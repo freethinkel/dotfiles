@@ -5,8 +5,11 @@ window:
     y: 5
 
 font:
+  use_thin_strokes: true
   normal: 
     family: JetBrainsMono Nerd Font
-  size: 14
-
-
+    size: 13
+  bold: 
+    family: JetBrainsMono Nerd Font
+    size: 13
+  
