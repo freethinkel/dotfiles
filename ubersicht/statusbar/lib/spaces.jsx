@@ -1,0 +1,39 @@
+import { styled, run } from "uebersicht";
+import { colors } from "./colors";
+
+export const Spaces = ({ spaces, active }) => {
+  return (
+    <Wrapper>
+      {spaces.map((space, i) => (
+        <Space
+          key={space}
+          active={i + 1 === active}
+          onClick={() => run(`yabai -m space --focus ${i + 1}`)}
+        >
+          {i + 1}: {space}
+        </Space>
+      ))}
+    </Wrapper>
+  );
+};
+
+const Space = styled.button`
+  border: none;
+  padding: 0 6px;
+  margin: 0;
+  outline: none;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  font-family: "JetBrainsMono Nerd Font", serif;
+  color: ${colors.white};
+  background: ${({ active }) => (active ? colors.primary : "transparent")};
+  transition: 0.3s;
+  &:hover {
+    background: ${colors.primary50};
+  }
+`;
+
+const Wrapper = styled.div`
+  display: flex;
+`;
