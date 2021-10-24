@@ -22,4 +22,4 @@ export PATH="$PATH:$HOME/.dev/flutter/bin:$HOME/.rvm/bin"
 alias cls="clear"
 alias vim="nvim"
 alias vimconfig="vim ~/.config/nvim/init.vim"
-
+alias ls="exa"
