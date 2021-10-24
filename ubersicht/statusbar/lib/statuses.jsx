@@ -4,15 +4,22 @@ import { colors } from "./colors";
 export const Statuses = ({ statuses }) => {
   return (
     <Wrapper>
-      <Volume value={statuses.volume} />
+      <Volume isAirpods={statuses.airpodsConnected} value={statuses.volume} />
       <Wifi name={statuses.wifi} />
+      <HardInfo statuses={statuses} />
+      <Battery value={statuses.battery} isCharging={statuses.charging} />
+      <DateItem value={statuses.date} />
+    </Wrapper>
+  );
+};
+
+const HardInfo = ({ statuses }) => {
+  return (
+    <Expanded>
       <Memory value={statuses.memory} />
       <Cpu value={statuses.cpu} />
       <Disk value={statuses.disk} />
-      <Battery value={statuses.battery} isCharging={statuses.charging} />
-      <DateItem value={statuses.date} />
-      <Time value={statuses.time} />
-    </Wrapper>
+    </Expanded>
   );
 };
 
@@ -21,15 +28,6 @@ const Memory = ({ value }) => {
     <ItemWrapper onClick={() => run("~/projects/dev/dotfiles/bin/purge.sh")}>
       <span className="ti ti-container" />
       <span>{value}Mb</span>
-    </ItemWrapper>
-  );
-};
-
-const Time = ({ value }) => {
-  return (
-    <ItemWrapper>
-      <span className="ti ti-clock" />
-      <span>{value}</span>
     </ItemWrapper>
   );
 };
@@ -54,18 +52,19 @@ const Disk = ({ value }) => {
 
 const Cpu = ({ value }) => {
   return (
-    <ItemWrapper>
+    <ItemWrapper className="cpu">
       <span className="ti ti-activity" />
       <span>{value}%</span>
     </ItemWrapper>
   );
 };
 
-const Volume = ({ value }) => {
+const Volume = ({ value, isAirpods }) => {
+  const icon = isAirpods ? "ti-headphones" : "ti-volume";
   return (
     <ItemWrapper>
-      <span className="ti ti-volume" />
-      <span>{value}</span>
+      <span className={"ti " + icon} />
+      <span>{value}%</span>
     </ItemWrapper>
   );
 };
@@ -104,6 +103,7 @@ const Battery = ({ value, isCharging }) => {
 
 const Wrapper = styled.div`
   display: flex;
+  justify-content: flex-end;
   font-family: "JetBrainsMono Nerd Font";
   padding-right: 8px;
   & > *:not(:first-child) {
@@ -138,9 +138,35 @@ const ItemWrapper = styled.button`
   & + & {
     margin-left: 16px;
   }
+  &.cpu {
+    min-width: 65px;
+  }
   &.battery {
     & .ti {
       font-size: 22px;
     }
+  }
+`;
+
+const Expanded = styled.div`
+  overflow: hidden;
+  width: 22px;
+  display: flex;
+  transition: 0.3s;
+  & > *:not(:first-child) {
+    position: relative;
+    &::before {
+      content: "";
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: -8px;
+      display: flex;
+      background-color: rgba(255, 255, 255, 0.4);
+      width: 2px;
+    }
+  }
+  &:hover {
+    width: 230px;
   }
 `;

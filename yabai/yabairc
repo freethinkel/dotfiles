@@ -43,16 +43,6 @@ yabai -m config left_padding                 10
 yabai -m config right_padding                10
 yabai -m config window_gap                   05
 
-yabai -m space 1 --label web
-yabai -m space 2 --label code
-yabai -m space 3 --label term
-yabai -m space 4 --label chat
-yabai -m space 5 --label cal
-yabai -m space 6 --label mail
-yabai -m space 7 --label todo
-yabai -m space 8 --label music
-yabai -m space 9 --label misc
-
 yabai -m rule --add title='mylauncher' manage=off sticky=on layer=above border=off
 
 echo "yabai configuration loaded.."

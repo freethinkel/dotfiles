@@ -1,6 +1,7 @@
 import { styled, run } from "uebersicht";
 import { Spaces } from "./lib/spaces.jsx";
 import { Statuses } from "./lib/statuses.jsx";
+import { Center } from "./lib/center.jsx";
 import { colors } from "./lib/colors";
 
 export const refreshFrequency = 500;
@@ -16,6 +17,7 @@ export const render = (props) => {
         href="./statusbar/lib/assets/tabler-icons.min.css"
       />
       <Spaces spaces={spaces} active={activeSpace} />
+      <Center statuses={statuses} />
       <Statuses statuses={statuses} />
     </Wrapper>
   );
@@ -38,7 +40,7 @@ const setStatuses = createAction("setStatuses");
 export const command = async (dispatch) => {
   const spaces = (
     await run(
-      "/usr/local/bin/yabai -m query --spaces | /usr/local/bin/jq -r '.[].label'"
+      "/usr/local/bin/yabai -m query --spaces | /usr/local/bin/jq -r '.[].index'"
     )
   )
     .split(/\n/)
@@ -65,6 +67,7 @@ export const command = async (dispatch) => {
     ),
     run("df -H -l | awk '{ print $5 }'"),
     run("top -l 1 | grep PhysMem: | awk '{print $2 - $6}'"),
+    run("~/projects/dev/dotfiles/bin/airpods.sh"),
   ]);
 
   dispatch(
@@ -82,6 +85,7 @@ export const command = async (dispatch) => {
         .map((e) => parseInt(e) || 0)
         .reduce((acc, curr) => acc + curr),
       memory: statuses[8].trim(),
+      airpodsConnected: parseInt(statuses[9]) === 1,
     })
   );
 };

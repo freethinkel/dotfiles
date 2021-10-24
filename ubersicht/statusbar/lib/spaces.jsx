@@ -10,7 +10,7 @@ export const Spaces = ({ spaces, active }) => {
           active={i + 1 === active}
           onClick={() => run(`yabai -m space --focus ${i + 1}`)}
         >
-          {i + 1}: {space}
+          {space}
         </Space>
       ))}
     </Wrapper>
@@ -23,12 +23,15 @@ const Space = styled.button`
   margin: 0;
   outline: none;
   height: 24px;
+  min-width: 24px;
   display: flex;
   align-items: center;
+  justify-content: center;
   font-family: "JetBrainsMono Nerd Font", serif;
   color: ${colors.white};
   background: ${({ active }) => (active ? colors.primary : "transparent")};
   transition: 0.3s;
+  margin-right: 2px;
   &:hover {
     background: ${colors.primary50};
   }
