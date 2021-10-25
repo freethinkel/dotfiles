@@ -24,6 +24,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'chun-yang/auto-pairs'
   Plug 'https://github.com/tpope/vim-fugitive'
 	Plug 'mattn/emmet-vim'
+	Plug 'vim-scripts/indentLine.vim'
 call plug#end()
 
 command! -nargs=0 Prettier :CocCommand prettier.formatFile

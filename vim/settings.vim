@@ -50,3 +50,5 @@ set keymap=russian-jcukenmac
 set iminsert=0
 "Аналогично настраивается режим поиска
 set imsearch=0
+set list
+set listchars=tab:\┆\ 

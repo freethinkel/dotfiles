@@ -4,7 +4,7 @@ ctrl + alt + cmd - r : launchctl kickstart -k "gui/${UID}/homebrew.mxcl.yabai"
 ctrl + alt + cmd - s : launchctl kickstart -k "gui/${UID}/homebrew.mxcl.skhd"
 
 ## open terminal
-ctrl - return : /Applications/iTerm.app/Contents/MacOS/iTerm2
+ctrl - return : alacritty
 
 ctrl + shift - space : yabai -m window --toggle float && yabai -m window --toggle topmost && yabai -m window --layer above
 
