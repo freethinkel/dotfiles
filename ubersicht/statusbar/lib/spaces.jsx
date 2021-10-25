@@ -29,11 +29,11 @@ const Space = styled.button`
   justify-content: center;
   font-family: "JetBrainsMono Nerd Font", serif;
   color: ${colors.white};
-  background: ${({ active }) => (active ? colors.primary : "transparent")};
+  background: ${({ active }) => (active ? colors.secondary : "transparent")};
   transition: 0.3s;
   margin-right: 2px;
   &:hover {
-    background: ${colors.primary50};
+    background: ${colors.secondary50};
   }
 `;
 

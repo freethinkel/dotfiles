@@ -1,4 +1,6 @@
 call plug#begin('~/.vim/plugged')
+	Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+	Plug 'junegunn/fzf.vim'
   Plug 'preservim/nerdtree'
   Plug 'aluriak/nerdcommenter'
   Plug 'Xuyuanp/nerdtree-git-plugin'
@@ -10,6 +12,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'phanviet/vim-monokai-pro'
   Plug 'sainnhe/gruvbox-material'
   Plug 'junegunn/seoul256.vim'
+	Plug 'morhetz/gruvbox'
 
   Plug 'pangloss/vim-javascript'
   Plug 'leafgarland/typescript-vim'
@@ -20,6 +23,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'keith/swift.vim'
   Plug 'chun-yang/auto-pairs'
   Plug 'https://github.com/tpope/vim-fugitive'
+	Plug 'mattn/emmet-vim'
 call plug#end()
 
 command! -nargs=0 Prettier :CocCommand prettier.formatFile
