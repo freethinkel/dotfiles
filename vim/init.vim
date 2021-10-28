@@ -25,6 +25,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'https://github.com/tpope/vim-fugitive'
 	Plug 'mattn/emmet-vim'
 	Plug 'vim-scripts/indentLine.vim'
+	Plug 'evanleck/vim-svelte', {'branch': 'main'}
 call plug#end()
 
 command! -nargs=0 Prettier :CocCommand prettier.formatFile

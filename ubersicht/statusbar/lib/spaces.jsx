@@ -1,7 +1,23 @@
-import { styled, run } from "uebersicht";
-import { colors } from "./colors";
+import { styled, run, React } from "uebersicht";
+import { colors, hexToRgba } from "./colors";
+import { useProcess, useUpdate } from "./utils";
 
-export const Spaces = ({ spaces, active }) => {
+export const Spaces = () => {
+  const spaces = (
+    useProcess(
+      "/usr/local/bin/yabai -m query --spaces | /usr/local/bin/jq -r '.[].index'"
+    ) || ""
+  )
+    .split("\n")
+    .filter((space) => space);
+
+  const active = parseInt(
+    useProcess(
+      "/usr/local/bin/yabai -m query --spaces --space | /usr/local/bin/jq '.index'"
+    )
+  );
+
+  useUpdate(500);
   return (
     <Wrapper>
       {spaces.map((space, i) => (
@@ -29,11 +45,11 @@ const Space = styled.button`
   justify-content: center;
   font-family: "JetBrainsMono Nerd Font", serif;
   color: ${colors.white};
-  background: ${({ active }) => (active ? colors.secondary : "transparent")};
+  background: ${({ active }) => (active ? colors.mint : "transparent")};
   transition: 0.3s;
   margin-right: 2px;
   &:hover {
-    background: ${colors.secondary50};
+    background: ${hexToRgba(colors.mint, "0.5")};
   }
 `;
 

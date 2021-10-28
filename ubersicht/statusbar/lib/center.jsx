@@ -1,20 +1,11 @@
-import { styled } from "uebersicht";
-import { colors } from "./colors";
+import { styled, React } from "uebersicht";
+import { Time } from "./components/Timer.jsx";
 
-export const Center = ({ statuses }) => {
+export const Center = () => {
   return (
     <Wrapper>
-      <Time value={statuses.time} />
+      <Time />
     </Wrapper>
-  );
-};
-
-const Time = ({ value }) => {
-  return (
-    <TimeInner>
-      <span className="ti ti-clock" />
-      <span>{value}</span>
-    </TimeInner>
   );
 };
 
@@ -25,25 +16,4 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   text-align: center;
-`;
-
-const TimeInner = styled.button`
-  outline: none;
-  border: none;
-  display: flex;
-  background: transparent;
-  color: ${colors.white};
-  font-size: "JetBrainsMono Nerd Font";
-  align-items: center;
-  gap: 3px;
-  font-size: 12px;
-  padding: 0;
-  height: 24px;
-  top: 0;
-  margin: 0;
-  color: ${colors.primary};
-  & .ti {
-    margin-top: -2px;
-    font-size: 18px;
-  }
 `;

@@ -4,7 +4,7 @@ import { Statuses } from "./lib/statuses.jsx";
 import { Center } from "./lib/center.jsx";
 import { colors } from "./lib/colors";
 
-export const refreshFrequency = 500;
+export const refreshFrequency = false;
 
 export const render = (props) => {
   const spaces = props.spaces || [];
@@ -38,21 +38,6 @@ const setActiveSpace = createAction("setActiveSpace");
 const setStatuses = createAction("setStatuses");
 
 export const command = async (dispatch) => {
-  const spaces = (
-    await run(
-      "/usr/local/bin/yabai -m query --spaces | /usr/local/bin/jq -r '.[].index'"
-    )
-  )
-    .split(/\n/)
-    .filter((space) => space);
-
-  dispatch(setSpaces(spaces));
-
-  const activeSpace = await run(
-    "/usr/local/bin/yabai -m query --spaces --space | /usr/local/bin/jq '.index'"
-  );
-  dispatch(setActiveSpace(+activeSpace));
-
   const statuses = await Promise.all([
     run("pmset -g batt | egrep '([0-9]+%).*' -o --colour=auto | cut -f1 -d';'"),
     run("pmset -g batt | grep -c 'AC'"),

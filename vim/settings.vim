@@ -52,3 +52,5 @@ set iminsert=0
 set imsearch=0
 set list
 set listchars=tab:\┆\ 
+
+let g:user_emmet_mode='i'

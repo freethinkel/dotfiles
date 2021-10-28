@@ -1,13 +1,18 @@
-import { styled, run } from "uebersicht";
+import { styled, run, React } from "uebersicht";
 import { colors } from "./colors";
+import { Volume } from "./components/Volume.jsx";
+import { Battery } from "./components/Battery.jsx";
+import { Wifi } from "./components/Wifi.jsx";
+
+const { useState, useEffect } = React;
 
 export const Statuses = ({ statuses }) => {
   return (
     <Wrapper>
-      <Volume isAirpods={statuses.airpodsConnected} value={statuses.volume} />
-      <Wifi name={statuses.wifi} />
+      <Volume />
+      <Wifi />
       <HardInfo statuses={statuses} />
-      <Battery value={statuses.battery} isCharging={statuses.charging} />
+      <Battery />
       <DateItem value={statuses.date} />
     </Wrapper>
   );
@@ -54,48 +59,6 @@ const Cpu = ({ value }) => {
   return (
     <ItemWrapper className="cpu">
       <span className="ti ti-activity" />
-      <span>{value}%</span>
-    </ItemWrapper>
-  );
-};
-
-const Volume = ({ value, isAirpods }) => {
-  const icon = isAirpods ? "ti-headphones" : "ti-volume";
-  return (
-    <ItemWrapper>
-      <span className={"ti " + icon} />
-      <span>{value}%</span>
-    </ItemWrapper>
-  );
-};
-
-const Wifi = ({ name }) => {
-  return (
-    <ItemWrapper>
-      <span className="ti ti-wifi"></span>
-      <span>{name}</span>
-    </ItemWrapper>
-  );
-};
-
-const Battery = ({ value, isCharging }) => {
-  let icon = "";
-  if (+value < 25) {
-    icon = "ti-battery-1";
-  } else if (+value < 50) {
-    icon = "ti-battery-2";
-  } else if (+value < 75) {
-    icon = "ti-battery-3";
-  } else {
-    icon = "ti-battery-4";
-  }
-
-  if (isCharging) {
-    icon = "ti-battery-charging";
-  }
-  return (
-    <ItemWrapper className="battery">
-      <span className={"ti " + icon}></span>
       <span>{value}%</span>
     </ItemWrapper>
   );

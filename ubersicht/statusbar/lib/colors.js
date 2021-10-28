@@ -1,8 +1,26 @@
 export const colors = {
   primary: "rgba(255, 172, 18, 1)",
-  primary50: "rgba(255, 172, 18, 0.5)",
-  secondary: "rgba(134, 175, 135, 1)",
-  secondary50: "rgba(134, 175, 135, 0.5)",
+
+  red: "#fb4934",
+  green: "#b8bb26",
+  yellow: "#fb4934",
+  blue: "#fb4934",
+  purple: "#fb4934",
+  mint: "#8ec07c",
+
   background: "#282828",
-  white: "#fff",
+  white: "#ebdbb2",
+};
+
+export const hexToRgba = (hex, opacity) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const rgb = result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
+
+  return `rgba(${[rgb.r, rgb.g, rgb.b].join(",")}, ${opacity || "1"})`;
 };

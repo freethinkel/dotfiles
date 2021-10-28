@@ -10,6 +10,7 @@
 		"javascriptreact",
 		"typescript",
 		"typescriptreact",
-		"dart"
+		"dart",
+		"svelte"
 	]
 }
