@@ -1,8 +1,15 @@
 window:
-  decorations: none
+  # Values for `decorations`:
+  #     - full: Borders and title bar
+  #     - none: Neither borders nor title bar
+  #     - buttonless: Title bar, transparent background and title bar buttons
+  #     - transparent: Title bar, transparent background, but no title bar buttons
+  decorations: full
   padding: 
     x: 5
-    y: 5
+    y: 5 
+dynamic_padding: true
+dynamic_title: true
 
 font:
   use_thin_strokes: true
@@ -17,6 +24,10 @@ key_bindings:
   - { key: Left, mods: Alt,  chars: "\x1bb" } # one word left
   - { key: Right, mods: Alt, chars: "\x1bf" } # one word right
   - { key: Slash, mods: Command, chars: "++" }
+
+tabspaces: 4
+
+background_opacity: 0.98
 
 colors:
   primary:

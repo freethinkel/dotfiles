@@ -12,5 +12,6 @@
 		"typescriptreact",
 		"dart",
 		"svelte"
-	]
+  ],
+  "svelte.enable-ts-plugin": true
 }

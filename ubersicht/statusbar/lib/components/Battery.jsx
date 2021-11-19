@@ -1,12 +1,14 @@
 import { styled } from "uebersicht";
 import { useProcess, useUpdate } from "../utils";
-import { colors } from "../colors";
+import { colors, hexToRgba } from "../colors";
 
 export const Battery = () => {
-  const value = useProcess(
-    "pmset -g batt | egrep '([0-9]+%).*' -o --colour=auto | cut -f1 -d';'"
+  const value = parseInt(
+    useProcess(
+      "pmset -g batt | egrep '([0-9]+%).*' -o --colour=auto | cut -f1 -d';'"
+    ) || ""
   );
-  const isCharging = false;
+  const isCharging = parseInt(useProcess("pmset -g batt | grep -c 'AC'")) > 0;
 
   useUpdate(2000);
 
@@ -36,10 +38,15 @@ const BatteryInner = styled.div`
   display: flex;
   align-items: center;
   border: none;
-  background: transparent;
-  color: ${colors.white};
+  background: ${hexToRgba(colors.green)};
+  color: ${colors.background};
   cursor: pointer;
   gap: 2px;
-  padding: 0;
+  padding: 0 8px;
   font-size: 12px;
+  font-weight: bold;
+  & .ti {
+    font-size: 22px;
+    font-weight: 100;
+  }
 `;

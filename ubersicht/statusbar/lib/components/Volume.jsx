@@ -1,5 +1,5 @@
 import { styled, run, React } from "uebersicht";
-import { colors } from "../colors";
+import { colors, hexToRgba } from "../colors";
 import { useProcess, useUpdate } from "../utils";
 
 const { useState, useEffect } = React;
@@ -27,9 +27,14 @@ const VolumeInner = styled.div`
   align-items: center;
   border: none;
   background: transparent;
-  color: ${colors.white};
+  color: ${colors.background};
   cursor: pointer;
   gap: 2px;
-  padding: 0;
+  padding: 0 8px;
+  font-weight: bold;
   font-size: 12px;
+  background-color: ${hexToRgba(colors.yellow)};
+  & .ti {
+    font-weight: bold;
+  }
 `;

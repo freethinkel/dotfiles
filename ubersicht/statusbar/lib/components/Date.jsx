@@ -1,7 +1,8 @@
 import { styled } from "uebersicht";
+import { colors } from "../colors";
 import { useUpdate } from "../utils";
 
-export const Date = () => {
+export const DateItem = () => {
   const now = new Date();
   const weekMap = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
 
@@ -23,4 +24,14 @@ export const Date = () => {
 
 const DateInner = styled.div`
   display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: bold;
+  color: ${colors.background};
+  background: ${colors.red};
+  & .ti {
+    font-weight: bold;
+  }
 `;

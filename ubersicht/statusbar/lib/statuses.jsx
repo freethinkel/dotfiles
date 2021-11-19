@@ -3,17 +3,15 @@ import { colors } from "./colors";
 import { Volume } from "./components/Volume.jsx";
 import { Battery } from "./components/Battery.jsx";
 import { Wifi } from "./components/Wifi.jsx";
-
-const { useState, useEffect } = React;
+import { DateItem } from "./components/Date.jsx";
 
 export const Statuses = ({ statuses }) => {
   return (
     <Wrapper>
       <Volume />
-      <Wifi />
-      <HardInfo statuses={statuses} />
       <Battery />
-      <DateItem value={statuses.date} />
+      <Wifi />
+      <DateItem />
     </Wrapper>
   );
 };
@@ -33,15 +31,6 @@ const Memory = ({ value }) => {
     <ItemWrapper onClick={() => run("~/projects/dev/dotfiles/bin/purge.sh")}>
       <span className="ti ti-container" />
       <span>{value}Mb</span>
-    </ItemWrapper>
-  );
-};
-
-const DateItem = ({ value }) => {
-  return (
-    <ItemWrapper>
-      <span className="ti ti-calendar" />
-      <span>{value}</span>
     </ItemWrapper>
   );
 };
@@ -67,21 +56,9 @@ const Cpu = ({ value }) => {
 const Wrapper = styled.div`
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
   font-family: "JetBrainsMono Nerd Font";
   padding-right: 8px;
-  & > *:not(:first-child) {
-    position: relative;
-    &::before {
-      content: "";
-      position: absolute;
-      top: 4px;
-      bottom: 4px;
-      left: -8px;
-      display: flex;
-      background-color: rgba(255, 255, 255, 0.4);
-      width: 2px;
-    }
-  }
   & .ti {
     margin-top: -2px;
     font-size: 18px;
@@ -95,20 +72,8 @@ const ItemWrapper = styled.button`
   background: transparent;
   color: ${colors.white};
   cursor: pointer;
-  gap: 2px;
   padding: 0;
   font-size: 12px;
-  & + & {
-    margin-left: 16px;
-  }
-  &.cpu {
-    min-width: 65px;
-  }
-  &.battery {
-    & .ti {
-      font-size: 22px;
-    }
-  }
 `;
 
 const Expanded = styled.div`
@@ -116,19 +81,6 @@ const Expanded = styled.div`
   width: 22px;
   display: flex;
   transition: 0.3s;
-  & > *:not(:first-child) {
-    position: relative;
-    &::before {
-      content: "";
-      position: absolute;
-      top: 4px;
-      bottom: 4px;
-      left: -8px;
-      display: flex;
-      background-color: rgba(255, 255, 255, 0.4);
-      width: 2px;
-    }
-  }
   &:hover {
     width: 230px;
   }

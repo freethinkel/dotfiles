@@ -31,7 +31,8 @@ call plug#end()
 command! -nargs=0 Prettier :CocCommand prettier.formatFile
 let g:coc_global_extensions = [
 \ 'coc-tsserver',
-\ 'coc-flutter'
+\ 'coc-flutter',
+\ 'coc-svelte'
 \ ]
 
 if isdirectory('./node_modules') && isdirectory('./node_modules/prettier')

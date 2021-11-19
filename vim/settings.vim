@@ -34,6 +34,7 @@ colorscheme gruvbox-material
 
 let NERDTreeAutoDeleteBuffer=1
 let NERDTreeShowHidden=1
+let g:NERDTreeGitStatusShowIgnored = 1
 
 let g:syntastic_swift_checkers = ['swiftpm', 'swiftlint']
 
@@ -43,6 +44,8 @@ let g:airline#extensions#keymap#enabled = 0 "Не показывать теку�
 let g:airline_section_z = "\ue0a1:%l/%L Col:%c" "Кастомная графа положения курсора
 let g:Powerline_symbols='unicode' "Поддержка unicode
 let g:airline#extensions#xkblayout#enabled = 0 "Про это позже расскажу
+
+let g:AutoPairs = {'(':')', '[':']', '{':'}',"'":"'",'"':'"', "`":"`", '```':'```', '"""':'"""', "'''":"'''", '>':'<'}
 
 "Если вы используете обычную qwerty, то поменяте mac на win
 set keymap=russian-jcukenmac

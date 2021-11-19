@@ -16,28 +16,14 @@ export const render = (props) => {
         rel="stylesheet"
         href="./statusbar/lib/assets/tabler-icons.min.css"
       />
-      <Spaces spaces={spaces} active={activeSpace} />
-      <Center statuses={statuses} />
-      <Statuses statuses={statuses} />
+      <Spaces />
+      <Center />
+      <Statuses />
     </Wrapper>
   );
 };
 
-const createAction = (type) => {
-  const fn = function (payload) {
-    return { type, payload };
-  };
-
-  fn.type = type;
-
-  return fn;
-};
-
-const setSpaces = createAction("setSpaces");
-const setActiveSpace = createAction("setActiveSpace");
-const setStatuses = createAction("setStatuses");
-
-export const command = async (dispatch) => {
+const command = async (dispatch) => {
   const statuses = await Promise.all([
     run("pmset -g batt | egrep '([0-9]+%).*' -o --colour=auto | cut -f1 -d';'"),
     run("pmset -g batt | grep -c 'AC'"),
@@ -73,20 +59,6 @@ export const command = async (dispatch) => {
       airpodsConnected: parseInt(statuses[9]) === 1,
     })
   );
-};
-
-export const updateState = (action, state = {}) => {
-  const handler = {
-    [setSpaces.type]: () => ({ ...state, spaces: action.payload }),
-    [setActiveSpace.type]: () => ({ ...state, activeSpace: action.payload }),
-    [setStatuses.type]: () => ({ ...state, statuses: action.payload }),
-  }[action.type];
-
-  if (handler) {
-    return handler();
-  }
-
-  return state;
 };
 
 const Wrapper = styled.div`

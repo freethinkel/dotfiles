@@ -1,14 +1,14 @@
 import { styled, React } from "uebersicht";
-import { colors } from "../colors";
+import { colors, hexToRgba } from "../colors";
 import { useUpdate } from "../utils";
 
 export const Time = () => {
   const now = new Date();
-  const value = [now.getHours(), now.getMinutes(), now.getSeconds()].map((v) =>
+  const value = [now.getHours(), now.getMinutes()].map((v) =>
     v.toString().padStart(2, "0")
   );
 
-  useUpdate(1000);
+  useUpdate(5000);
 
   return (
     <TimeInner>
@@ -24,19 +24,20 @@ const TimeInner = styled.button`
   display: flex;
   background: transparent;
   color: ${colors.white};
-  font-size: "JetBrainsMono Nerd Font";
+  font-family: "JetBrainsMono Nerd Font";
   align-items: center;
   gap: 3px;
   font-size: 12px;
-  padding: 0;
+  padding: 0 8px;
   height: 24px;
   top: 0;
   margin: 0;
   font-weight: bold;
-  letter-spacing: 1px;
-  color: ${colors.green};
+  color: ${colors.mint};
+  background: ${hexToRgba(colors.mint, 0.12)};
   & .ti {
     margin-top: -2px;
+    font-weight: bold;
     font-size: 16px;
   }
 `;

@@ -20,6 +20,8 @@ export PATH="$PATH:$HOME/.dev/flutter/bin:$HOME/.rvm/bin"
 
 # MY ALIASES
 alias cls="clear"
-alias vim="nvim"
 alias vimconfig="vim ~/.config/nvim/init.vim"
 alias ls="exa"
+alias lvim="/Users/freethinkel/.local/bin/lvim"
+alias vim="lvim"
+alias code="code-insiders"

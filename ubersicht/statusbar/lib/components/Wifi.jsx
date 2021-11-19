@@ -1,4 +1,5 @@
 import { styled } from "uebersicht";
+import { colors } from "../colors";
 import { useProcess, useUpdate } from "../utils";
 
 export const Wifi = () => {
@@ -20,5 +21,12 @@ const WifiInner = styled.div`
   font-size: 12px;
   display: flex;
   align-items: center;
-  gap: 2p;
+  gap: 2px;
+  padding: 0 8px;
+  font-weight: bold;
+  background: ${colors.blue};
+  color: ${colors.background};
+  & .ti {
+    font-weight: bold;
+  }
 `;
