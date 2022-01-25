@@ -25,3 +25,4 @@ alias ls="exa"
 alias lvim="/Users/freethinkel/.local/bin/lvim"
 alias vim="lvim"
 alias code="code-insiders"
+source $HOME/.cargo/env

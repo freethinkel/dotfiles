@@ -8,6 +8,6 @@ ctrl - return : alacritty
 
 ctrl + shift - space : yabai -m window --toggle float && yabai -m window --toggle topmost && yabai -m window --layer above
 
-ctrl - space : ~/projects/dev/dotfiles/bin/popup.sh ~/projects/dev/dotfiles/bin/launcher.sh
+# ctrl - space : ~/projects/dev/dotfiles/bin/popup.sh ~/projects/dev/dotfiles/bin/launcher.sh
 
 ctrl + alt - f : yabai -m window --toggle zoom-fullscreen

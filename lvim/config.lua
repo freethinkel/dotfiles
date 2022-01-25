@@ -66,6 +66,7 @@ lvim.builtin.terminal.active = true
 lvim.builtin.nvimtree.setup.view.side = "left"
 lvim.builtin.nvimtree.show_icons.git = 0
 lvim.builtin.nvimtree.hide_dotfiles = 0
+lvim.builtin.project.detection_methods = {"pattern"}
 
 -- if you don't want all the parsers change this to a table of the ones you want
 lvim.builtin.treesitter.ensure_installed = {
@@ -79,7 +80,7 @@ lvim.builtin.treesitter.ensure_installed = {
   "css",
   "rust",
   "java",
-  "yaml",
+  "yaml"
 }
 
 lvim.builtin.treesitter.ignore_install = { "haskell" }
@@ -154,6 +155,35 @@ lvim.plugins = {
       "folke/trouble.nvim",
       cmd = "TroubleToggle",
     },
+    {
+      "akinsho/flutter-tools.nvim",
+      requires = "nvim-lua/plenary.nvim",
+      config = function()
+        require("flutter-tools").setup {
+          lsp = {
+            on_attach = require("lvim.lsp").common_on_attach
+          }
+        }
+      end,
+    },
+    {"karb94/neoscroll.nvim",
+      event = "WinScrolled",
+      config = function()
+      require('neoscroll').setup({
+        mappings = {'<C-u>', '<C-d>', '<C-b>', '<C-f>',
+        '<C-y>', '<C-e>', 'zt', 'zz', 'zb'},
+        hide_cursor = true,          -- Hide cursor while scrolling
+        stop_eof = true,             -- Stop at <EOF> when scrolling downwards
+        use_local_scrolloff = false, -- Use the local scope of scrolloff instead of the global scope
+        respect_scrolloff = false,   -- Stop scrolling when the cursor reaches the scrolloff margin of the file
+        cursor_scrolls_alone = true, -- The cursor will keep on scrolling even if the window cannot scroll further
+        easing_function = nil,        -- Default easing function
+        pre_hook = nil,              -- Function to run before the scrolling animation starts
+        post_hook = nil,              -- Function to run after the scrolling animation ends
+        })
+      end
+  }
+
 }
 -- Autocommands (https://neovim.io/doc/user/autocmd.html)
 -- lvim.autocommands.custom_groups = {
