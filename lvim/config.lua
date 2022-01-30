@@ -11,7 +11,7 @@ an executable
 -- general
 lvim.log.level = "warn"
 lvim.format_on_save = true
-lvim.colorscheme = "gruvbox-material"
+lvim.colorscheme = "catppuccin"
 
 vim.opt.cc = "80"
 vim.opt.timeoutlen = 300
@@ -142,9 +142,9 @@ lvim.builtin.treesitter.highlight.enabled = true
 lvim.plugins = {
     {"folke/tokyonight.nvim"},
     {"lunarvim/colorschemes"},
-    {"morhetz/gruvbox"},
     {"sainnhe/gruvbox-material"},
-    {"afamadriz/neon"},
+    {"Manas140/Conscious"},
+    {"catppuccin/nvim"},
     {
       "folke/trouble.nvim",
       cmd = "TroubleToggle",
