@@ -16,6 +16,51 @@ lvim.colorscheme = "catppuccin"
 vim.opt.cc = "80"
 vim.opt.timeoutlen = 300
 
+lvim.transparent_window = true
+
+require("catppuccin").setup({
+  transparent_background = true,
+  term_colors = false,
+  styles = {
+    comments = "italic",
+    functions = "italic",
+    keywords = "italic",
+    strings = "NONE",
+    variables = "italic",
+  },
+  integrations = {
+    treesitter = true,
+    lsp_trouble = false,
+    cmp = true,
+    lsp_saga = false,
+    gitgutter = false,
+    gitsigns = true,
+    telescope = true,
+    nvimtree = {
+      enabled = true,
+      show_root = true,
+      transparent_panel = true,
+    },
+    which_key = false,
+    indent_blankline = {
+      enabled = true,
+      colored_indent_levels = false,
+    },
+    dashboard = true,
+    neogit = false,
+    vim_sneak = false,
+    fern = false,
+    barbar = false,
+    bufferline = true,
+    markdown = true,
+    lightspeed = false,
+    ts_rainbow = false,
+    hop = false,
+    notify = true,
+    telekasten = true,
+  }
+})
+
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
 -- add your own keymapping
@@ -106,20 +151,20 @@ lvim.builtin.treesitter.highlight.enabled = true
 -- end
 
 -- -- set a formatter, this will override the language server formatting capabilities (if it exists)
--- local formatters = require "lvim.lsp.null-ls.formatters"
--- formatters.setup {
---   { command = "black", filetypes = { "python" } },
---   { command = "isort", filetypes = { "python" } },
---   {
---     -- each formatter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
---     command = "prettier",
---     ---@usage arguments to pass to the formatter
---     -- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
---     extra_args = { "--print-with", "100" },
---     ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
---     filetypes = { "typescript", "typescriptreact" },
---   },
--- }
+local formatters = require "lvim.lsp.null-ls.formatters"
+formatters.setup {
+  { command = "black", filetypes = { "python" } },
+  { command = "isort", filetypes = { "python" } },
+  {
+    -- each formatter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
+    command = "prettier",
+    ---@usage arguments to pass to the formatter
+    -- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
+    extra_args = { "--print-with", "100" },
+    ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
+    filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
+  },
+}
 
 -- -- set additional linters
 -- local linters = require "lvim.lsp.null-ls.linters"
@@ -145,6 +190,7 @@ lvim.plugins = {
     {"sainnhe/gruvbox-material"},
     {"Manas140/Conscious"},
     {"catppuccin/nvim"},
+    {"evanleck/vim-svelte"},
     {
       "folke/trouble.nvim",
       cmd = "TroubleToggle",
