@@ -1,4 +1,4 @@
-export ZSH="/Users/freethinkel/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 # ZSH_THEME="spaceship"
 ZSH_THEME="headline"
@@ -23,7 +23,7 @@ source $HOME/.cargo/env
 # MY ALIASES
 alias cls="clear"
 alias ls="exa"
-alias lvim="/Users/freethinkel/.local/bin/lvim"
+alias lvim="$HOME/.local/bin/lvim"
 alias vim="lvim"
 alias vimconfig="vim ~/.config/nvim/"
 alias cat="bat"
