@@ -18,7 +18,12 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 export PATH="$PATH:$HOME/.dev/flutter/bin:$HOME/.rvm/bin:$HOME/.dev/bin"
-source $HOME/.cargo/env
+
+if [ -d "$HOME/.cargo" ]; 
+then
+  source $HOME/.cargo/env
+fi
+
 
 # MY ALIASES
 alias cls="clear"
