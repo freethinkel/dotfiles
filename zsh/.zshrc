@@ -1,6 +1,7 @@
 export ZSH="/Users/freethinkel/.oh-my-zsh"
 
-ZSH_THEME="spaceship"
+# ZSH_THEME="spaceship"
+ZSH_THEME="headline"
 
 plugins=(
   git
@@ -16,13 +17,14 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-export PATH="$PATH:$HOME/.dev/flutter/bin:$HOME/.rvm/bin"
+export PATH="$PATH:$HOME/.dev/flutter/bin:$HOME/.rvm/bin:$HOME/.dev/bin"
+source $HOME/.cargo/env
 
 # MY ALIASES
 alias cls="clear"
-alias vimconfig="vim ~/.config/nvim/init.vim"
 alias ls="exa"
 alias lvim="/Users/freethinkel/.local/bin/lvim"
 alias vim="lvim"
-alias code="code-insiders"
-source $HOME/.cargo/env
+alias vimconfig="vim ~/.config/nvim/"
+alias cat="bat"
+# alias code="code-insiders"

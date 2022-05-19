@@ -1,5 +1,5 @@
 import { styled } from "uebersicht";
-import { colors } from "../colors";
+import { colors } from "../vars";
 import { useProcess, useUpdate } from "../utils";
 
 export const Wifi = () => {

@@ -1,8 +1,6 @@
-import { styled, run, React } from "uebersicht";
-import { colors, hexToRgba } from "../colors";
+import { styled,  React } from "uebersicht";
+import { colors, hexToRgba } from "../vars";
 import { useProcess, useUpdate } from "../utils";
-
-const { useState, useEffect } = React;
 
 export const Volume = () => {
   const value = (

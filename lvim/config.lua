@@ -94,15 +94,16 @@ lvim.keys.normal_mode["<C-s>"] = ":w<cr>"
 --   name = "+Trouble",
 --   r = { "<cmd>Trouble lsp_references<cr>", "References" },
 --   f = { "<cmd>Trouble lsp_definitions<cr>", "Definitions" },
---   d = { "<cmd>Trouble lsp_document_diagnostics<cr>", "Diagnostics" },
+--   d = { "<cmd>Trouble document_diagnostics<cr>", "Diagnostics" },
 --   q = { "<cmd>Trouble quickfix<cr>", "QuickFix" },
 --   l = { "<cmd>Trouble loclist<cr>", "LocationList" },
---   w = { "<cmd>Trouble lsp_workspace_diagnostics<cr>", "Diagnostics" },
+--   w = { "<cmd>Trouble workspace_diagnostics<cr>", "Wordspace Diagnostics" },
 -- }
 
 -- TODO: User Config for predefined plugins
 -- After changing plugin config exit and reopen LunarVim, Run :PackerInstall :PackerCompile
-lvim.builtin.dashboard.active = true
+lvim.builtin.alpha.active = true
+lvim.builtin.alpha.mode = "dashboard"
 lvim.builtin.notify.active = true
 lvim.builtin.terminal.active = true
 lvim.builtin.nvimtree.setup.view.side = "left"
@@ -117,6 +118,7 @@ lvim.builtin.treesitter.ensure_installed = {
   "lua",
   "python",
   "typescript",
+  "tsx",
   "css",
   "rust",
   "java",
@@ -125,7 +127,6 @@ lvim.builtin.treesitter.ensure_installed = {
 
 lvim.builtin.treesitter.ignore_install = { "haskell" }
 lvim.builtin.treesitter.highlight.enabled = true
-
 
 -- generic LSP settings
 
@@ -200,4 +201,3 @@ lvim.plugins = {
 -- lvim.autocommands.custom_groups = {
 --   { "BufWinEnter", "*.lua", "setlocal ts=8 sw=8" },
 -- }
-

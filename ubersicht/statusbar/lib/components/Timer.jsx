@@ -1,5 +1,5 @@
 import { styled, React } from "uebersicht";
-import { colors, hexToRgba } from "../colors";
+import { colors, hexToRgba } from "../vars";
 import { useUpdate } from "../utils";
 
 export const Time = () => {
@@ -34,7 +34,7 @@ const TimeInner = styled.button`
   margin: 0;
   font-weight: bold;
   color: ${colors.mint};
-  background: ${hexToRgba(colors.mint, 0.12)};
+  /* background: ${hexToRgba(colors.mint, 0.12)}; */
   & .ti {
     margin-top: -2px;
     font-weight: bold;

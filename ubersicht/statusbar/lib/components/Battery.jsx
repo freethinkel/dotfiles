@@ -1,6 +1,6 @@
 import { styled } from "uebersicht";
 import { useProcess, useUpdate } from "../utils";
-import { colors, hexToRgba } from "../colors";
+import { colors, hexToRgba } from "../vars";
 
 export const Battery = () => {
   const value = parseInt(

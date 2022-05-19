@@ -1,13 +1,27 @@
 #SKHD STUFF
 
-ctrl + alt + cmd - r : launchctl kickstart -k "gui/${UID}/homebrew.mxcl.yabai"
+ctrl + alt + cmd - y : launchctl kickstart -k "gui/${UID}/homebrew.mxcl.yabai"
 ctrl + alt + cmd - s : launchctl kickstart -k "gui/${UID}/homebrew.mxcl.skhd"
 
 ## open terminal
 ctrl - return : alacritty
 
-ctrl + shift - space : yabai -m window --toggle float && yabai -m window --toggle topmost && yabai -m window --layer above
+ctrl + shift - space : yabai -m window --toggle float 
 
 # ctrl - space : ~/projects/dev/dotfiles/bin/popup.sh ~/projects/dev/dotfiles/bin/launcher.sh
 
 ctrl + alt - f : yabai -m window --toggle zoom-fullscreen
+
+ctrl + alt - c : yabai -m window --toggle float; yabai -m window --grid 1:6:1:1:4:1
+
+ctrl + alt - o : ~/.nvm/versions/node/v14.18.1/bin/node ~/projects/dev/dotfiles/bin/window_sort.js
+
+
+ctrl + alt - 1 : yabai -m space --focus 1
+ctrl + alt - 2 : yabai -m space --focus 2
+ctrl + alt - 3 : yabai -m space --focus 3
+ctrl + alt - 4 : yabai -m space --focus 4
+ctrl + alt - 5 : yabai -m space --focus 5
+ctrl + alt - 6 : yabai -m space --focus 6
+ctrl + alt - 7 : yabai -m space --focus 7
+ctrl + alt - 8 : yabai -m space --focus 8

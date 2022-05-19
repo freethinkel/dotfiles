@@ -1,5 +1,5 @@
 import { styled, run, React } from "uebersicht";
-import { colors, hexToRgba } from "./colors";
+import { colors, hexToRgba, vars } from "./vars";
 import { useProcess, useUpdate } from "./utils";
 
 export const Spaces = () => {
@@ -18,6 +18,7 @@ export const Spaces = () => {
   );
 
   useUpdate(500);
+
   return (
     <Wrapper>
       {spaces.map((space, i) => (
@@ -55,4 +56,6 @@ const Space = styled.button`
 
 const Wrapper = styled.div`
   display: flex;
+  background: ${colors.background};
+  border-radius: ${vars.radius};
 `;

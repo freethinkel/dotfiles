@@ -1,5 +1,5 @@
 import { styled } from "uebersicht";
-import { colors } from "../colors";
+import { colors } from "../vars";
 import { useUpdate } from "../utils";
 
 export const DateItem = () => {
