@@ -1,35 +1,23 @@
 window:
-  # Values for `decorations`:
-  #     - full: Borders and title bar
-  #     - none: Neither borders nor title bar
-  #     - buttonless: Title bar, transparent background and title bar buttons
-  #     - transparent: Title bar, transparent background, but no title bar buttons
   decorations: buttonless 
+  opacity: 1.0
   padding: 
     x: 5
-    y: 5 
-# dynamic_padding: true
-
-background_opacity: 1.0 
+    y: 5
+dynamic_padding: false
 
 font:
   builtin_box_drawing: true
   use_thin_strokes: true
   draw_bold_text_with_bright_colors: true
   size: 12
-  offset:
-    x: 0
-    y: -4
+  # offset:
+  #   x: 0
+  #   y: -4
   normal: 
     family: JetBrainsMono Nerd Font
     style: Regular
-  bold:
-    style: Bold
-  italic:
-    style: Italic
-  bold_italic:
-    style: Bold Italic
-  
+
 key_bindings:
   - { key: Left, mods: Alt,  chars: "\x1bb" } # one word left
   - { key: Right, mods: Alt, chars: "\x1bf" } # one word right
@@ -74,40 +62,40 @@ env:
 #     - { index: 17, color: '0xcb2431' }
 
 # The 'Dark dimmed' colorscheme from Github.
-colors:
-  primary:
-    background: '#2d333b'
-    foreground: '#adbac7'
-  normal:
-    black:   '#2d333b'
-    red:     '#f47067'
-    green:   '#8ddb8c'
-    yellow:  '#f69d50'
-    blue:    '#6cb6ff'
-    magenta: '#dcbdfb'
-    cyan:    '#96d0ff'
-    white:   '#adbac7'
-  bright:
-    black:   '#768390'
-    red:     '#f47067'
-    green:   '#8ddb8c'
-    yellow:  '#f69d50'
-    blue:    '#6cb6ff'
-    magenta: '#dcbdfb'
-    cyan:    '#96d0ff'
-    white:   '#adbac7'
-# # Catppuccin!
+# colors:
+#   primary:
+#     background: '#2d333b'
+#     foreground: '#adbac7'
+#   normal:
+#     black:   '#2d333b'
+#     red:     '#f47067'
+#     green:   '#8ddb8c'
+#     yellow:  '#f69d50'
+#     blue:    '#6cb6ff'
+#     magenta: '#dcbdfb'
+#     cyan:    '#96d0ff'
+#     white:   '#adbac7'
+#   bright:
+#     black:   '#768390'
+#     red:     '#f47067'
+#     green:   '#8ddb8c'
+#     yellow:  '#f69d50'
+#     blue:    '#6cb6ff'
+#     magenta: '#dcbdfb'
+#     cyan:    '#96d0ff'
+#     white:   '#adbac7'
+# Catppuccin!
 # colors:
 #   # Default colors
 #   primary:
 #     background: '0x1E1D2F'
 #     foreground: '0xD9E0EE'
-
+#
 #   # Colors the cursor will use if `custom_cursor_colors` is true
 #   cursor:
 #     text: '0x1E1D2F'
 #     cursor: '0xF5E0DC'
-
+#
 #   # Normal colors
 #   normal:
 #     black:   '0x6E6C7E'
@@ -118,7 +106,7 @@ colors:
 #     magenta: '0xF5C2E7'
 #     cyan:    '0x89DCEB'
 #     white:   '0xD9E0EE'
-
+#
 #   # Bright colors
 #   bright:
 #     black:   '0x988BA2'
@@ -129,8 +117,58 @@ colors:
 #     magenta: '0xF5C2E7'
 #     cyan:    '0x89DCEB'
 #     white:   '0xD9E0EE'
-
+#
 #   indexed_colors:
 #     - { index: 16, color: '0xF8BD96' }
 #     - { index: 17, color: '0xF5E0DC' }
+#
 
+# Nord
+colors:
+  primary:
+    background: '#2e3440'
+    foreground: '#d8dee9'
+    dim_foreground: '#a5abb6'
+  cursor:
+    text: '#2e3440'
+    cursor: '#d8dee9'
+  vi_mode_cursor:
+    text: '#2e3440'
+    cursor: '#d8dee9'
+  selection:
+    text: CellForeground
+    background: '#4c566a'
+  search:
+    matches:
+      foreground: CellBackground
+      background: '#88c0d0'
+    bar:
+      background: '#434c5e'
+      foreground: '#d8dee9'
+  normal:
+    black: '#3b4252'
+    red: '#bf616a'
+    green: '#a3be8c'
+    yellow: '#ebcb8b'
+    blue: '#81a1c1'
+    magenta: '#b48ead'
+    cyan: '#88c0d0'
+    white: '#e5e9f0'
+  bright:
+    black: '#4c566a'
+    red: '#bf616a'
+    green: '#a3be8c'
+    yellow: '#ebcb8b'
+    blue: '#81a1c1'
+    magenta: '#b48ead'
+    cyan: '#8fbcbb'
+    white: '#eceff4'
+  dim:
+    black: '#373e4d'
+    red: '#94545d'
+    green: '#809575'
+    yellow: '#b29e75'
+    blue: '#68809a'
+    magenta: '#8c738c'
+    cyan: '#6d96a5'
+    white: '#aeb3bb'

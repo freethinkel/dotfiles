@@ -186,16 +186,17 @@ formatters.setup {
 -- }
 -- Additional Plugins
 lvim.plugins = {
-    {"folke/tokyonight.nvim"},
-    {"lunarvim/colorschemes"},
-    {"sainnhe/gruvbox-material"},
-    {"Manas140/Conscious"},
-    {"catppuccin/nvim"},
-    {"evanleck/vim-svelte"},
-    {
-      "folke/trouble.nvim",
-      cmd = "TroubleToggle",
-    },
+  { "folke/tokyonight.nvim" },
+  { "lunarvim/colorschemes" },
+  { "sainnhe/gruvbox-material" },
+  { "Manas140/Conscious" },
+  { "catppuccin/nvim" },
+  { "evanleck/vim-svelte" },
+  {
+    "folke/trouble.nvim",
+    cmd = "TroubleToggle",
+  },
+  { 'pantharshit00/vim-prisma' }
 }
 -- Autocommands (https://neovim.io/doc/user/autocmd.html)
 -- lvim.autocommands.custom_groups = {

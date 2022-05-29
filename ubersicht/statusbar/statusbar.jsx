@@ -22,9 +22,9 @@ export const render = () => {
 
 const Wrapper = styled.div`
   position: fixed;
-  top: 10px;
-  left: 10px;
-  right: 10px;
+  top: 5px;
+  left: 5px;
+  right: 5px;
   color: ${colors.white};
   display: flex;
   justify-content: space-between;

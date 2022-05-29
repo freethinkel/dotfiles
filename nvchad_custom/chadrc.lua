@@ -1,0 +1,33 @@
+require "custom"
+
+local M = {}
+M.ui = {
+  theme = "nord",
+}
+
+M.mappings = require "custom.mappings"
+
+local pluginConfigs = require "custom.plugins.configs"
+
+M.plugins = {
+  user = require "custom.plugins",
+  override = {
+    ["kyazdani42/nvim-tree.lua"] = pluginConfigs.nvimtree,
+  },
+  options = {
+    lspconfig = {
+      setup_lspconf = "custom.plugins.lspconfig",
+    },
+  },
+}
+
+M.options = {
+  user = function()
+    vim.opt.tabstop = 2
+    vim.opt.shiftwidth = 2
+    vim.opt.timeoutlen = 300
+    vim.opt.swapfile = false
+  end,
+}
+
+return M

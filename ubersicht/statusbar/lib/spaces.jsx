@@ -58,4 +58,5 @@ const Wrapper = styled.div`
   display: flex;
   background: ${colors.background};
   border-radius: ${vars.radius};
+  overflow: hidden;
 `;
