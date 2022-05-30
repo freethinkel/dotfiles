@@ -2,7 +2,7 @@ local null_ls = require "null-ls"
 local b = null_ls.builtins
 
 local prettier_format_filetypes = {
-  "html", "markdown", "css", "typescript", "javascript", "typescriptreact", "javascriptreact", "svelte"
+  "html", "markdown", "css", "typescript", "javascript", "typescriptreact", "javascriptreact", "svelte", "postcss"
 }
 
 local sources = {

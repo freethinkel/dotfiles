@@ -6,3 +6,4 @@ keymap('i', 'jk', '<ESC>', opts)
 keymap('i', 'jj', '<ESC>', opts)
 keymap('i', 'kj', '<ESC>', opts)
 
+vim.cmd "au BufNewFile,BufRead *.pcss set ft=postcss"

@@ -8,5 +8,6 @@ return {
   },
   ['jiangmiao/auto-pairs'] = {},
   ['pantharshit00/vim-prisma'] = {},
-  ['christoomey/vim-tmux-navigator'] = {}
+  ['christoomey/vim-tmux-navigator'] = {},
+  ['stephenway/postcss.vim'] = {}
 }
