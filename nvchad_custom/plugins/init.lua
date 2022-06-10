@@ -10,5 +10,6 @@ return {
   ['pantharshit00/vim-prisma'] = {},
   ['christoomey/vim-tmux-navigator'] = {},
   ['stephenway/postcss.vim'] = {},
-  ['thosakwe/vim-flutter'] = {}
+  ['thosakwe/vim-flutter'] = {},
+  ['styled-components/vim-styled-components'] = {}
 }
