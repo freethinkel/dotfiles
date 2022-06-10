@@ -45,12 +45,12 @@ const Space = styled.button`
   align-items: center;
   justify-content: center;
   font-family: "JetBrainsMono Nerd Font", serif;
-  color: ${colors.white};
-  background: ${({ active }) => (active ? colors.mint : "transparent")};
+  color: ${({ active }) => (active ? colors.background : colors.white)};
+  background: ${({ active }) => (active ? colors.purple : "transparent")};
   transition: 0.3s;
   margin-right: 2px;
   &:hover {
-    background: ${hexToRgba(colors.mint, "0.5")};
+    background: ${hexToRgba(colors.purple, "0.4")};
   }
 `;
 

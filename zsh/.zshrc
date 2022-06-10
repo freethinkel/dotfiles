@@ -7,6 +7,7 @@ plugins=(
   git
   zsh-autosuggestions
   zsh-syntax-highlighting
+  zsh-z
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -24,8 +25,8 @@ then
   source $HOME/.cargo/env
 fi
 
-
 # MY ALIASES
+alias ssh_fix="eval \"$(ssh-agent -s)\" && ssh-add ~/.ssh/id_ed25519"
 alias cls="clear"
 alias ls="exa"
 alias lvim="$HOME/.local/bin/lvim"

@@ -6,10 +6,10 @@ local prettier_format_filetypes = {
 }
 
 local sources = {
-
    b.formatting.prettier.with {
      filetypes = prettier_format_filetypes
    },
+   b.formatting.dart_format,
    b.diagnostics.eslint,
    -- Lua
    b.formatting.stylua,

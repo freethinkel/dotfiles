@@ -3,20 +3,25 @@ local M = {}
 M.nvimtree = {
   git = {
     enable = true,
-    ignore = true
+    ignore = false
   },
    view = {
     side = "left",
     width = 30,
     hide_root_folder = true,
   },
-  diagnostics = { enable = true, show_on_dirs = false,
+  diagnostics = {
+    enable = true,
+    show_on_dirs = false,
     icons = {
       hint = "",
       info = "",
       warning = "",
       error = "",
     },
+  },
+  filters = {
+    dotfiles = false
   },
   renderer = {
     highlight_git = true,

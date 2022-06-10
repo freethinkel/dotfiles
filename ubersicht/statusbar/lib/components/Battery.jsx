@@ -21,7 +21,7 @@ export const Battery = () => {
     icon = "ti-battery-3";
   } else {
     icon = "ti-battery-4";
-  }
+  } 
 
   if (isCharging) {
     icon = "ti-battery-charging";
@@ -45,6 +45,7 @@ const BatteryInner = styled.div`
   padding: 0 8px;
   font-size: 12px;
   font-weight: bold;
+
   & .ti {
     font-size: 22px;
     font-weight: 100;

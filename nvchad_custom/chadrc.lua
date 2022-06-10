@@ -2,7 +2,8 @@ require "custom"
 
 local M = {}
 M.ui = {
-  theme = "nord",
+  theme = "tokyonight",
+  theme_toggle = {"one_light", "tokyonight"}
 }
 
 M.mappings = require "custom.mappings"

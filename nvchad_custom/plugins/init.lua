@@ -9,5 +9,6 @@ return {
   ['jiangmiao/auto-pairs'] = {},
   ['pantharshit00/vim-prisma'] = {},
   ['christoomey/vim-tmux-navigator'] = {},
-  ['stephenway/postcss.vim'] = {}
+  ['stephenway/postcss.vim'] = {},
+  ['thosakwe/vim-flutter'] = {}
 }
