@@ -11,5 +11,11 @@ return {
   ['christoomey/vim-tmux-navigator'] = {},
   ['stephenway/postcss.vim'] = {},
   ['thosakwe/vim-flutter'] = {},
-  ['styled-components/vim-styled-components'] = {}
+  ['styled-components/vim-styled-components'] = {},
+  ["goolord/alpha-nvim"] = {
+    disable = false,
+    config = function()
+      require("custom.plugins.alpha")
+    end
+  },
 }
