@@ -1,17 +1,14 @@
-local M = {}
 
-M.setup_lsp = function(attach, capabilities)
-   local lspconfig = require "lspconfig"
+local on_attach = require("plugins.configs.lspconfig").on_attach
+local capabilities = require("plugins.configs.lspconfig").capabilities
 
-   -- lspservers with default config
-   local servers = { "html", "cssls", "clangd", "svelte", "tsserver", "dartls", "rust_analyzer" }
+local lspconfig = require "lspconfig"
+local servers = { "html", "cssls", "clangd", "svelte", "eslint", "tsserver", "dartls", "rust_analyzer", "prismals" }
 
-   for _, lsp in ipairs(servers) do
-      lspconfig[lsp].setup {
-         on_attach = attach,
-         capabilities = capabilities,
-      }
-   end
+for _, lsp in ipairs(servers) do
+  lspconfig[lsp].setup {
+    on_attach = on_attach,
+    capabilities = capabilities,
+  }
 end
 
-return M

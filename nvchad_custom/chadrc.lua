@@ -2,9 +2,9 @@ require "custom"
 
 local M = {}
 M.ui = {
-  theme = "tokyonight",
+  theme = "sweetpastel",
   theme_toggle = {"one_light", "tokyonight"},
-  transparency = true
+  -- transparency = true
 }
 
 M.mappings = require "custom.mappings"
@@ -16,11 +16,6 @@ M.plugins = {
   override = {
     ["kyazdani42/nvim-tree.lua"] = pluginConfigs.nvimtree,
     ["akinsho/bufferline.nvim"] = pluginConfigs.bufferline
-  },
-  options = {
-    lspconfig = {
-      setup_lspconf = "custom.plugins.lspconfig",
-    },
   },
 }
 

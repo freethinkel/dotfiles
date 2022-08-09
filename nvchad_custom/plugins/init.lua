@@ -18,4 +18,12 @@ return {
       require("custom.plugins.alpha")
     end
   },
+  ['jxnblk/vim-mdx-js'] = {},
+  ['projekt0n/github-nvim-theme'] = {},
+  ["neovim/nvim-lspconfig"] = {
+    config = function()
+      require "plugins.configs.lspconfig"
+      require "custom.plugins.lspconfig"
+    end,
+  },
 }

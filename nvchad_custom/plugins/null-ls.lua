@@ -11,6 +11,10 @@ local sources = {
    },
    b.formatting.dart_format,
    b.diagnostics.eslint,
+   b.code_actions.eslint,
+   b.code_actions.gitsigns,
+   -- Prisma
+   b.formatting.prismaFmt,
    -- Lua
    b.formatting.stylua,
    b.diagnostics.luacheck.with { extra_args = { "--global vim" } },

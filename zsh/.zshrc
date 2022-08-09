@@ -1,7 +1,8 @@
 export ZSH="$HOME/.oh-my-zsh"
 
-# ZSH_THEME="spaceship"
-ZSH_THEME="typewritten"
+ZSH_THEME="spaceship"
+
+SPACESHIP_CHAR_SYMBOL="❯ "
 
 plugins=(
   git
@@ -34,3 +35,15 @@ alias vim="nvim"
 alias vimconfig="vim ~/.config/nvim/"
 alias cat="bat"
 # alias code="code-insiders"
+
+# pnpm
+export PNPM_HOME="/Users/freethinkel/Library/pnpm"
+export PATH="$PNPM_HOME:$PATH"
+# pnpm end
+
+# bun completions
+[ -s "/Users/freethinkel/.bun/_bun" ] && source "/Users/freethinkel/.bun/_bun"
+
+# Bun
+export BUN_INSTALL="/Users/freethinkel/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
