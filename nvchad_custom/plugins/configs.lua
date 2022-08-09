@@ -30,7 +30,7 @@ M.nvimtree = {
     indent_markers = {
       enable = true,
       icons = {
-        corner = "└ ",
+        corner = "└",
         edge = "│ ",
         none = "  ",
       },
