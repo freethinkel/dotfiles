@@ -15,7 +15,8 @@ M.plugins = {
   user = require "custom.plugins",
   override = {
     ["kyazdani42/nvim-tree.lua"] = pluginConfigs.nvimtree,
-    ["akinsho/bufferline.nvim"] = pluginConfigs.bufferline
+    ["akinsho/bufferline.nvim"] = pluginConfigs.bufferline,
+    ["lewis6991/gitsigns.nvim"] = pluginConfigs.gitsigns
   },
 }
 

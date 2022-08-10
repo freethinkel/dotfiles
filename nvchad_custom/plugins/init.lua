@@ -7,7 +7,6 @@ return {
     end,
   },
   ['jiangmiao/auto-pairs'] = {},
-  ['pantharshit00/vim-prisma'] = {},
   ['christoomey/vim-tmux-navigator'] = {},
   ['stephenway/postcss.vim'] = {},
   ['thosakwe/vim-flutter'] = {},
@@ -26,4 +25,8 @@ return {
       require "custom.plugins.lspconfig"
     end,
   },
+  ["tpope/vim-fugitive"] = {},
+  ["neoclide/coc.nvim"] = {
+    branch = "release"
+  }
 }
