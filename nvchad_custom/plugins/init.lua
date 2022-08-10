@@ -26,5 +26,5 @@ return {
     end,
   },
   ["tpope/vim-fugitive"] = {},
-  ["nvim-ts-autotag"] = {}
+  ["windwp/nvim-ts-autotag"] = {}
 }
