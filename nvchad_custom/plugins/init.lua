@@ -26,7 +26,5 @@ return {
     end,
   },
   ["tpope/vim-fugitive"] = {},
-  ["neoclide/coc.nvim"] = {
-    branch = "release"
-  }
+  ["nvim-ts-autotag"] = {}
 }
