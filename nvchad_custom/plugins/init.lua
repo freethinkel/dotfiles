@@ -32,4 +32,10 @@ return {
 		end,
 	},
 	["folke/which-key.nvim"] = { disable = false },
+	["glepnir/lspsaga.nvim"] = {
+		config = function()
+			require("custom.plugins.lspsaga").setup()
+		end,
+	},
+	["williamboman/mason.nvim"] = require("custom.plugins.mason"),
 }

@@ -11,6 +11,7 @@ local prettier_format_filetypes = {
 	"javascriptreact",
 	"svelte",
 	"postcss",
+	"json",
 }
 
 local sources = {
