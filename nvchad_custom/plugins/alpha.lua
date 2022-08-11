@@ -103,7 +103,7 @@ options.buttons = {
 	type = "group",
 	val = {
 		button("SPC f f", "   Search", ":Telescope find_files<CR>"),
-		button("p", "   Projects", ":Telescope projects<CR>"),
+		button("p", "   Projects", ":Telescope git_status<CR>"),
 		button("SPC f o", "   Recents", ":Telescope oldfiles<CR>"),
 		button("SPC f w", "  Find Word  ", ":Telescope live_grep<CR>"),
 		button("SPC b m", "  Bookmarks  ", ":Telescope marks<CR>"),
