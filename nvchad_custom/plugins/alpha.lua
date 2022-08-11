@@ -72,7 +72,7 @@ local function getGreeting(name)
 	return greetingsTable[greetingIndex] .. ", " .. name
 end
 
-local userName = "freethinkel"
+local userName = os.getenv("USER")
 
 local greeting = getGreeting(userName)
 
