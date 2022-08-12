@@ -38,4 +38,10 @@ return {
 		end,
 	},
 	["williamboman/mason.nvim"] = require("custom.plugins.mason"),
+	["folke/todo-comments.nvim"] = {
+		requires = "nvim-lua/plenary.nvim",
+		config = function()
+			require("custom.plugins.todo-comments").setup()
+		end,
+	},
 }

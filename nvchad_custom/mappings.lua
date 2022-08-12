@@ -15,6 +15,15 @@ keymap("n", "vs", ":vsplit<Return>", opts)
 -- Delete word backward
 -- keymap('n', 'dw', 'vb"_d', opts)
 
+M.todocomments = {
+	n = {
+		["tl"] = {
+			"<Cmd>TodoTelescope<cr>",
+			"Show todos and fixme comments",
+		},
+	},
+}
+
 M.tabufline = {
 	n = {
 		-- cycle through buffers
