@@ -1,20 +1,15 @@
 import { styled, run, React } from "uebersicht";
-import { colors, hexToRgba, vars } from "./vars";
-import { useProcess, useUpdate } from "./utils";
+import { colors, hexToRgba, vars } from "./helpers/vars";
+import { useProcess, useUpdate } from "./helpers/utils";
+import { yabaiBin, jqBin } from "./helpers/bins";
 
 export const Spaces = () => {
-  const spaces = (
-    useProcess(
-      "/usr/local/bin/yabai -m query --spaces | /usr/local/bin/jq -r '.[].index'"
-    ) || ""
-  )
-    .split("\n")
-    .filter((space) => space);
+  const spaces = JSON.parse(
+    useProcess(`${yabaiBin} -m query --spaces`) || "[]"
+  ).sort((a, b) => a.index - b.index);
 
   const active = parseInt(
-    useProcess(
-      "/usr/local/bin/yabai -m query --spaces --space | /usr/local/bin/jq '.index'"
-    )
+    useProcess(`${yabaiBin} -m query --spaces --space | ${jqBin} '.index'`)
   );
 
   useUpdate(500);
@@ -23,11 +18,11 @@ export const Spaces = () => {
     <Wrapper>
       {spaces.map((space, i) => (
         <Space
-          key={space}
-          active={i + 1 === active}
-          onClick={() => run(`yabai -m space --focus ${i + 1}`)}
+          key={space.index}
+          active={space.index === active}
+          onClick={() => run(`${yabaiBin} -m space --focus ${i + 1}`)}
         >
-          {space}
+          {space.index}: {space.label}
         </Space>
       ))}
     </Wrapper>
@@ -39,7 +34,7 @@ const Space = styled.button`
   padding: 0 6px;
   margin: 0;
   outline: none;
-  height: 24px;
+  height: 100%;
   min-width: 24px;
   display: flex;
   align-items: center;
@@ -57,6 +52,6 @@ const Space = styled.button`
 const Wrapper = styled.div`
   display: flex;
   background: ${colors.background};
-  border-radius: ${vars.radius};
   overflow: hidden;
+  border-radius: ${vars.radius};
 `;

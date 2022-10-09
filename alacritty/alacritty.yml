@@ -1,6 +1,6 @@
 window:
   decorations: buttonless
-  opacity: 0.5
+  opacity: 0.8
   padding:
     x: 5
     y: 5
@@ -8,12 +8,12 @@ dynamic_padding: true
 
 font:
   builtin_box_drawing: true
-  use_thin_strokes: true
-  draw_bold_text_with_bright_colors: true
+  use_thin_strokes: false
+  # draw_bold_text_with_bright_colors: true
   size: 12
-  # offset:
-  #   x: 0
-  #   y: -4
+  offset:
+    x: 0
+    y: 0
   normal:
     # family: FiraCode Nerd Font
     family: JetBrainsMono Nerd Font
@@ -22,6 +22,26 @@ font:
 key_bindings:
   - { key: Left, mods: Alt, chars: "\x1bb" } # one word left
   - { key: Right, mods: Alt, chars: "\x1bf" } # one word right
+  # Create a new tmux window
+  - { key: T, mods: Command, chars: "\x02\x63" }
+  # Switch tmux windows
+  - { key: LBracket, mods: Command|Shift, chars: "\x02\x70" }
+  - { key: RBracket, mods: Command|Shift, chars: "\x02\x6e" }
+  # Kill tmux panel
+  - { key: X, mods: Command, chars: "\x02\x78" }
+  # Rename tmux panel
+  - { key: Comma, mods: Command, chars: "\x02\x2c" }
+  # tmux select window pane
+  - { key: Key1, mods: Command, chars: "\x02\x31" }
+  - { key: Key2, mods: Command, chars: "\x02\x32" }
+  - { key: Key3, mods: Command, chars: "\x02\x33" }
+  - { key: Key4, mods: Command, chars: "\x02\x34" }
+  - { key: Key5, mods: Command, chars: "\x02\x35" }
+  - { key: Key6, mods: Command, chars: "\x02\x36" }
+  - { key: Key7, mods: Command, chars: "\x02\x37" }
+  - { key: Key8, mods: Command, chars: "\x02\x38" }
+  - { key: Key9, mods: Command, chars: "\x02\x39" }
+  # Mappin alt key
   - { key: A,         mods: Alt,       chars: "\x1ba"                       }
   - { key: B,         mods: Alt,       chars: "\x1bb"                       }
   - { key: C,         mods: Alt,       chars: "\x1bc"                       }
@@ -182,6 +202,38 @@ schemes:
       - { index: 16, color: '0xd18616' }
       - { index: 17, color: '0xcb2431' }
 
+  github-light-default: &github-light-default
+    # Default colors
+    primary:
+      background: '0xffffff'
+      foreground: '0x4d5566'
+
+    # Normal colors
+    normal:
+      black:   '0x24292e'
+      red:     '0xd73a49'
+      green:   '0x22863a'
+      yellow:  '0xb08800'
+      blue:    '0x0366d6'
+      magenta: '0x6f42c1'
+      cyan:    '0x1b7c83'
+      white:   '0x4d5566'
+
+    # Bright colors
+    bright:
+      black:   '0x586069'
+      red:     '0xcb2431'
+      green:   '0x28a745'
+      yellow:  '0xdbab09'
+      blue:    '0x2188ff'
+      magenta: '0x8a63d2'
+      cyan:    '0x1b7c83'
+      white:   '0x4d5566'
+
+    indexed_colors:
+      - { index: 16, color: '0xd18616' }
+      - { index: 17, color: '0xcb2431' }
+
   nord: &nord
     primary:
       background: '#2e3440'
@@ -230,7 +282,6 @@ schemes:
       magenta: '#8c738c'
       cyan: '#6d96a5'
       white: '#aeb3bb'
-
   tokyo-night: &tokyo-night
     primary:
       background: '0x1a1b26'
@@ -276,5 +327,29 @@ schemes:
       magenta: '0xbb9af7'
       cyan: '0x0db9d7'
       white: '0xacb0d0'
+  gruvbox: &gruvbox
+    primary:
+      background: '0x282828'
+      foreground: '0xdfbf8e'
 
-colors: *github-dimmed
+    normal:
+      black:   '0x665c54'
+      red:     '0xea6962'
+      green:   '0xa9b665'
+      yellow:  '0xe78a4e'
+      blue:    '0x7daea3'
+      magenta: '0xd3869b'
+      cyan:    '0x89b482'
+      white:   '0xdfbf8e'
+
+    bright:
+      black:   '0x928374'
+      red:     '0xea6962'
+      green:   '0xa9b665'
+      yellow:  '0xe3a84e'
+      blue:    '0x7daea3'
+      magenta: '0xd3869b'
+      cyan:    '0x89b482'
+      white:   '0xdfbf8e'
+
+colors: *catppuccin

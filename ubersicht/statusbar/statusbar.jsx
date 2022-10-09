@@ -1,10 +1,9 @@
 import { styled } from "uebersicht";
 import { Spaces } from "./lib/spaces.jsx";
 import { Statuses } from "./lib/statuses.jsx";
-import { Center } from "./lib/center.jsx";
-import { colors } from "./lib/vars";
+import { colors } from "./lib/helpers/vars";
 
-export const refreshFrequency = false;
+const BAR_HEIGHT = 40;
 
 export const render = () => {
   return (
@@ -14,19 +13,33 @@ export const render = () => {
         href="./statusbar/lib/assets/tabler-icons.min.css"
       />
       <Spaces />
-      <Center />
       <Statuses />
+      <TopNotch />
     </Wrapper>
   );
 };
 
 const Wrapper = styled.div`
   position: fixed;
-  top: 5px;
-  left: 5px;
-  right: 5px;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  padding: 4px 10px;
+  height: ${BAR_HEIGHT}px;
   color: ${colors.white};
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
   justify-content: space-between;
-  /* background-color: ${colors.background}; */
+  box-sizing: border-box;
+`;
+
+const TopNotch = styled.div`
+  position: fixed;
+  pointer-events: none;
+  background: #000;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: ${BAR_HEIGHT}px;
+  z-index: -1;
 `;

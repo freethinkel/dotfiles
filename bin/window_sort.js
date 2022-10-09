@@ -2,13 +2,13 @@
 const { exec } = require("child_process");
 
 const appsToSpaces = {
-  "Google Chrome": 1,
-  alacritty: 2,
-  iTerm2: 2,
-  "Visual Studio Code": 2,
-  Code: 2,
-  Slack: 3,
-  Telegram: 3,
+  "Google Chrome": "web",
+  alacritty: "term",
+  iTerm2: "term",
+  "Visual Studio Code": "term",
+  Code: "term",
+  Slack: "chat",
+  Telegram: "chat",
 };
 
 const main = async () => {
@@ -17,7 +17,7 @@ const main = async () => {
       async (space) => ({
         space,
         apps: JSON.parse(
-          await runProccess(`yabai -m query --windows --space ${space.index}`)
+          await runProccess(`yabai -m query --windows --space ${space.label}`)
         ),
       })
     )

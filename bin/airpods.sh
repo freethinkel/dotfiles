@@ -5,7 +5,7 @@
 #
 # Modified script from https://gist.github.com/Jahhein/45b8e8c9c36a0932189a5037f990bcdd
 
-AIRPOD_ICON=$'🎧';
+AIRPOD_ICON=$'??';
 
 BATTERY_INFO=(
   "BatteryPercentCombined" 
@@ -22,9 +22,11 @@ CONNECTED=$(grep -ia6 "${MAC_ADDR}"<<<"${SYS_PROFILE}"|awk '/Connected: Yes/{pri
 BT_DATA=$(grep -ia6 '"'"${MAC_ADDR}"'"'<<<"${BT_DEFAULTS}")
 
 if [[ "${CONNECTED}" ]]; then
-   printf "1"
-	else 
-		printf "0"
+  for info in "${BATTERY_INFO[@]}"; do
+    declare -x "${info}"="$(awk -v pat="${info}" '$0~pat{gsub (";",""); print $3 }'<<<"${BT_DATA}")"
+    [[ ! -z "${!info}" ]] && OUTPUT="${OUTPUT} $(awk '/BatteryPercent/{print substr($0,15)": "}'<<<"${info}")${!info}%"
+  done
+   printf "%s\\n" "${AIRPOD_ICON} ${OUTPUT}"
 fi
 
 exit 0

@@ -34,6 +34,10 @@ alias lvim="$HOME/.local/bin/lvim"
 alias vim="nvim"
 alias vimconfig="vim ~/.config/nvim/"
 alias cat="bat"
+
+function gch() {
+ git checkout "$(git branch --all | fzf | tr -d '[:space:]')"
+}
 # alias code="code-insiders"
 
 # pnpm
@@ -47,3 +51,4 @@ export PATH="$PNPM_HOME:$PATH"
 # Bun
 export BUN_INSTALL="/Users/freethinkel/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+export EDITOR="nvim"

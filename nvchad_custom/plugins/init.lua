@@ -3,7 +3,7 @@ return {
 	["jose-elias-alvarez/null-ls.nvim"] = {
 		after = "nvim-lspconfig",
 		config = function()
-			require("custom.plugins.null-ls").setup()
+			require("custom.plugins.config.null-ls").setup()
 		end,
 	},
 	["jiangmiao/auto-pairs"] = {},
@@ -14,7 +14,7 @@ return {
 	["goolord/alpha-nvim"] = {
 		disable = false,
 		config = function()
-			require("custom.plugins.alpha")
+			require("custom.plugins.config.alpha")
 		end,
 	},
 	["jxnblk/vim-mdx-js"] = {},
@@ -22,7 +22,7 @@ return {
 	["neovim/nvim-lspconfig"] = {
 		config = function()
 			require("plugins.configs.lspconfig")
-			require("custom.plugins.lspconfig")
+			require("custom.plugins.config.lspconfig")
 		end,
 	},
 	["tpope/vim-fugitive"] = {},
@@ -32,16 +32,33 @@ return {
 		end,
 	},
 	["folke/which-key.nvim"] = { disable = false },
-	["glepnir/lspsaga.nvim"] = {
-		config = function()
-			require("custom.plugins.lspsaga").setup()
-		end,
-	},
-	["williamboman/mason.nvim"] = require("custom.plugins.mason"),
 	["folke/todo-comments.nvim"] = {
 		requires = "nvim-lua/plenary.nvim",
 		config = function()
-			require("custom.plugins.todo-comments").setup()
+			require("custom.plugins.config.todo-comments").setup()
+		end,
+	},
+	["ahmedkhalf/project.nvim"] = {
+		after = "telescope.nvim",
+		config = function()
+			require("custom.plugins.config.telescope").setup()
+			require("custom.plugins.config.projects").setup()
+		end,
+	},
+	["mg979/vim-visual-multi"] = {},
+	["jwalton512/vim-blade"] = {},
+	["nvim-lua/plenary.nvim"] = {},
+	["sindrets/diffview.nvim"] = {
+		requires = "nvim-lua/plenary.nvim",
+		module = "git",
+		config = function()
+			require("custom.plugins.config.diffview").setup()
+		end,
+	},
+	["chrsm/impulse.nvim"] = {
+		requires = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim" },
+		config = function()
+			require("custom.plugins.config.impulse").setup()
 		end,
 	},
 }

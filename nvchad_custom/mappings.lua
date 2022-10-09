@@ -1,5 +1,4 @@
 local M = {}
-
 local opts = { noremap = true, silent = true }
 local keymap = vim.api.nvim_set_keymap
 
@@ -29,51 +28,16 @@ M.tabufline = {
 		-- cycle through buffers
 		["<S-l>"] = {
 			function()
-				require("core.utils").tabuflineNext()
+				require("nvchad_ui.tabufline").tabuflineNext()
 			end,
 			"goto next buffer",
 		},
 
 		["<S-h>"] = {
 			function()
-				require("core.utils").tabuflinePrev()
+				require("nvchad_ui.tabufline").tabuflinePrev()
 			end,
 			"goto prev buffer",
-		},
-	},
-}
-
-M.lspconfig = {
-	i = {
-		["<C-k>"] = {
-			"<Cmd>Lspsaga signature_help<cr>",
-			"Lsp show signature",
-		},
-	},
-	n = {
-		["d]"] = {
-			"<Cmd>Lspsaga diagnostic_jump_next<cr>",
-			"Lsp diagnostics info",
-		},
-		["d["] = {
-			"<Cmd>Lspsaga diagnostic_jump_prev<cr>",
-			"Lsp diagnostics info",
-		},
-		["gd"] = {
-			"<Cmd>Lspsaga lsp_finder<cr>",
-			"Lsp show definition and references", -- press o - for open file
-		},
-		["gp"] = {
-			"<Cmd>Lspsaga preview_definition<cr>",
-			"Lsp preview definition",
-		},
-		["gr"] = {
-			"<Cmd>Lspsaga rename<cr>",
-			"Lsp rename",
-		},
-		["<S-k>"] = {
-			"<Cmd>Lspsaga hover_doc<cr>",
-			"Lsp hover",
 		},
 	},
 }
