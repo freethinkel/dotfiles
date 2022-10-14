@@ -14,6 +14,15 @@ keymap("n", "vs", ":vsplit<Return>", opts)
 -- Delete word backward
 -- keymap('n', 'dw', 'vb"_d', opts)
 
+M.base = {
+	n = {
+		["<leader>qq"] = {
+			"<cmd>:qa!<cr>",
+			"Close vim",
+		},
+	},
+}
+
 M.todocomments = {
 	n = {
 		["tl"] = {

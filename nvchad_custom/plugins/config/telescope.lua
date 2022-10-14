@@ -6,7 +6,7 @@ M.setup = function()
 			preview = {
 				mime_hook = function(filepath, bufnr, opts)
 					local is_image = function(filepath)
-						local image_extensions = { "png", "jpg" } -- Supported image formats
+						local image_extensions = { "png", "jpg", "jpeg", "gif" } -- Supported image formats
 						local split_path = vim.split(filepath:lower(), ".", { plain = true })
 						local extension = split_path[#split_path]
 						return vim.tbl_contains(image_extensions, extension)
@@ -18,10 +18,14 @@ M.setup = function()
 								vim.api.nvim_chan_send(term, d .. "\r\n")
 							end
 						end
+
 						vim.fn.jobstart({
-							"catimg",
-							filepath, -- Terminal image viewer command
-						}, { on_stdout = send_output, stdout_buffered = true })
+							"viu",
+							filepath,
+						}, {
+							on_stdout = send_output,
+							stdout_buffered = true,
+						})
 					else
 						require("telescope.previewers.utils").set_preview_message(
 							bufnr,
