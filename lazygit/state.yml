@@ -1,6 +1,9 @@
 lastupdatecheck: 0
 recentrepos:
 - /Users/freethinkel/Developer/dev/dotfiles
+- /Users/freethinkel/Developer/sftpro/voiso-design-system
+- /Users/freethinkel/Developer/sftpro/callcenter-frontend
 startuppopupversion: 5
-customcommandshistory: []
+customcommandshistory:
+- q
 hidecommandlog: false

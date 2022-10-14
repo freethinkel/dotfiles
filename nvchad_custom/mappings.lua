@@ -23,6 +23,18 @@ M.todocomments = {
 	},
 }
 
+M.lazygit = {
+	n = {
+		["<leader>gl"] = {
+			function()
+				-- require("nvterm.terminal").toggle("float")
+				require("custom.modules.lazygit").toggle()
+			end,
+			"Open lazygit",
+		},
+	},
+}
+
 M.tabufline = {
 	n = {
 		-- cycle through buffers

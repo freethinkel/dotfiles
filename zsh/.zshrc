@@ -34,16 +34,12 @@ alias lvim="$HOME/.local/bin/lvim"
 alias vim="nvim"
 alias vimconfig="vim ~/.config/nvim/"
 alias cat="bat"
+alias tdev="tmux new -s dev || tmux attach-session -t dev"
 
 function gch() {
  git checkout "$(git branch --all | fzf | tr -d '[:space:]')"
 }
 # alias code="code-insiders"
-
-# pnpm
-export PNPM_HOME="/Users/freethinkel/Library/pnpm"
-export PATH="$PNPM_HOME:$PATH"
-# pnpm end
 
 # bun completions
 [ -s "/Users/freethinkel/.bun/_bun" ] && source "/Users/freethinkel/.bun/_bun"
