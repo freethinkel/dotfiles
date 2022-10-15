@@ -4,7 +4,7 @@ local custom_colors = require("custom.colors")
 
 M.ui = {
 	theme = "catppuccin",
-	theme_toggle = { "catppuccin", "catppuccin_late" },
+	theme_toggle = { "catppuccin", "catppuccin_latte" },
 	hl_add = {
 		DiffText = {
 			fg = "none",

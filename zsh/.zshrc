@@ -33,6 +33,7 @@ alias ls="exa"
 alias lvim="$HOME/.local/bin/lvim"
 alias vim="nvim"
 alias vimconfig="vim ~/.config/nvim/"
+alias v="vim"
 alias cat="bat"
 alias tdev="tmux new -s dev || tmux attach-session -t dev"
 
