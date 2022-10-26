@@ -36,7 +36,7 @@ return {
 		icons = {
 			webdev_colors = true,
 			git_placement = "signcolumn",
-			padding = " ",
+			padding = "  ",
 			symlink_arrow = " ➛ ",
 			show = {
 				file = true,
@@ -50,12 +50,12 @@ return {
 				folder = {
 					arrow_open = "",
 					arrow_closed = "",
-					default = " ",
-					open = " ",
-					empty = " ",
-					empty_open = " ",
-					symlink = " ",
-					symlink_open = " ",
+					default = "",
+					open = "",
+					empty = "",
+					empty_open = "",
+					symlink = "",
+					symlink_open = "",
 				},
 				git = {
 					unstaged = "",

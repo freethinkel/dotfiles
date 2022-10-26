@@ -10,4 +10,13 @@ export const BaseBlock = styled.div`
   height: 100%;
   gap: 4px;
   align-items: center;
+  transition: 0.2s;
+
+  ${({ hoverable }) =>
+    hoverable
+      ? `&:hover {
+    background: ${theme.accent};
+  color: ${theme.background}
+    }`
+      : ""}
 `;

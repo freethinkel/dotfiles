@@ -1,6 +1,7 @@
 import { styled, run } from "uebersicht";
 import { useProcess } from "../utils/hooks";
 import { YABAI } from "../utils/vars";
+import { theme } from "../utils/theme";
 import { BaseBlock } from "../components/BaseBlock.jsx";
 import { WindowTitle } from "./WindowTitle.jsx";
 
@@ -11,7 +12,12 @@ export const Spaces = () => {
   );
   const spaces = JSON.parse(query || "[]");
 
-  const setSpace = (space) => run(`${YABAI} -m space --focus ${space.label}`);
+  const setSpace = (space) => {
+    console.log("space");
+    run(`${YABAI} -m space --focus ${space.label}`)
+      .then(console.log)
+      .catch(console.log);
+  };
 
   return (
     <Wrapper>
@@ -20,6 +26,7 @@ export const Spaces = () => {
           <Space
             onClick={() => setSpace(space)}
             key={space.index}
+            hoverable
             accent={active.index === space.index}
           >
             {space.index}: {space.label}
@@ -47,4 +54,6 @@ const Space = styled(BaseBlock)`
   border: none;
   margin: 0;
   font-weight: bold;
+  transition: 0.2s;
+  cursor: pointer;
 `.withComponent("button");

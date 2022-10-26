@@ -61,4 +61,11 @@ return {
 			require("custom.plugins.config.impulse").setup()
 		end,
 	},
+	["windwp/nvim-spectre"] = {},
+	["nvim-telescope/telescope-media-files.nvim"] = {},
+	["folke/zen-mode.nvim"] = {
+		config = function()
+			require("custom.plugins.config.zen-mode").setup()
+		end,
+	},
 }

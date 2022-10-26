@@ -4,8 +4,8 @@ ctrl + alt + cmd - y : launchctl kickstart -k "gui/${UID}/homebrew.mxcl.yabai"
 ctrl + alt + cmd - s : launchctl kickstart -k "gui/${UID}/homebrew.mxcl.skhd"
 
 ## open terminal
-# ctrl - return : /Applications/Alacritty.app/Contents/MacOS/alacritty
 ctrl - return : /Applications/kitty.app/Contents/MacOS/kitty ~
+# ctrl - return : /Applications/Alacritty.app/Contents/MacOS/alacritty
 
 ctrl + shift - space : yabai -m window --toggle float 
 

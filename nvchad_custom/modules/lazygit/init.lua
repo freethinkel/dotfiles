@@ -13,7 +13,6 @@ end
 M.close = function()
 	state = false
 	vim.cmd("silent! :q")
-	vim.cmd("silent! :checktime")
 end
 
 M.toggle = function()

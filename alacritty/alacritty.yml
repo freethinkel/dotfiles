@@ -7,9 +7,11 @@ window:
 dynamic_padding: true
 
 font:
-  builtin_box_drawing: true
-  use_thin_strokes: false
+  # builtin_box_drawing: true
+  # use_thin_strokes: true
   # draw_bold_text_with_bright_colors: true
+  # mac_use_thin_fonts: true
+  # use_thin_font: true
   size: 14
   offset:
     x: 0
@@ -18,13 +20,16 @@ font:
     # family: FiraCode Nerd Font
     # family: JetBrainsMono Nerd Font
     family: Iosevka Nerd Font
-    style: Regular
+    style: Light
 
 key_bindings:
   - { key: Left, mods: Alt, chars: "\x1bb" } # one word left
   - { key: Right, mods: Alt, chars: "\x1bf" } # one word right
   # Create a new tmux window
   - { key: T, mods: Command, chars: "\x02\x63" }
+  - { key: W, mods: Command, chars: "\x02\x78" }
+  - { key: Backslash, mods: Command|Shift, chars: "\x02\x25" }
+  - { key: Minus, mods: Command|Shift, chars: "\x02\x22" }
   # Switch tmux windows
   - { key: LBracket, mods: Command|Shift, chars: "\x02\x70" }
   - { key: RBracket, mods: Command|Shift, chars: "\x02\x6e" }
@@ -43,6 +48,7 @@ key_bindings:
   - { key: Key8, mods: Command, chars: "\x02\x38" }
   - { key: Key9, mods: Command, chars: "\x02\x39" }
   # Mappin alt key
+  - { key: I, mods: Alt, chars: "\x1b\x69\xcb\x86" }
   - { key: A,         mods: Alt,       chars: "\x1ba"                       }
   - { key: B,         mods: Alt,       chars: "\x1bb"                       }
   - { key: C,         mods: Alt,       chars: "\x1bc"                       }
@@ -51,7 +57,7 @@ key_bindings:
   - { key: F,         mods: Alt,       chars: "\x1bf"                       }
   - { key: G,         mods: Alt,       chars: "\x1bg"                       }
   - { key: H,         mods: Alt,       chars: "\x1bh"                       }
-  - { key: I,         mods: Alt,       chars: "\x1bi"                       }
+  # - { key: I,         mods: Alt,       chars: "\x1bi"                       }
   - { key: J,         mods: Alt,       chars: "\x1bj"                       }
   - { key: K,         mods: Alt,       chars: "\x1bk"                       }
   - { key: L,         mods: Alt,       chars: "\x1bl"                       }

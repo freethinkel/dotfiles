@@ -11,14 +11,28 @@ keymap("n", "-", "<C-x>", opts)
 keymap("n", "ss", ":split<Return>", opts)
 keymap("n", "vs", ":vsplit<Return>", opts)
 
--- Delete word backward
--- keymap('n', 'dw', 'vb"_d', opts)
-
 M.base = {
 	n = {
 		["<leader>qq"] = {
 			"<cmd>:qa!<cr>",
 			"Close vim",
+		},
+		["<leader>uc"] = {
+			function()
+				vim.cmd("source ~/.config/nvim/init.lua")
+			end,
+			"update config",
+		},
+	},
+}
+
+M.spectre = {
+	n = {
+		["<leader>fr"] = {
+			function()
+				require("spectre").open()
+			end,
+			"Find and replace",
 		},
 	},
 }
@@ -36,7 +50,6 @@ M.lazygit = {
 	n = {
 		["<leader>gl"] = {
 			function()
-				-- require("nvterm.terminal").toggle("float")
 				require("custom.modules.lazygit").toggle()
 			end,
 			"Open lazygit",
@@ -46,14 +59,12 @@ M.lazygit = {
 
 M.tabufline = {
 	n = {
-		-- cycle through buffers
 		["<S-l>"] = {
 			function()
 				require("nvchad_ui.tabufline").tabuflineNext()
 			end,
 			"goto next buffer",
 		},
-
 		["<S-h>"] = {
 			function()
 				require("nvchad_ui.tabufline").tabuflinePrev()

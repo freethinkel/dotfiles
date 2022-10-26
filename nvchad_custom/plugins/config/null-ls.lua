@@ -38,11 +38,11 @@ _G.prismaFormat = function()
 end
 
 local on_attach = function(client)
-	if client.resolved_capabilities.document_formatting then
+	if client.server_capabilities.documentFormattingProvider then
 		if vim.bo.filetype == "prisma" then
 			vim.cmd("autocmd BufWritePost <buffer> lua prismaFormat()")
 		else
-			vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_seq_sync(nil, 2000, {'null-ls'})")
+			vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.format({timeout_ms = 2000})")
 		end
 	end
 end

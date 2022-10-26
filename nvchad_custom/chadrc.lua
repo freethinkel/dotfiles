@@ -75,27 +75,6 @@ M.ui = {
 			bg = "black",
 		},
 	},
-
-	-- transparency = true,
-	-- hl_override = {
-	-- 	DiffDelete = {
-	-- 		fg = "#414141",
-	-- 		bg = "NONE",
-	-- 	},
-	-- vim.cmd(":hi DiffDelete   gui=bold    guifg=#666666")
-	-- DiffAdd     diff mode: Added line
-	-- DiffChange  diff mode: Changed line
-	-- DiffDelete  diff mode: Deleted line
-	-- DiffText    diff mode: Changed text within a changed line
-	--
-	-- hi DiffAdd      gui=none    guifg=NONE          guibg=#bada9f
-	-- hi DiffChange   gui=none    guifg=NONE          guibg=#e5d5ac
-	-- hi DiffDelete   gui=bold    guifg=#ff8080       guibg=#ffb0b0
-	-- hi DiffText     gui=none    guifg=NONE          guibg=#8cbee2
-	-- DiffInlineChange
-	-- DiffInlineDelete
-	-- DiffInlineAdd
-	-- },
 }
 
 M.mappings = require("custom.mappings")
