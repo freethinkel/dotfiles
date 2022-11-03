@@ -17,15 +17,24 @@ local M = {
 			["folke/zen-mode.nvim"] = {
 				config = require("user.config.plugins.zen-mode").setup,
 			},
+			["mattn/emmet-vim"] = {},
+			["dcampos/cmp-emmet-vim"] = {},
 		},
 		["gitsigns"] = require("user.config.plugins.gitsigns").setup,
 		["null-ls"] = require("user.config.plugins.null-ls").setup,
 		["heirline"] = require("user.config.plugins.heirline").setup,
+		["cmp"] = require("user.config.plugins.cmp").setup,
 		["mason-lspconfig"] = {},
 	},
 	lsp = {
 		servers = {
 			"tsserver",
+		},
+		formatting = {
+			format_on_save = {
+				enabled = true, -- enable or disable format on save globally
+			},
+			timeout_ms = 2000, -- default format timeout
 		},
 	},
 	header = {

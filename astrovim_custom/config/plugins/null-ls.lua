@@ -22,6 +22,8 @@ M.setup = function(config)
 		b.formatting.prettier.with({
 			filetypes = prettier_format_filetypes,
 		}),
+		b.diagnostics.eslint,
+		b.formatting.eslint,
 		b.formatting.dart_format,
 		-- Prisma
 		b.formatting.prismaFmt,
@@ -31,7 +33,10 @@ M.setup = function(config)
 
 		-- Shell
 		b.formatting.shfmt,
+		-- Spell
+		b.completion.spell,
 	}
+
 	return config
 end
 

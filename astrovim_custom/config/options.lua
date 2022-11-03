@@ -1,3 +1,5 @@
+-- vim.cmd("setlocal spell spelllang=ru_ru,en_us")
+
 return {
 	opt = {
 		shiftwidth = 2,
@@ -7,5 +9,9 @@ return {
 		fillchars = {
 			diff = "╱",
 		},
+		-- keymap = "russian-jcukenwin",
+		iminsert = 0,
+		imsearch = 0,
+		-- langmap = "ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ,ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня,abcdefghijklmnopqrstuvwxyz,",
 	},
 }
