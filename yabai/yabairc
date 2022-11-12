@@ -12,6 +12,7 @@ yabai -m rule --add app="^System Information$" sticky=on layer=above manage=off
 yabai -m rule --add app="^Path Finder$" manage=off
 yabai -m rule --add app="^TeamViewer$" sticky=off layer=above manage=off
 yabai -m rule --add app="Fantastical" manage=off
+yabai -m rule --add app="Музыка" manage=off
 yabai -m rule --add app="^Visual Studio Code" window --space 2
 
 # global settings
