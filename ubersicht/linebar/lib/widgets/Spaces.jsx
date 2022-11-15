@@ -1,7 +1,6 @@
 import { styled, run } from "uebersicht";
 import { useProcess } from "../utils/hooks";
 import { YABAI } from "../utils/vars";
-import { theme } from "../utils/theme";
 import { BaseBlock } from "../components/BaseBlock.jsx";
 import { WindowTitle } from "./WindowTitle.jsx";
 
@@ -47,6 +46,7 @@ const Wrapper = styled.div`
 
 const SpacesInner = styled.div`
   display: flex;
+  gap: 4px;
 `;
 
 const Space = styled(BaseBlock)`

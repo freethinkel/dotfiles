@@ -11,8 +11,20 @@ keymap("n", "-", "<C-x>", opts)
 keymap("n", "ss", ":split<Return>", opts)
 keymap("n", "vs", ":vsplit<Return>", opts)
 
+M.disabled = {
+	n = {
+		["<leader>ca"] = "",
+		["[d"] = "",
+		["d]"] = "",
+	},
+}
+
 M.base = {
 	n = {
+		["<leader>h"] = {
+			"<cmd>nohlsearch<cr>",
+			"Remove hightlights",
+		},
 		["<leader>qq"] = {
 			"<cmd>:qa!<cr>",
 			"Close vim",
@@ -22,6 +34,41 @@ M.base = {
 				vim.cmd("source ~/.config/nvim/init.lua")
 			end,
 			"update config",
+		},
+	},
+}
+
+M.lsp = {
+	n = {
+		["gd"] = {
+			function()
+				vim.cmd("Lspsaga lsp_finder")
+			end,
+			"Go to definition",
+		},
+		["K"] = {
+			"<Cmd>Lspsaga hover_doc<cr>",
+			"Hover lsp",
+		},
+		["<leader>lr"] = {
+			"<cmd>Lspsaga rename<cr>",
+			"Rename symbol",
+		},
+		["<leader>la"] = {
+			"<Cmd>Lspsaga code_action<cr>",
+			"Lsp code action",
+		},
+		["<leader>lp"] = {
+			"<cmd>Lspsaga peek_definition<cr>",
+			"Peek definition",
+		},
+		["<leader>lk"] = {
+			"<cmd>Lspsaga diagnostic_jump_prev<cr>",
+			"Lsp diagnostic jump next",
+		},
+		["<leader>lj"] = {
+			"<cmd>Lspsaga diagnostic_jump_next<cr>",
+			"Lsp diagnostic jump next",
 		},
 	},
 }

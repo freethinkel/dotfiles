@@ -28,9 +28,6 @@ export const render = () => {
 };
 
 const RoundedCorner = styled.div`
-  background: rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(10px);
-  --webkit-backdrop-filter: blur(10px);
   border-radius: 5px;
   overflow: hidden;
   display: flex;

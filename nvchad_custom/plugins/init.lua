@@ -68,4 +68,9 @@ return {
 			require("custom.plugins.config.zen-mode").setup()
 		end,
 	},
+	["glepnir/lspsaga.nvim"] = {
+		config = function()
+			require("custom.plugins.config.lspsaga").setup()
+		end,
+	},
 }

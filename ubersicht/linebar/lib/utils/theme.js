@@ -10,4 +10,10 @@ const catpuccin = {
   accent: "#F38BA8",
 };
 
-export const theme = catpuccin;
+const mountain = {
+  text: "#f0f0f0",
+  background: "#0f0f0f",
+  accent: "#8aac8b",
+};
+
+export const theme = mountain;

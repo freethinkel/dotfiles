@@ -3,7 +3,7 @@ local M = {}
 local custom_colors = require("custom.colors")
 
 M.ui = {
-	theme = "catppuccin",
+	theme = "mountain",
 	theme_toggle = { "catppuccin", "catppuccin_latte" },
 	hl_add = {
 		DiffText = {

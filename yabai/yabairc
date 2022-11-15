@@ -12,7 +12,6 @@ yabai -m rule --add app="^System Information$" sticky=on layer=above manage=off
 yabai -m rule --add app="^Path Finder$" manage=off
 yabai -m rule --add app="^TeamViewer$" sticky=off layer=above manage=off
 yabai -m rule --add app="Fantastical" manage=off
-yabai -m rule --add app="Музыка" manage=off
 yabai -m rule --add app="^Visual Studio Code" window --space 2
 
 # global settings
@@ -22,12 +21,12 @@ yabai -m config window_placement             second_child
 yabai -m config window_topmost               off
 yabai -m config window_shadow                float
 yabai -m config window_opacity               on
-yabai -m config window_opacity_duration      0.3
-yabai -m config active_window_opacity        1.0
-yabai -m config normal_window_opacity        1.0
-yabai -m config window_border                off
-yabai -m config window_border_width          6
-yabai -m config active_window_border_color   0xff88C0D0
+yabai -m config window_opacity_duration      0.1
+yabai -m config active_window_opacity        0.98
+yabai -m config normal_window_opacity        0.8
+yabai -m config window_border                on
+yabai -m config window_border_width          2
+yabai -m config active_window_border_color   0xff8aac8b
 yabai -m config normal_window_border_color   0xff282828
 yabai -m config insert_feedback_color        0xffd75f5f
 yabai -m config split_ratio                  0.50

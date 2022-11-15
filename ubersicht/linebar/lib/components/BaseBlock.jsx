@@ -11,6 +11,7 @@ export const BaseBlock = styled.div`
   gap: 4px;
   align-items: center;
   transition: 0.2s;
+  border-radius: 4px;
 
   ${({ hoverable }) =>
     hoverable
