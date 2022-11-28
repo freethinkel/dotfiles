@@ -17,10 +17,12 @@ yabai -m rule --add app="^Visual Studio Code" window --space 2
 # global settings
 yabai -m config mouse_follows_focus          off
 yabai -m config focus_follows_mouse          off
+# yabai -m config window_border_radius         1
 yabai -m config window_placement             second_child
 yabai -m config window_topmost               off
 yabai -m config window_shadow                float
-yabai -m config window_opacity               on
+yabai -m config window_border_blur           off
+yabai -m config window_opacity               off
 yabai -m config window_opacity_duration      0.1
 yabai -m config active_window_opacity        0.98
 yabai -m config normal_window_opacity        0.8

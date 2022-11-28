@@ -37,11 +37,17 @@ _G.prismaFormat = function()
 	vim.cmd("noautocmd write")
 end
 
+_G.eslintFixAll = function()
+	vim.cmd(":EslintFixAll")
+end
+
 local on_attach = function(client)
+	vim.pretty_print(client.server_capabilities)
 	if client.server_capabilities.documentFormattingProvider then
 		if vim.bo.filetype == "prisma" then
 			vim.cmd("autocmd BufWritePost <buffer> lua prismaFormat()")
 		else
+			-- vim.cmd("autocmd BufWritePre <buffer> lua pcall(eslintFixAll)")
 			vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.format({timeout_ms = 2000})")
 		end
 	end
