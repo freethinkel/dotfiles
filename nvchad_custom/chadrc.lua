@@ -3,8 +3,9 @@ local M = {}
 local custom_colors = require("custom.colors")
 
 M.ui = {
-	theme = "mountain",
-	theme_toggle = { "catppuccin", "catppuccin_latte" },
+	theme = "aquarium",
+	theme_toggle = { "nord", "catppuccin_latte" },
+	-- transparency = true,
 	hl_add = {
 		DiffText = {
 			fg = "none",
@@ -69,10 +70,12 @@ M.ui = {
 			bg = "NONE",
 		},
 		SignColumn = {
-			bg = "black",
+			-- bg = "black",
+			bg = "NONE",
 		},
 		FoldColumn = {
-			bg = "black",
+			-- bg = "black",
+			bg = "NONE",
 		},
 	},
 }

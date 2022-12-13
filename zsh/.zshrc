@@ -48,4 +48,5 @@ function gch() {
 # Bun
 export BUN_INSTALL="/Users/freethinkel/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+export PATH="${PATH}:/Users/freethinkel/Library/Python/3.10/lib/python/site-packages"
 export EDITOR="nvim"

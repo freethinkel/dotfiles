@@ -42,7 +42,7 @@ _G.eslintFixAll = function()
 end
 
 local on_attach = function(client)
-	vim.pretty_print(client.server_capabilities)
+	-- vim.pretty_print(client.server_capabilities)
 	if client.server_capabilities.documentFormattingProvider then
 		if vim.bo.filetype == "prisma" then
 			vim.cmd("autocmd BufWritePost <buffer> lua prismaFormat()")
