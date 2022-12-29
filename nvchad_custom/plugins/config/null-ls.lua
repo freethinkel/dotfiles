@@ -18,6 +18,7 @@ local sources = {
 	b.formatting.prettier.with({
 		filetypes = prettier_format_filetypes,
 	}),
+	b.formatting.rustfmt,
 	b.formatting.dart_format,
 	-- Prisma
 	b.formatting.prismaFmt,

@@ -1,12 +1,12 @@
 local M = {}
 
+local get_icon = require("custom.modules.nonicons.icons").get
+
 M.setup = function()
 	local status, diffview = pcall(require, "diffview")
 	if not status then
 		return
 	end
-
-	local actions = require("diffview.actions")
 
 	---@diagnostic disable-next-line: redundant-parameter
 	diffview.setup({
@@ -14,8 +14,8 @@ M.setup = function()
 		enhanced_diff_hl = true, -- See ':h diffview-config-enhanced_diff_hl'
 		use_icons = true, -- Requires nvim-web-devicons
 		icons = { -- Only applies when use_icons is true.
-			folder_closed = "",
-			folder_open = "",
+			folder_closed = get_icon("file-directory-fill"),
+			folder_open = get_icon("file-directory-open-fill"),
 		},
 		signs = {
 			fold_closed = "",

@@ -22,7 +22,7 @@ return {
 	["neovim/nvim-lspconfig"] = {
 		config = function()
 			require("plugins.configs.lspconfig")
-			require("custom.plugins.config.lspconfig")
+			require("custom.plugins.config.lsp").config()
 		end,
 	},
 	["tpope/vim-fugitive"] = {},
@@ -70,7 +70,18 @@ return {
 	},
 	["glepnir/lspsaga.nvim"] = {
 		config = function()
-			require("custom.plugins.config.lspsaga").setup()
+			require("custom.plugins.config.lsp").lspsaga()
 		end,
 	},
+	["kyazdani42/nvim-web-devicons"] = {
+		config = function()
+			require("custom.modules.nonicons").setup()
+		end,
+	},
+	-- ["yamatsum/nvim-nonicons"] = {
+	-- 	requires = { "kyazdani42/nvim-web-devicons" },
+	-- 	config = function()
+	-- 		require("nvim-nonicons").setup()
+	-- 	end,
+	-- },
 }

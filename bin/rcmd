@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+const { execSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
+
+const exec = (command) => execSync(command).toString();
+
+const store = {
+  get: (key) => {
+    try {
+      const file = fs.readFileSync(
+        path.resolve(process.env.HOME, ".micro_store")
+      );
+      return JSON.parse(file)[key];
+    } catch (err) {
+      return null;
+    }
+  },
+  set: (key, data) => {
+    try {
+      const filePath = path.resolve(process.env.HOME, ".micro_store");
+      if (!fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, "{}");
+      }
+      const file = fs.readFileSync(filePath);
+      const parsed = JSON.parse(file || "{}") || {};
+      parsed[key] = data;
+      fs.writeFileSync(
+        path.resolve(process.env.HOME, ".micro_store"),
+        JSON.stringify(parsed)
+      );
+    } catch (err) {}
+  },
+};
+
+const rotateArr = (arr, index) => {
+  return arr[(index + 1) % arr.length];
+};
+
+const main = () => {
+  const args = process.argv.slice(2);
+  const command = args[0];
+  const prev_app = store.get("prev_app");
+  const app = args[1];
+
+  if (!command) {
+    return;
+  }
+
+  if (command === "toggle_layout") {
+    const currentSpace = JSON.parse(exec("yabai -m query --spaces --space"));
+    const layout = currentSpace.type === "stack" ? "bsp" : "stack";
+    exec(`yabai -m config --space ${currentSpace.index} layout ${layout}`);
+    return;
+  }
+
+  const windows = JSON.parse(exec("yabai -m query --windows"));
+
+  if (app) {
+    const selected = windows.find(
+      (window) => window.app.toLowerCase().indexOf(app.toLowerCase()) >= 0
+    );
+    exec(`yabai -m window --focus ${selected.id}`);
+    return;
+  }
+
+  const filtered = windows.filter(
+    (window) => window.app.toLowerCase()[0] === command
+  );
+
+  const selectedApp = rotateArr(
+    filtered,
+    filtered.indexOf(filtered.find((w) => w.id === prev_app?.id))
+  );
+
+  exec(`yabai -m window --focus ${selectedApp.id}`);
+
+  store.set("prev_app", selectedApp);
+};
+
+main();

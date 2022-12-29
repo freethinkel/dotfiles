@@ -4,7 +4,7 @@ import { useProcess } from "../utils/hooks";
 import { YABAI } from "../utils/vars";
 
 export const WindowTitle = () => {
-  const result = useProcess(`${YABAI} -m query --windows`);
+  const [result] = useProcess(`${YABAI} -m query --windows`);
   const windows = JSON.parse(result || "[]");
   const activeWindow = windows.find((window) => window["has-focus"]);
 

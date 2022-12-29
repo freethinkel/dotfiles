@@ -5,8 +5,7 @@ ZSH_THEME="spaceship"
 SPACESHIP_CHAR_SYMBOL="❯ "
 
 plugins=(
-  git
-  zsh-autosuggestions
+  git zsh-autosuggestions
   zsh-syntax-highlighting
   zsh-z
 )

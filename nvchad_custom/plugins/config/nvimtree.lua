@@ -1,3 +1,29 @@
+local default_glyphs = {
+	default = "",
+	symlink = "",
+	folder = {
+		arrow_open = "",
+		arrow_closed = "",
+		default = "",
+		open = "",
+		empty = "",
+		empty_open = "",
+		symlink = "",
+		symlink_open = "",
+	},
+	git = {
+		unstaged = "",
+		staged = "ﰶ",
+		unmerged = "",
+		renamed = "➜",
+		untracked = "●",
+		deleted = "﯀",
+		ignored = "",
+	},
+}
+
+local glyphs = require("custom.modules.nonicons.extensions").nvimtree_glyphs
+
 return {
 	git = {
 		enable = true,
@@ -44,29 +70,7 @@ return {
 				folder_arrow = false,
 				git = false,
 			},
-			glyphs = {
-				default = "",
-				symlink = "",
-				folder = {
-					arrow_open = "",
-					arrow_closed = "",
-					default = "",
-					open = "",
-					empty = "",
-					empty_open = "",
-					symlink = "",
-					symlink_open = "",
-				},
-				git = {
-					unstaged = "",
-					staged = "ﰶ",
-					unmerged = "",
-					renamed = "➜",
-					untracked = "●",
-					deleted = "﯀",
-					ignored = "",
-				},
-			},
+			glyphs = glyphs,
 		},
 	},
 }

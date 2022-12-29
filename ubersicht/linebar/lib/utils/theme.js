@@ -16,4 +16,4 @@ const mountain = {
   accent: "#8aac8b",
 };
 
-export const theme = mountain;
+export const theme = nord;

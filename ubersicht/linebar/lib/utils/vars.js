@@ -1,3 +1,3 @@
-export const BAR_HEIGHT = 40;
+export const BAR_HEIGHT = 46;
 
-export const YABAI = "/opt/homebrew/bin/yabai";
+export const YABAI = '/opt/homebrew/bin/yabai';

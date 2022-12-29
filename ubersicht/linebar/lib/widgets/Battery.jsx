@@ -23,12 +23,14 @@ const getBatteryIcon = (value, isCharging) => {
 };
 
 export const Battery = () => {
-  const value = parseInt(
-    useProcess(
-      "pmset -g batt | egrep '([0-9]+%).*' -o --colour=auto | cut -f1 -d';'"
-    ) || "0"
+  const [value] = useProcess(
+    "pmset -g batt | egrep '([0-9]+%).*' -o --colour=auto | cut -f1 -d';'",
+    (value) => parseInt(value || "0")
   );
-  const isCharging = parseInt(useProcess("pmset -g batt | grep -c 'AC'")) > 0;
+  const [isCharging] = useProcess(
+    "pmset -g batt | grep -c 'AC'",
+    (value) => parseInt(value) > 0
+  );
   const icon = getBatteryIcon(value, isCharging);
 
   useUpdate(30000);
