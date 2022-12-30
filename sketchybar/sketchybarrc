@@ -1,23 +1,23 @@
 #!/usr/bin/env sh
 
-source "$HOME/.config/sketchybar/colors.sh"
+source "$HOME/.config/sketchybar/vars.sh"
 
 ITEM_DIR="$HOME/.config/sketchybar/items"
 PLUGIN_DIR="$HOME/.config/sketchybar/plugins"
 
 FONT="Iosevka Nerd Font"
-ICON_FONT="tabler-icons"
+ICON_FONT="SF Pro"
 
 
 sketchybar --bar y_offset=0                                             \
-                 color=$BACKGROUND_COLOR                                \
+                 color=0x00000000                                       \
                  blur_radius=12                                         \
                  corner_radius=0                                        \
                  sticky=on                                              \
                  notch_width=0                                          \
                  height=39                                              \
            --default updates=when_shown                                 \
-                     icon.font="$ICON_FONT:Regular:20.0"                   \
+                     icon.font="$ICON_FONT:Regular:18.0"                \
                      icon.color=$TEXT_COLOR                             \
                      icon.padding_left=0                                \
                      icon.padding_right=0                               \
@@ -46,5 +46,11 @@ source "$ITEM_DIR/caffeinate.sh"
 source "$ITEM_DIR/volume.sh"
 source "$ITEM_DIR/battery.sh"
 source "$ITEM_DIR/keyboard.sh"
+
+sketchybar --add bracket controls keyboard_layout battery volume_icon volume caffeinate \
+          --set controls background.color="$BACKGROUND_COLOR"                           \
+          background.corner_radius=$BORDER_RADIUS                                       \
+          background.border_width=1                                                     \
+          background.border_color="$BORDER_COLOR"
 
 sketchybar --update

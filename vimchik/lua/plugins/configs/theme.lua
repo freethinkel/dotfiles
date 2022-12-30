@@ -28,4 +28,8 @@ M.nord = function()
   require("utils").set_theme({ theme = "nord" });
 end
 
+M.tokyonight = function()
+  require("utils").set_theme({ theme = "tokyonight-night" })
+end
+
 return M

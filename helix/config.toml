@@ -1,6 +1,15 @@
-theme="rose_pine"
+theme = "nord"
 [editor]
 mouse = true
+line-number = "relative"
+bufferline = "multiple"
+color-modes = true
+
+[editor.cursor-shape]
+insert = "bar"
+
+[editor.lsp]
+display-messages = true
 
 [keys.normal]
 A-k = "move_line_up"

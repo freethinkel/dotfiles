@@ -8,9 +8,15 @@ require("utils").setup_packer({
     tag = "v3.*",
     requires = 'nvim-tree/nvim-web-devicons'
   },
+  ["lukas-reineke/indent-blankline.nvim"] = {},
+  -- THEMES
   ["shaunsingh/nord.nvim"] = {
     config = require("plugins.configs.theme").nord
   },
+  ["folke/tokyonight.nvim"] = {
+    -- config = require("plugins.configs.theme").tokyonight
+  },
+  -- THEMES END
   ["nvim-tree/nvim-tree.lua"] = {
     requires = { 'nvim-tree/nvim-web-devicons' },
     config = require("plugins.configs.nvim-tree").setup
@@ -25,12 +31,18 @@ require("utils").setup_packer({
     run = ":TSUpdate",
     config = require("plugins.configs.treesitter").setup
   },
+  ["nvim-treesitter/nvim-treesitter-context"] = {
+    config = require("plugins.configs.treesitter").context
+  },
   ["nvim-telescope/telescope.nvim"] = {
     requires = { { 'nvim-lua/plenary.nvim' } },
     config = require("plugins.configs.telescope").setup
   },
   ["numToStr/Comment.nvim"] = {
     config = require("plugins.configs.comment").setup
+  },
+  ["nvim-lualine/lualine.nvim"] = {
+    config = require("plugins.configs.lualine").setup
   },
   -- LANG SUPPORT
   ["styled-components/vim-styled-components"] = {},

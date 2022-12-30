@@ -1,11 +1,5 @@
 #!/usr/bin/env sh
 
-# ICONS -> 
-# 
-# 
-# 
-
-
 sketchybar --add item volume right                              \
            --set volume script="$PLUGIN_DIR/volume.sh"          \
                         updates=on                              \
@@ -15,6 +9,8 @@ sketchybar --add item volume right                              \
                         icon.width=0                            \
                         icon.align=right                        \
                         label.drawing=off                       \
+                        background.corner_radius=3              \
+                        icon.background.corner_radius=3         \
                         background.drawing=on                   \
                         background.color=$BACKGROUND_COLOR      \
                         background.height=8                     \
@@ -25,17 +21,9 @@ sketchybar --add item volume right                              \
 sketchybar --add item volume_icon right                           \
             --set volume_icon script="$PLUGIN_DIR/volume.sh"      \
             background.padding_right=10                           \
-              icon=""                                            \
+            icon="􀊥"                                              \
+            icon.font="$ICON_FONT:Regular:18.0"                   \
+            script="$PLUGIN_DIR/volume.sh"                        \
+            updates=on \
             icon.y_offset=1 
 
-
-# sketchybar --add alias "Пункт управления,Sound" right                      \
-#            --rename "Пункт управления,Sound" volume_alias                  \
-#            --set volume_alias icon.drawing=off                           \
-#                               label.drawing=off                          \
-#                               alias.color=$TEXT_COLOR                         \
-#                               background.padding_right=0                 \
-#                               background.padding_left=-5                 \
-#                               width=25                                   \
-#                               align=right                                \
-#                               click_script="$PLUGIN_DIR/volume_click.sh" 

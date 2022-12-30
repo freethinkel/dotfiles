@@ -1,17 +1,20 @@
 local M = {}
 
 M.setup = function()
-	local status, lualine = pcall(require, "lualine")
-	if not status then
-		return
-	end
+  local status, lualine = pcall(require, "lualine")
+  if not status then
+    return
+  end
 
-	lualine.setup({
-		options = {
-			theme = "auto",
-			globalstatus = true
-		}
-	})
+  lualine.setup({
+    options = {
+      theme = "auto",
+      globalstatus = true,
+      separator = nil,
+      component_separators = { left = '|', right = '|' },
+      section_separators = { left = '', right = '' },
+    }
+  })
 end
 
 return M

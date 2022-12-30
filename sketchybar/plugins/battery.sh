@@ -1,29 +1,56 @@
 #!/usr/bin/env sh
+source "$HOME/.config/sketchybar/vars.sh"
 
-PERCENTAGE=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
-CHARGING=$(pmset -g batt | grep 'AC Power')
+update() {
+  PERCENTAGE=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
+  CHARGING=$(pmset -g batt | grep 'AC Power')
+  ICONS=("􀛪" "􀛩" "􀺶" "􀺸" "􀛨")
+  ICON_CHARGING="􀢋"
 
-if [ $PERCENTAGE = "" ]; then
-  exit 0
-fi
+  if [ $PERCENTAGE = "" ]; then
+    exit 0
+  fi
 
-COLOR=$RED
+  COLOR=$GREEN_COLOR
 
-# case ${PERCENTAGE} in
-#    100) COLOR=0xff${NORD14:1} ;;
-#    9[0-9]) COLOR=0xff${NORD14:1} ;;
-#    8[0-9]) COLOR=0xff${NORD14:1} ;;
-#    7[0-9]) COLOR=0xff${NORD14:1} ;;
-#    6[0-9]) COLOR=0xff${NORD14:1} ;;
-#    5[0-9]) COLOR=0xff${NORD14:1} ;;
-#    4[0-9]) COLOR=0xff${NORD14:1} ;;
-#    3[0-9]) COLOR=0xff${NORD13:1} ;;
-#    2[0-9]) COLOR=0xff${NORD13:1} ;;
-#    1[0-9]) COLOR=0xff${NORD11:1} ;;
-#    *) COLOR=0xff${NORD11:1}
-# esac
+  case ${PERCENTAGE} in
+     100) COLOR=$GREEN_COLOR ;;
+     9[0-9]) COLOR=$GREEN_COLOR ;;
+     8[0-9]) COLOR=$GREEN_COLOR ;;
+     7[0-9]) COLOR=$GREEN_COLOR ;;
+     6[0-9]) COLOR=$YELLOW_COLOR ;;
+     5[0-9]) COLOR=$YELLOW_COLOR ;;
+     4[0-9]) COLOR=$YELLOW_COLOR ;;
+     3[0-9]) COLOR=$YELLOW_COLOR ;;
+     2[0-9]) COLOR=$RED_COLOR ;;
+     1[0-9]) COLOR=$RED_COLOR ;;
+     *) COLOR=$RED_COLOR ;;
+  esac
 
-# [ $CHARGING != "" ] && COLOR=0xff${NORD14:1}
-#
+  case $PERCENTAGE in
+     100) ICON=${ICONS[4]} ;;
+     9[0-9]) ICON=${ICONS[4]} ;;
+     8[0-9]) ICON=${ICONS[3]} ;;
+     7[0-9]) ICON=${ICONS[3]} ;;
+     6[0-9]) ICON=${ICONS[3]} ;;
+     5[0-9]) ICON=${ICONS[2]} ;;
+     4[0-9]) ICON=${ICONS[2]} ;;
+     3[0-9]) ICON=${ICONS[1]} ;;
+     2[0-9]) ICON=${ICONS[1]} ;;
+     1[0-9]) ICON=${ICONS[0]} ;;
+     *) ICON=${ICONS[0]} ;;
+  esac
 
-# sketchybar --set "Пункт управления,Battery" alias.color=0xffffffff label="${PERCENTAGE}%"
+  [ "$CHARGING" != "" ] && ICON=${ICON_CHARGING}
+
+  sketchybar --set $NAME icon.color=$COLOR icon=$ICON
+}
+
+mouse_clicked() {
+  sleep 1
+}
+
+case "$SENDER" in
+  "mouse.clicked") mouse_clicked ;;
+  *) update ;;
+esac
