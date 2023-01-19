@@ -1,4 +1,4 @@
-local default_glyphs = {
+local glyphs = {
 	default = "",
 	symlink = "",
 	folder = {
@@ -22,7 +22,7 @@ local default_glyphs = {
 	},
 }
 
-local glyphs = require("custom.modules.nonicons.extensions").nvimtree_glyphs
+-- local glyphs = require("custom.modules.nonicons.extensions").nvimtree_glyphs
 
 return {
 	git = {

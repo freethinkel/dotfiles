@@ -3,9 +3,9 @@ local M = {}
 local custom_colors = require("custom.colors")
 
 M.ui = {
-	theme = "nord",
+	theme = "tokyonight",
 	theme_toggle = { "catppuccin", "catppuccin_latte" },
-	-- transparency = true,
+	transparency = true,
 	hl_add = custom_colors.hl_add(),
 	hl_override = custom_colors.hl_override(),
 }
@@ -14,7 +14,6 @@ M.mappings = require("custom.mappings")
 
 M.plugins = {
 	user = require("custom.plugins"),
-	-- remove = { "kyazdani42/nvim-web-devicons" },
 	override = {
 		["hrsh7th/nvim-cmp"] = require("custom.plugins.config.lsp").cmp(),
 		-- ["NvChad/ui"] = require("custom.plugins.config.nvchad_ui"),

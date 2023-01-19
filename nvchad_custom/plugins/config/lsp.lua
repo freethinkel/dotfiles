@@ -1,45 +1,45 @@
 local M = {}
 
-local lspkind_icons = {
-	Text = " ",
-	Method = " ",
-	Function = " ",
-	Constructor = " ",
-	Field = " ",
-	Variable = " ",
-	Class = " ",
-	Interface = " ",
-	Property = " ",
-	Keyword = " ",
-	Snippet = " ",
-	Color = " ",
-	File = " ",
-	Reference = " ",
-	Folder = " ",
-	Struct = " ",
-	Event = " ",
-	Operator = " ",
-	TypeParameter = " ",
-	Namespace = "",
-	Module = " ",
-	Unit = "塞 ",
-	Value = " ",
-	Enum = " ",
-	EnumMember = " ",
-	Constant = " ",
-	Table = "",
-	Object = " ",
-	Tag = "",
-	Array = "[]",
-	Boolean = " ",
-	Number = " ",
-	Null = "ﳠ",
-	String = " ",
-	Calendar = "",
-	Watch = " ",
-	Package = "",
-	Copilot = " ",
-}
+-- local lspkind_icons = {
+-- 	Text = " ",
+-- 	Method = " ",
+-- 	Function = " ",
+-- 	Constructor = " ",
+-- 	Field = " ",
+-- 	Variable = " ",
+-- 	Class = " ",
+-- 	Interface = " ",
+-- 	Property = " ",
+-- 	Keyword = " ",
+-- 	Snippet = " ",
+-- 	Color = " ",
+-- 	File = " ",
+-- 	Reference = " ",
+-- 	Folder = " ",
+-- 	Struct = " ",
+-- 	Event = " ",
+-- 	Operator = " ",
+-- 	TypeParameter = " ",
+-- 	Namespace = "",
+-- 	Module = " ",
+-- 	Unit = "塞 ",
+-- 	Value = " ",
+-- 	Enum = " ",
+-- 	EnumMember = " ",
+-- 	Constant = " ",
+-- 	Table = "",
+-- 	Object = " ",
+-- 	Tag = "",
+-- 	Array = "[]",
+-- 	Boolean = " ",
+-- 	Number = " ",
+-- 	Null = "ﳠ",
+-- 	String = " ",
+-- 	Calendar = "",
+-- 	Watch = " ",
+-- 	Package = "",
+-- 	Copilot = " ",
+-- }
 
 M.lspsaga = function()
 	local status, lspsaga = pcall(require, "lspsaga")
@@ -47,21 +47,21 @@ M.lspsaga = function()
 		return
 	end
 
-	lspsaga.init_lsp_saga({
-		-- code_action_icon = "",
-		code_action_icon = require("custom.modules.nonicons.icons").get("light-bulb"),
+	lspsaga.setup({
+		code_action_icon = "",
+		-- code_action_icon = require("custom.modules.nonicons.icons").get("light-bulb"),
 	})
 end
 
 M.cmp = function()
 	return {
-		formatting = {
-			format = function(_, vim_item)
-				local icons = lspkind_icons
-				vim_item.kind = string.format("%s %s", icons[vim_item.kind], "(" .. string.lower(vim_item.kind) .. ")")
-				return vim_item
-			end,
-		},
+		-- formatting = {
+		-- 	format = function(_, vim_item)
+		-- 		local icons = lspkind_icons
+		-- 		vim_item.kind = string.format("%s %s", icons[vim_item.kind], "(" .. string.lower(vim_item.kind) .. ")")
+		-- 		return vim_item
+		-- 	end,
+		-- },
 	}
 end
 

@@ -74,9 +74,9 @@ return {
 		end,
 	},
 	["kyazdani42/nvim-web-devicons"] = {
-		config = function()
-			require("custom.modules.nonicons").setup()
-		end,
+		-- config = function()
+		-- 	require("custom.modules.nonicons").setup()
+		-- end,
 	},
 	-- ["yamatsum/nvim-nonicons"] = {
 	-- 	requires = { "kyazdani42/nvim-web-devicons" },

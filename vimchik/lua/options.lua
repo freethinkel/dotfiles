@@ -1,4 +1,4 @@
-local opt = vim.opt;
+local opt = vim.opt
 
 opt.nu = true
 opt.numberwidth = 2
@@ -29,8 +29,8 @@ opt.signcolumn = "yes"
 opt.incsearch = true
 
 opt.updatetime = 50
-opt.clipboard = "unnamedplus"
-
+-- opt.clipboard = "unnamedplus"
+opt.clipboard:append("unnamedplus")
 
 vim.cmd("au BufNewFile,BufRead *.pcss set ft=postcss")
 vim.cmd("au BufNewFile,BufRead *.mdx set ft=mdx")

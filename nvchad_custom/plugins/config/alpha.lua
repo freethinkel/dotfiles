@@ -1,5 +1,5 @@
 local present, alpha = pcall(require, "alpha")
-local get_icon = require("custom.modules.nonicons.icons").get
+-- local get_icon = require("custom.modules.nonicons.icons").get
 
 if not present then
 	return
@@ -102,13 +102,13 @@ options.header = {
 options.buttons = {
 	type = "group",
 	val = {
-		button("b", get_icon("mark-github") .. "  Git branches", ":Telescope git_branches<CR>"),
-		button("p", get_icon("archive") .. "  Projects", ":Telescope projects<CR>"),
-		button("SPC f f", get_icon("search") .. "  Search", ":Telescope find_files<CR>"),
-		button("SPC f w", get_icon("typography") .. "  Find Word  ", ":Telescope live_grep<CR>"),
-		button("SPC f o", get_icon("history") .. "  Recents", ":Telescope oldfiles<CR>"),
-		button("SPC e s", get_icon("gear") .. "  Settings", ":e $MYVIMRC | :cd %:p:h <CR>"),
-		button("q", get_icon("package-dependents") .. "  Quit", ":qa!<CR>"),
+		button("b", "   Git branches", ":Telescope git_branches<CR>"),
+		button("p", "   Projects", ":Telescope projects<CR>"),
+		button("SPC f f", "   Search", ":Telescope find_files<CR>"),
+		button("SPC f w", "   Find Word  ", ":Telescope live_grep<CR>"),
+		button("SPC f o", "   Recents", ":Telescope oldfiles<CR>"),
+		button("SPC e s", "   Settings", ":e $MYVIMRC | :cd %:p:h <CR>"),
+		button("q", "   Quit", ":qa!<CR>"),
 	},
 	opts = {
 		spacing = 1,
