@@ -19,6 +19,19 @@ M.disabled = {
 	},
 }
 
+M.packer = {
+	n = {
+		["<leader>p"] = {
+			"",
+			"Packer",
+		},
+		["<leader>ps"] = {
+			"<cmd>PackerSync<cr>",
+			"PackerSync",
+		},
+	},
+}
+
 M.base = {
 	n = {
 		["<leader>h"] = {

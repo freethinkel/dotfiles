@@ -30,7 +30,7 @@ alias ssh_fix="eval \"$(ssh-agent -s)\" && ssh-add ~/.ssh/id_ed25519"
 alias cls="clear"
 alias ls="exa"
 alias lvim="$HOME/.local/bin/lvim"
-alias vim="nvim"
+alias vim="lvim"
 alias vimconfig="vim ~/.config/nvim/"
 alias v="vim"
 alias cat="bat"
@@ -49,3 +49,8 @@ export BUN_INSTALL="/Users/freethinkel/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 export PATH="${PATH}:/Users/freethinkel/Library/Python/3.10/lib/python/site-packages"
 export EDITOR="nvim"
+
+# pnpm
+export PNPM_HOME="/Users/freethinkel/Library/pnpm"
+export PATH="$PNPM_HOME:$PATH"
+# pnpm end
