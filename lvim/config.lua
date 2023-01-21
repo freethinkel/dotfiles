@@ -102,6 +102,7 @@ lvim.builtin.treesitter.highlight.enable = true
 lvim.lsp.installer.setup.ensure_installed = {
   "sumneko_lua",
   "tsserver",
+  "eslint",
   "jsonls",
 }
 -- -- change UI setting of `LspInstallInfo`
@@ -154,8 +155,11 @@ formatters.setup {
   },
 }
 
+require("lvim.lsp.manager").setup("eslint")
+
 -- -- set additional linters
 -- local linters = require "lvim.lsp.null-ls.linters"
+
 -- linters.setup {
 --   { command = "flake8", filetypes = { "python" } },
 --   {
@@ -174,6 +178,13 @@ formatters.setup {
 
 -- Additional Plugins
 lvim.plugins = {
+  { "mg979/vim-visual-multi" },
+  { "akinsho/flutter-tools.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require("flutter-tools").setup()
+    end
+  },
   -- {
   --   "folke/trouble.nvim",
   --   cmd = "TroubleToggle",

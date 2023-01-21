@@ -4,14 +4,14 @@ window:
   padding:
     x: 5
     y: 5
-dynamic_padding: true
+# dynamic_padding: true
 
 font:
   # builtin_box_drawing: true
   # use_thin_strokes: true
   # draw_bold_text_with_bright_colors: true
-  mac_use_thin_fonts: true
-  use_thin_font: true
+  # mac_use_thin_fonts: true
+  # use_thin_font: true
   size: 14
   offset:
     x: 0
@@ -125,7 +125,7 @@ key_bindings:
   - { key: Backslash, mods: Alt,       chars: "\x1b\\"                      } # Alt + \
   - { key: Backslash, mods: Alt|Shift, chars: "\x1b|"                       } # Alt + | - { key: Slash, mods: Command, chars: '++' }
 
-tabspaces: 2
+# tabspaces: 2
 
 # env:
 #   # TERM: xterm-256color
