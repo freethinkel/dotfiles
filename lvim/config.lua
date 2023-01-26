@@ -4,8 +4,7 @@ lvim is the global options object
 Linters should be
 filled in as strings with either
 a global executable or a path to
-an executable
-]]
+an executable ]]
 -- THESE ARE EXAMPLE CONFIGS FEEL FREE TO CHANGE TO WHATEVER YOU WANT
 
 -- general
@@ -13,7 +12,6 @@ lvim.log.level = "warn"
 lvim.format_on_save.enabled = true
 -- to disable icons and use a minimalist setup, uncomment the following
 -- lvim.use_icons = false
-
 vim.opt.fillchars = vim.opt.fillchars + "diff:╱"
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
@@ -50,11 +48,16 @@ lvim.keys.normal_mode["<S-h>"] = ":BufferLineCyclePrev<CR>"
 -- }
 
 -- Change theme settings
-lvim.colorscheme = "tokyonight"
-lvim.builtin.theme.name = "tokyonight"
+lvim.colorscheme                                  = "tokyonight"
+lvim.builtin.theme.name                           = "tokyonight"
+lvim.builtin.theme.tokyonight.options.transparent = true
+lvim.builtin.theme.tokyonight.options.style       = "night"
+
+lvim.icons.ui.Target = ""
+-- lvim.builtin.lualine.sections.
+lvim.builtin.lualine.style = "lvim"
 -- lvim.builtin.theme.options.dim_inactive = true
 -- lvim.builtin.theme.options.style = "night"
-lvim.builtin.theme.tokyonight.options.style = "night"
 
 -- Use which-key to add extra bindings with the leader-key prefix
 -- lvim.builtin.which_key.mappings["P"] = { "<cmd>Telescope projects<CR>", "Projects" }
@@ -70,11 +73,21 @@ lvim.builtin.theme.tokyonight.options.style = "night"
 
 -- TODO: User Config for predefined plugins
 -- After changing plugin config exit and reopen LunarVim, Run :PackerInstall :PackerCompile
+lvim.builtin.gitsigns.opts.current_line_blame = true
 lvim.builtin.alpha.active = true
 lvim.builtin.alpha.mode = "dashboard"
+
 lvim.builtin.terminal.active = true
 lvim.builtin.nvimtree.setup.view.side = "left"
 lvim.builtin.nvimtree.setup.renderer.icons.show.git = false
+
+lvim.builtin.gitsigns.opts.signs.untracked = {
+  text = "┃",
+  hl = "GitSignsAdd",
+  numhl = "GitSignsAddNr",
+  linehl = "GitSignsAddLn"
+};
+
 
 -- if you don't want all the parsers change this to a table of the ones you want
 lvim.builtin.treesitter.auto_install = true
@@ -155,6 +168,8 @@ formatters.setup {
   },
 }
 
+-- lvim.lsp.override = { "dart" }
+
 require("lvim.lsp.manager").setup("eslint")
 
 -- -- set additional linters
@@ -179,12 +194,19 @@ require("lvim.lsp.manager").setup("eslint")
 -- Additional Plugins
 lvim.plugins = {
   { "mg979/vim-visual-multi" },
+  { "christoomey/vim-tmux-navigator" },
   { "akinsho/flutter-tools.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
-      require("flutter-tools").setup()
+      require("flutter-tools").setup({
+        lsp = {
+          on_attach = require("lvim.lsp").common_on_attach
+        }
+      })
     end
   },
+  { "imsnif/kdl.vim" },
+  { "rescript-lang/vim-rescript" }
   -- {
   --   "folke/trouble.nvim",
   --   cmd = "TroubleToggle",

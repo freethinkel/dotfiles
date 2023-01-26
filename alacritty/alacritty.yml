@@ -1,9 +1,9 @@
 window:
   decorations: buttonless
-  opacity: 0.7
+  opacity: 1
   padding:
-    x: 5
-    y: 5
+    x: 2
+    y: 2
 # dynamic_padding: true
 
 font:
@@ -13,9 +13,12 @@ font:
   # mac_use_thin_fonts: true
   # use_thin_font: true
   size: 14
+  glyph_offset:
+    x: 0
+    y: 4
   offset:
     x: 0
-    y: 0
+    y: 5
   normal:
     # family: FiraCode Nerd Font
     # family: JetBrainsMono Nerd Font
@@ -335,6 +338,30 @@ schemes:
       magenta: '0xbb9af7'
       cyan: '0x0db9d7'
       white: '0xacb0d0'
+
+  tokyo-night-dark: &tokyo-night-dark
+    primary:
+      foreground: '0xa9b1d6'
+      background: '0x1a1b26'
+    normal:
+      black: '0x414868'
+      red: '0xf7768e'
+      green: '0x73daca'
+      yellow: '0xe0af68'
+      blue: '0x7aa2f7'
+      magenta: '0xbb9af7'
+      cyan: '0x7dcfff'
+      white: '0xc0caf5'
+    bright:
+      black: '0x414868'
+      red: '0xf7768e'
+      green: '0x73daca'
+      yellow: '0xe0af68'
+      blue: '0x7aa2f7'
+      magenta: '0xbb9af7'
+      cyan: '0x7dcfff'
+      white: '0xc0caf5'
+     
   gruvbox: &gruvbox
     primary:
       background: '0x282828'
@@ -630,4 +657,4 @@ schemes:
         foreground: "#6e6a86"
         background: "#1f1d2e"
 
-colors: *tokyo-night
+colors: *tokyo-night-dark

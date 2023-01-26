@@ -35,6 +35,10 @@ alias vimconfig="vim ~/.config/nvim/"
 alias v="vim"
 alias cat="bat"
 alias tdev="tmux new -s dev || tmux attach-session -t dev"
+alias zel="zellij"
+alias zela="zel attach"
+alias zels="zel --session"
+alias zeld="zela dev || zels dev"
 
 function gch() {
  git checkout "$(git branch --all | fzf | tr -d '[:space:]')"
@@ -54,3 +58,7 @@ export EDITOR="nvim"
 export PNPM_HOME="/Users/freethinkel/Library/pnpm"
 export PATH="$PNPM_HOME:$PATH"
 # pnpm end
+
+export WASMTIME_HOME="$HOME/.wasmtime"
+
+export PATH="$WASMTIME_HOME/bin:$PATH"
