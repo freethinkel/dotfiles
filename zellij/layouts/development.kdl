@@ -2,24 +2,22 @@ layout {
     default_tab_template {
         children
         pane size=1 borderless=true {
-            // FIXME: Zellij wants absolute path only
             plugin location="file:/Users/freethinkel/.config/zellij/plugins/statusbar/target/wasm32-wasi/release/statusbar.wasm"
-
         }
     }
 
-    tab name="editor" focus=true {
-        pane borderless=true {
-          command "lvim"
-        }
-    }
-    tab name="terminal" {
-        pane
-        pane size="20%"
-    }
+    // tab focus=true {
+    //     pane borderless=true {
+    //       command "lvim"
+    //     }
+    //     pane size="20%"
+    // }
 }
 
 keybinds {
+    tmux {
+        bind "\"" { NewPane "Down"; SwitchToMode "Normal"; Resize "Decrease"; }
+    }
     locked {
         bind "Insert" { GoToTab 2; SwitchToMode "Normal"; }
     }

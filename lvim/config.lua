@@ -20,7 +20,9 @@ vim.opt.timeoutlen = 150
 
 lvim.keys.insert_mode["jj"] = "<esc>"
 lvim.keys.insert_mode["kj"] = "<esc>"
+lvim.keys.insert_mode["Kj"] = "<esc>"
 lvim.keys.insert_mode["jk"] = "<esc>"
+lvim.keys.insert_mode["Jk"] = "<esc>"
 lvim.keys.normal_mode["<S-l>"] = ":BufferLineCycleNext<CR>"
 lvim.keys.normal_mode["<S-h>"] = ":BufferLineCyclePrev<CR>"
 
@@ -53,9 +55,41 @@ lvim.builtin.theme.name                           = "tokyonight"
 lvim.builtin.theme.tokyonight.options.transparent = true
 lvim.builtin.theme.tokyonight.options.style       = "night"
 
-lvim.icons.ui.Target = ""
--- lvim.builtin.lualine.sections.
+-- LUALINE
+local lualine_components = require "lvim.core.lualine.components"
 lvim.builtin.lualine.style = "lvim"
+lvim.builtin.lualine.sections.lualine_a = {
+  {
+    function()
+      return " " .. vim.api.nvim_get_mode()['mode']:upper() .. " "
+    end,
+    padding = { left = 0, right = 0 },
+    color = {},
+    cond = nil,
+  },
+}
+lvim.builtin.lualine.sections.lualine_x = {
+  lualine_components.diagnostics
+}
+lvim.builtin.lualine.sections.lualine_y = {
+  "searchcount",
+  "encoding",
+  {
+    "filetype",
+    colored = false,
+  },
+  {
+    "progress",
+    separator = { left = "" },
+  },
+}
+lvim.builtin.lualine.sections.lualine_z = {
+  {
+    "location",
+    padding = { left = 0, right = 1 },
+  },
+}
+
 -- lvim.builtin.theme.options.dim_inactive = true
 -- lvim.builtin.theme.options.style = "night"
 
@@ -190,6 +224,7 @@ require("lvim.lsp.manager").setup("eslint")
 --     filetypes = { "javascript", "python" },
 --   },
 -- }
+--
 
 -- Additional Plugins
 lvim.plugins = {
@@ -201,6 +236,15 @@ lvim.plugins = {
       require("flutter-tools").setup({
         lsp = {
           on_attach = require("lvim.lsp").common_on_attach
+        },
+        debugger = { -- integrate with nvim dap + install dart code debugger
+          enabled = true,
+          exception_breakpoints = {},
+          register_configurations = function(_)
+            print("init debugger")
+            require("dap").configurations.dart = {}
+            require("dap.ext.vscode").load_launchjs()
+          end,
         }
       })
     end
