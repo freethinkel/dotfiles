@@ -17,7 +17,7 @@ export const Airpods = () => {
 
   return (
     <BaseBlock>
-      <Icon name="headphones" />
+      <Icon name="headphones" size={24} />
       C:{caseP}% | L:{left}% | R:{right}%
     </BaseBlock>
   );

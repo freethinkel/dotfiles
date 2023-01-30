@@ -37,7 +37,7 @@ export const Battery = () => {
 
   return (
     <BaseBlock>
-      <Icon size={22} name={icon} />
+      <Icon size={28} name={icon} />
       {value}%
     </BaseBlock>
   );

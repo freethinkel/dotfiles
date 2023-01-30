@@ -40,6 +40,20 @@ alias zela="zel attach"
 alias zels="zel --session"
 alias zeld="zela dev || zels dev"
 
+alias work="timer 45m && osascript -e 'display notification \"☕\" with title \"Work Timer is up!\" subtitle \"Take a Break 😊\" sound name \"Crystal\"' & say 'Все, адыхать. Попей водички там или сходи покури!'"
+alias rest="timer 10m && osascript -e 'display notification \"☕\" with title \"Rest Timer is up!\" subtitle \"Take a Work 😊\" sound name \"Crystal\"' & say 'Все, теперб работать! впирьот, впирьот!'"
+
+function pomo(){
+  echo "How many rounds you want to do?"
+  read count;
+  for i in {1..$count};
+  do
+    work;
+    sleep 1;
+    rest;
+  done
+}
+
 function gch() {
  git checkout "$(git branch --all | fzf | tr -d '[:space:]')"
 }

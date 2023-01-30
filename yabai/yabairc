@@ -14,7 +14,8 @@ yabai -m rule --add app="Fantastical" manage=off
 yabai -m rule --add app="^Übersicht$" manage=off border=off
 
 yabai -m rule --add app="^Google Chrome" space=^1
-yabai -m rule --add app="^Code" space=^2
+yabai -m rule --add app="^Firefox" space=^1
+# yabai -m rule --add app="^Code" space=^2
 yabai -m rule --add app="^Kitty" space=^2
 yabai -m rule --add app="^Alacritty" space=^2
 yabai -m rule --add app="^Slack" space=^3
@@ -31,24 +32,24 @@ yabai -m space 5 --label term
 # global settings
 yabai -m config mouse_follows_focus          off
 yabai -m config focus_follows_mouse          off
-# yabai -m config window_border_radius         1
+yabai -m config window_border_radius         1
 yabai -m config window_placement             second_child
 yabai -m config window_topmost               off
-yabai -m config window_shadow                float
+# yabai -m config window_shadow                float
 yabai -m config window_border_blur           off
 yabai -m config window_opacity               off
 yabai -m config window_opacity_duration      0.1
 yabai -m config active_window_opacity        0.98
 yabai -m config normal_window_opacity        0.8
 yabai -m config window_border                off
-yabai -m config window_border_width          2
+yabai -m config window_border_width          4
 yabai -m config active_window_border_color   0xff81A1C1
 yabai -m config normal_window_border_color   0xff434C5E
 yabai -m config insert_feedback_color        0xffd75f5f
 yabai -m config split_ratio                  0.50
 yabai -m config auto_balance                 on
 yabai -m config window_animation_duration    0.1
-# yabai -m config mouse_modifier               alt
+yabai -m config mouse_modifier               alt
 yabai -m config mouse_action1                move
 yabai -m config mouse_action2                resize
 yabai -m config mouse_drop_action            swap
@@ -58,8 +59,8 @@ yabai -m config layout                       bsp
 yabai -m config external_bar                 all:40:0
 yabai -m config top_padding                  8
 yabai -m config bottom_padding               8
-yabai -m config left_padding                 4
-yabai -m config right_padding                4
+yabai -m config left_padding                 8
+yabai -m config right_padding                8
 yabai -m config window_gap                   8
 
 echo "yabai configuration loaded.."

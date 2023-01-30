@@ -3,28 +3,28 @@ import { Icon } from '../components/Icon.jsx';
 import { useProcess, useUpdate } from '../utils/hooks';
 
 const layoutMap = {
-	ABC: 'EN',
-	RussianWin: 'RU',
+  ABC: 'EN',
+  RussianWin: 'RU',
 };
 
 export const KeyboardLayout = () => {
-	const [str] = useProcess(
-		'defaults read ~/Library/Preferences/com.apple.HIToolbox.plist | grep AppleCurrentKeyboardLayoutInputSourceID',
-		(value) => value || ''
-	);
-	useUpdate(800);
+  const [str] = useProcess(
+    'defaults read ~/Library/Preferences/com.apple.HIToolbox.plist | grep AppleCurrentKeyboardLayoutInputSourceID',
+    (value) => value || ''
+  );
+  useUpdate(800);
 
-	const layout = str
-		.replace('AppleCurrentKeyboardLayoutInputSourceID =', '')
-		.replace(/"/gim, '')
-		.replace(';', '')
-		.replace('com.apple.keylayout.', '')
-		.trim();
+  const layout = str
+    .replace('AppleCurrentKeyboardLayoutInputSourceID =', '')
+    .replace(/"/gim, '')
+    .replace(';', '')
+    .replace('com.apple.keylayout.', '')
+    .trim();
 
-	return (
-		<BaseBlock>
-			<Icon name='keyboard' />
-			{layoutMap[layout] || layout}
-		</BaseBlock>
-	);
+  return (
+    <BaseBlock>
+      <Icon name='keyboard' size={24} />
+      {layoutMap[layout] || layout}
+    </BaseBlock>
+  );
 };

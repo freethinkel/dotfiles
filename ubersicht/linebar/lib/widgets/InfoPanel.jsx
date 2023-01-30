@@ -4,6 +4,7 @@ import { DateTime } from "./DateTime.jsx";
 import { Volume } from "./Volume.jsx";
 import { Airpods } from "./Airpods.jsx";
 import { KeyboardLayout } from "./KeyboardLayout.jsx";
+import { Caffeinate } from './Caffeinate.jsx'
 
 export const InfoPanel = () => {
   return (
@@ -12,6 +13,7 @@ export const InfoPanel = () => {
       <Airpods />
       <Volume />
       <Battery />
+      <Caffeinate />
       <DateTime />
     </Wrapper>
   );
@@ -19,5 +21,5 @@ export const InfoPanel = () => {
 
 const Wrapper = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 8px;
 `;

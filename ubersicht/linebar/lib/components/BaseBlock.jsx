@@ -1,5 +1,5 @@
 import { styled } from "uebersicht";
-import { theme } from "../utils/theme";
+import { theme, toOpacity } from "../utils/theme";
 
 export const BaseBlock = styled.div`
   font-size: 12px;
@@ -11,7 +11,8 @@ export const BaseBlock = styled.div`
   gap: 4px;
   align-items: center;
   transition: 0.2s;
-  border-radius: 4px;
+  border-radius: var(--border-radius);
+  border: 1px solid ${toOpacity(theme.accent, 0.12)};
 
   ${({ hoverable }) =>
     hoverable
