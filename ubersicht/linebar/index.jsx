@@ -2,6 +2,7 @@ import { styled } from 'uebersicht';
 import { BAR_HEIGHT } from './lib/utils/vars';
 import { Spaces } from './lib/widgets/Spaces.jsx';
 import { InfoPanel } from './lib/widgets/InfoPanel.jsx';
+import { YabaiMode } from './lib/widgets/YabaiMode.jsx'
 
 export const refreshFrequency = false;
 
@@ -17,6 +18,7 @@ export const render = () => {
       <RoundedCorner
       // style={{ borderTopLeftRadius: '18px' }}
       >
+        <YabaiMode />
         <Spaces />
       </RoundedCorner>
       <div />
@@ -36,6 +38,7 @@ const RoundedCorner = styled.div`
 	border-radius: 5px;
 	overflow: hidden;
 	display: flex;
+  gap: 8px;
 `;
 
 const Container = styled.div`

@@ -34,6 +34,7 @@ alias vim="lvim"
 alias vimconfig="vim ~/.config/nvim/"
 alias v="vim"
 alias cat="bat"
+alias :qa="exit"
 alias tdev="tmux new -s DEV || tmux attach-session -t DEV"
 alias zel="zellij"
 alias zela="zel attach"
@@ -64,8 +65,6 @@ function gch() {
 
 # Bun
 export BUN_INSTALL="/Users/freethinkel/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-export PATH="${PATH}:/Users/freethinkel/Library/Python/3.10/lib/python/site-packages"
 export EDITOR="nvim"
 
 # pnpm
@@ -75,4 +74,7 @@ export PATH="$PNPM_HOME:$PATH"
 
 export WASMTIME_HOME="$HOME/.wasmtime"
 
+export PATH="$BUN_INSTALL/bin:$PATH"
+export PATH="${PATH}:/Users/freethinkel/Library/Python/3.10/lib/python/site-packages"
+export PATH="$PATH":"$HOME/.pub-cache/bin"
 export PATH="$WASMTIME_HOME/bin:$PATH"

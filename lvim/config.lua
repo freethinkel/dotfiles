@@ -205,6 +205,7 @@ formatters.setup {
 -- lvim.lsp.override = { "dart" }
 
 require("lvim.lsp.manager").setup("eslint")
+require("lvim.lsp.manager").setup("angularls")
 
 -- -- set additional linters
 -- local linters = require "lvim.lsp.null-ls.linters"
@@ -250,7 +251,25 @@ lvim.plugins = {
     end
   },
   { "imsnif/kdl.vim" },
-  { "rescript-lang/vim-rescript" }
+  { "rescript-lang/vim-rescript" },
+  {
+    "sindrets/diffview.nvim",
+    event = "BufRead",
+  },
+  {
+    "windwp/nvim-ts-autotag",
+    config = function()
+      require("nvim-ts-autotag").setup()
+    end,
+  },
+  {
+    "npxbr/glow.nvim",
+    ft = { "markdown" },
+    config = function()
+      require('glow').setup()
+    end
+    -- run = "yay -S glow"
+  },
   -- {
   --   "folke/trouble.nvim",
   --   cmd = "TroubleToggle",
