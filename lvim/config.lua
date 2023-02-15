@@ -26,6 +26,49 @@ lvim.keys.insert_mode["Jk"] = "<esc>"
 lvim.keys.normal_mode["<S-l>"] = ":BufferLineCycleNext<CR>"
 lvim.keys.normal_mode["<S-h>"] = ":BufferLineCyclePrev<CR>"
 
+-- LSP MAPPING
+-- lvim.keys.normal_mode["<leader>la"] = { "<cmd>Lspsaga code_action<cr>", "Code actions" }
+lvim.builtin.which_key.mappings['l']['a'] = {
+  "<cmd>Lspsaga code_action<cr>",
+  "Code actions"
+}
+lvim.builtin.which_key.mappings['l']['r'] = {
+  "<cmd>Lspsaga rename<cr>",
+  "Rename"
+}
+lvim.builtin.which_key.mappings['l']['c'] = {
+  "<cmd>Lspsaga show_cursor_diagnostics<cr>",
+  "Show cursor diagnostic"
+}
+lvim.builtin.which_key.mappings['l']['j'] = {
+  "<cmd>Lspsaga diagnostic_jump_next<cr>",
+  "Show cursor diagnostic"
+}
+lvim.builtin.which_key.mappings['l']['k'] = {
+  "<cmd>Lspsaga diagnostic_jump_prev<cr>",
+  "Show cursor diagnostic"
+}
+lvim.lsp.buffer_mappings.normal_mode['gd'] = { "<cmd>Lspsaga goto_definition<cr>", "Goto definitions" }
+lvim.lsp.buffer_mappings.normal_mode['gp'] = { "<cmd>Lspsaga peek_definition<cr>", "Peek definitions" }
+lvim.lsp.buffer_mappings.normal_mode['gr'] = { "<cmd>Lspsaga lsp_finder<cr>", "Goto references" }
+lvim.lsp.buffer_mappings.normal_mode['K'] = { "<cmd>Lspsaga hover_doc<cr>", "Show hover" }
+
+-- ["K"] = { "<cmd>lua vim.lsp.buf.hover()<cr>", "Show hover" },
+-- ["gd"] = { "<cmd>lua vim.lsp.buf.definition()<cr>", "Goto Definition" },
+-- ["gD"] = { "<cmd>lua vim.lsp.buf.declaration()<cr>", "Goto declaration" },
+-- ["gr"] = { "<cmd>lua vim.lsp.buf.references()<cr>", "Goto references" },
+-- ["gI"] = { "<cmd>lua vim.lsp.buf.implementation()<cr>", "Goto Implementation" },
+-- ["gs"] = { "<cmd>lua vim.lsp.buf.signature_help()<cr>", "show signature help" },
+-- ["gl"] = {
+--   function()
+--     local config = lvim.lsp.diagnostics.float
+--     config.scope = "line"
+--     vim.diagnostic.open_float(0, config)
+--   end,
+--   "Show line diagnostics",
+-- },
+-- LSP MAPPING END
+
 -- unmap a default keymapping
 -- vim.keymap.del("n", "<C-Up>")
 -- override a default keymapping
@@ -50,10 +93,10 @@ lvim.keys.normal_mode["<S-h>"] = ":BufferLineCyclePrev<CR>"
 -- }
 
 -- Change theme settings
-lvim.colorscheme                                  = "tokyonight"
-lvim.builtin.theme.name                           = "tokyonight"
-lvim.builtin.theme.tokyonight.options.transparent = true
-lvim.builtin.theme.tokyonight.options.style       = "night"
+lvim.colorscheme        = "tokyonight"
+lvim.builtin.theme.name = "tokyonight"
+-- lvim.builtin.theme.tokyonight.options.transparent = true
+-- lvim.builtin.theme.tokyonight.options.style       = "night"
 
 -- LUALINE
 local lualine_components = require "lvim.core.lualine.components"
@@ -262,13 +305,28 @@ lvim.plugins = {
       require("nvim-ts-autotag").setup()
     end,
   },
-  {
-    "npxbr/glow.nvim",
-    ft = { "markdown" },
+  { "glepnir/lspsaga.nvim",
+    branch = "main",
     config = function()
-      require('glow').setup()
-    end
-    -- run = "yay -S glow"
+      require("lspsaga").setup({
+        ui = {
+          -- currently only round theme
+          theme = "round",
+          -- this option only work in neovim 0.9
+          title = true,
+          -- border type can be single,double,rounded,solid,shadow.
+          border = "rounded",
+          winblend = 0,
+          expand = "",
+          collapse = "",
+          preview = " ",
+          code_action = "",
+          incoming = " ",
+          outgoing = " ",
+          kind = {},
+        },
+      })
+    end,
   },
   -- {
   --   "folke/trouble.nvim",
