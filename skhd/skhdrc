@@ -6,6 +6,7 @@ ctrl + alt + cmd - s : /opt/homebrew/bin/brew services restart skhd
 ## open terminal
 # ctrl - return : /Applications/kitty.app/Contents/MacOS/kitty ~
 ctrl - return : /Applications/Alacritty.app/Contents/MacOS/alacritty
+# ctrl - return : /Applications/WezTerm.app/Contents/MacOS/wezterm
 
 rcmd + alt - space : yabai -m window --toggle float 
 rcmd + alt - c : yabai -m window --toggle float; yabai -m window --grid 1:6:1:1:4:1

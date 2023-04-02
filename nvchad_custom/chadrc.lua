@@ -1,30 +1,22 @@
+---@type ChadrcConfig
 local M = {}
 
-local custom_colors = require("custom.colors")
+-- Path to overriding theme and highlights files
+local highlights = require("custom.highlights")
 
 M.ui = {
 	theme = "tokyonight",
-	theme_toggle = { "catppuccin", "catppuccin_latte" },
-	transparency = true,
-	hl_add = custom_colors.hl_add(),
-	hl_override = custom_colors.hl_override(),
-}
+	theme_toggle = { "tokyonight", "one_light" },
 
-M.mappings = require("custom.mappings")
-
-M.plugins = {
-	user = require("custom.plugins"),
-	override = {
-		["hrsh7th/nvim-cmp"] = require("custom.plugins.config.lsp").cmp(),
-		-- ["NvChad/ui"] = require("custom.plugins.config.nvchad_ui"),
-		["kyazdani42/nvim-tree.lua"] = require("custom.plugins.config.nvimtree"),
-		["akinsho/bufferline.nvim"] = require("custom.plugins.config.bufferline"),
-		["lewis6991/gitsigns.nvim"] = require("custom.plugins.config.gitsigns"),
-		["williamboman/mason.nvim"] = require("custom.plugins.config.mason"),
-		["nvim-treesitter/nvim-treesitter"] = {
-			auto_install = true,
-		},
+	hl_override = highlights.override,
+	hl_add = highlights.add,
+	nvdash = {
+		load_on_startup = true,
 	},
 }
+
+M.plugins = "custom.plugins"
+
+M.mappings = require("custom.mappings")
 
 return M

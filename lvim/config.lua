@@ -12,11 +12,13 @@ lvim.log.level = "warn"
 lvim.format_on_save.enabled = true
 -- to disable icons and use a minimalist setup, uncomment the following
 -- lvim.use_icons = false
-vim.opt.fillchars = vim.opt.fillchars + "diff:╱"
+vim.opt.fillchars = vim.opt.fillchars + "diff:╱" + 'eob: '
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
 -- add your own keymapping
 vim.opt.timeoutlen = 150
+
+vim.cmd("au BufNewFile,BufRead *.pcss set ft=postcss")
 
 lvim.keys.insert_mode["jj"] = "<esc>"
 lvim.keys.insert_mode["kj"] = "<esc>"
@@ -53,6 +55,16 @@ lvim.lsp.buffer_mappings.normal_mode['gp'] = { "<cmd>Lspsaga peek_definition<cr>
 lvim.lsp.buffer_mappings.normal_mode['gr'] = { "<cmd>Lspsaga lsp_finder<cr>", "Goto references" }
 lvim.lsp.buffer_mappings.normal_mode['K'] = { "<cmd>Lspsaga hover_doc<cr>", "Show hover" }
 
+lvim.builtin.which_key.mappings["F"] = {
+  name = "Flutter",
+  r = { ":FlutterRun<cr>", "FlutterRun" },
+  q = { ":FlutterQuit<cr>", "FlutterQuit" },
+  R = { ":FlutterRestart<cr>", "FlutterRestart" },
+  C = { ":FlutterLogClear<cr>", "FlutterLogClear" }
+  -- "<cmd>Lspsaga diagnostic_jump_prev<cr>",
+  -- "Show cursor diagnostic"
+}
+
 -- ["K"] = { "<cmd>lua vim.lsp.buf.hover()<cr>", "Show hover" },
 -- ["gd"] = { "<cmd>lua vim.lsp.buf.definition()<cr>", "Goto Definition" },
 -- ["gD"] = { "<cmd>lua vim.lsp.buf.declaration()<cr>", "Goto declaration" },
@@ -74,7 +86,7 @@ lvim.lsp.buffer_mappings.normal_mode['K'] = { "<cmd>Lspsaga hover_doc<cr>", "Sho
 -- override a default keymapping
 -- lvim.keys.normal_mode["<C-q>"] = ":q<cr>" -- or vim.keymap.set("n", "<C-q>", ":q<cr>" )
 
--- Change Telescope navigation to use j and k for navigation and n and p for history in both input and normal mode.
+-- hange Telescope navigation to use j and k for navigation and n and p for history in both input and normal mode.
 -- we use protected-mode (pcall) just in case the plugin wasn't loaded yet.
 -- local _, actions = pcall(require, "telescope.actions")
 -- lvim.builtin.telescope.defaults.mappings = {
@@ -93,10 +105,15 @@ lvim.lsp.buffer_mappings.normal_mode['K'] = { "<cmd>Lspsaga hover_doc<cr>", "Sho
 -- }
 
 -- Change theme settings
-lvim.colorscheme        = "tokyonight"
-lvim.builtin.theme.name = "tokyonight"
+-- lvim.colorscheme = "github_dimmed"
+--
+-- lvim.colorscheme                            = "tokyonight"
+-- lvim.builtin.theme.name                     = "tokyonight"
+-- lvim.builtin.theme.tokyonight.options.style = "night"
 -- lvim.builtin.theme.tokyonight.options.transparent = true
--- lvim.builtin.theme.tokyonight.options.style       = "night"
+--
+lvim.colorscheme = "catppuccin-frappe"
+-- lvim.builtin.theme.catppuccin.options.style = "mocca"
 
 -- LUALINE
 local lualine_components = require "lvim.core.lualine.components"
@@ -241,14 +258,16 @@ formatters.setup {
     -- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
     extra_args = { "--print-with", "100" },
     ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
-    filetypes = { "typescript", "typescriptreact" },
+    filetypes = { "typescript", "typescriptreact", "html", "css", "postcss", "javascript", "javascriptreact" },
   },
 }
 
 -- lvim.lsp.override = { "dart" }
-
+require("lvim.lsp.manager").setup("lua_ls")
+require("lvim.lsp.manager").setup("cssmodules_ls")
 require("lvim.lsp.manager").setup("eslint")
 require("lvim.lsp.manager").setup("angularls")
+require("lvim.lsp.manager").setup("emmet_ls")
 
 -- -- set additional linters
 -- local linters = require "lvim.lsp.null-ls.linters"
@@ -274,18 +293,19 @@ require("lvim.lsp.manager").setup("angularls")
 lvim.plugins = {
   { "mg979/vim-visual-multi" },
   { "christoomey/vim-tmux-navigator" },
-  { "akinsho/flutter-tools.nvim",
+  {
+    "akinsho/flutter-tools.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       require("flutter-tools").setup({
         lsp = {
           on_attach = require("lvim.lsp").common_on_attach
         },
-        debugger = { -- integrate with nvim dap + install dart code debugger
+        debugger = {
+          -- integrate with nvim dap + install dart code debugger
           enabled = true,
           exception_breakpoints = {},
           register_configurations = function(_)
-            print("init debugger")
             require("dap").configurations.dart = {}
             require("dap.ext.vscode").load_launchjs()
           end,
@@ -305,7 +325,8 @@ lvim.plugins = {
       require("nvim-ts-autotag").setup()
     end,
   },
-  { "glepnir/lspsaga.nvim",
+  {
+    "glepnir/lspsaga.nvim",
     branch = "main",
     config = function()
       require("lspsaga").setup({
@@ -328,6 +349,63 @@ lvim.plugins = {
       })
     end,
   },
+  { 'nyoom-engineering/oxocarbon.nvim' },
+  { "catppuccin/nvim",                 name = "catppuccin" },
+  { "stephenway/postcss.vim" },
+  {
+    "loctvl842/monokai-pro.nvim",
+    config = function()
+      -- require("monokai-pro").setup({
+      --   transparent_background = false,
+      --   terminal_colors = true,
+      --   devicons = true, -- highlight the icons of `nvim-web-devicons`
+      --   styles = {
+      --     comment = { italic = true },
+      --     keyword = { italic = true },       -- any other keyword
+      --     type = { italic = true },          -- (preferred) int, long, char, etc
+      --     storageclass = { italic = true },  -- static, register, volatile, etc
+      --     structure = { italic = true },     -- struct, union, enum, etc
+      --     parameter = { italic = true },     -- parameter pass in function
+      --     annotation = { italic = true },
+      --     tag_attribute = { italic = true }, -- attribute of tag in reactjs
+      --   },
+      --   filter = "pro",                      -- classic | octagon | pro | machine | ristretto | spectrum
+      --   -- Enable this will disable filter option
+      --   day_night = {
+      --     enable = false,            -- turn off by default
+      --     day_filter = "ristretto",  -- classic | octagon | pro | machine | ristretto | spectrum
+      --     night_filter = "spectrum", -- classic | octagon | pro | machine | ristretto | spectrum
+      --   },
+      --   inc_search = "background",   -- underline | background
+      --   background_clear = {
+      --     -- "float_win",
+      --     "toggleterm",
+      --     "telescope",
+      --     "which-key",
+      --     "renamer"
+      --   }, -- "float_win", "toggleterm", "telescope", "which-key", "renamer", "neo-tree"
+      --   plugins = {
+      --     bufferline = {
+      --       underline_selected = false,
+      --       underline_visible = false,
+      --     },
+      --     indent_blankline = {
+      --       context_highlight = "default", -- default | pro
+      --       context_start_underline = false,
+      --     },
+      --   },
+      -- })
+    end
+  },
+  {
+    "projekt0n/github-nvim-theme",
+    version = 'v0.0.7',
+    config = function()
+      require('github-theme').setup({
+        theme_style = "dimmed"
+      })
+    end
+  }
   -- {
   --   "folke/trouble.nvim",
   --   cmd = "TroubleToggle",
