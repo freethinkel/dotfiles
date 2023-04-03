@@ -17,6 +17,17 @@ M.general = {
 	},
 }
 
+M.telescope = {
+	n = {
+		["<C-p>"] = {
+			function()
+				vim.cmd("Telescope")
+			end,
+			"Telescope",
+		},
+	},
+}
+
 M.lsp = {
 	n = {
 		["<leader>la"] = { "<cmd>Lspsaga code_action<cr>", "Code action" },
