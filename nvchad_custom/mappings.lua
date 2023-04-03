@@ -49,17 +49,17 @@ M.git = {
 			end,
 			"Open lazygit",
 		},
-    ["<leader>gh"] = {
-      function()
+		["<leader>gh"] = {
+			function()
 				local view = require("diffview.lib").get_current_view()
 				if view then
 					vim.cmd("DiffviewClose")
 				else
 					vim.cmd("DiffviewFileHistory %")
 				end
-      end,
-      "Git file history"
-    },
+			end,
+			"Git file history",
+		},
 		["<leader>gm"] = {
 			function()
 				local view = require("diffview.lib").get_current_view()
@@ -70,6 +70,33 @@ M.git = {
 				end
 			end,
 			"Toggle Diffview",
+		},
+	},
+}
+
+M.dap = {
+	n = {
+		["<leader>dt"] = {
+			function()
+				require("dapui").toggle()
+			end,
+			"Toggle dap",
+		},
+		["<leader>db"] = {
+			function()
+				require("dap").toggle_breakpoint()
+			end,
+			"Toggle breakpoint",
+		},
+		["<leader>ds"] = {
+			function()
+				if vim.bo.filetype == "dart" then
+					vim.cmd("FlutterRun")
+				else
+					require("dap").continue()
+				end
+			end,
+			"Start debugger",
 		},
 	},
 }

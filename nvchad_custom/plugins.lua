@@ -12,7 +12,8 @@ local plugins = {
 	},
 	{
 		"jay-babu/mason-null-ls.nvim",
-		event = { "BufReadPre", "BufNewFile" },
+		-- event = { "BufReadPre", "BufNewFile" },
+		event = "LspAttach",
 		dependencies = {
 			"williamboman/mason.nvim",
 			"jose-elias-alvarez/null-ls.nvim",
@@ -52,8 +53,16 @@ local plugins = {
 
 	{
 		"akinsho/flutter-tools.nvim",
+		lazy = false,
 		config = function()
 			require("custom.configs.flutter")
+		end,
+	},
+	{
+		"rcarriga/nvim-dap-ui",
+		dependencies = { "mfussenegger/nvim-dap" },
+		config = function()
+			require("custom.configs.dap").setup_ui()
 		end,
 	},
 	{
@@ -70,26 +79,22 @@ local plugins = {
 	},
 	{
 		"NvChad/base46",
-    lazy = false,
+		lazy = false,
 		config = function()
 			require("custom.highlights").override_hightlight()
 		end,
 	},
-  {
-    "aserowy/tmux.nvim",
-    lazy = false,
-    config = function()
-      require("tmux").setup()
-    end,
-  },
-  {
-    "mg979/vim-visual-multi",
-    event = "BufEnter"
-  }
-	-- {
-	-- 	"NvChad/nvim-colorizer.lua",
-	-- 	enabled = true,
-	-- },
+	{
+		"aserowy/tmux.nvim",
+		lazy = false,
+		config = function()
+			require("tmux").setup()
+		end,
+	},
+	{
+		"mg979/vim-visual-multi",
+		event = "BufEnter",
+	},
 }
 
 return plugins

@@ -4,16 +4,22 @@ if not present then
 	return
 end
 
+require("telescope").load_extension("flutter")
+
 flutter_tools.setup({
 	lsp = {
-		on_attach = require("lvim.lsp").common_on_attach,
+		on_attach = require("custom.configs.lspconfig").on_attach,
 	},
-	debugger = { -- integrate with nvim dap + install dart code debugger
+	debugger = {
 		enabled = true,
+		run_via_dap = true,
 		exception_breakpoints = {},
 		register_configurations = function(_)
 			require("dap").configurations.dart = {}
 			require("dap.ext.vscode").load_launchjs()
 		end,
+	},
+	dev_log = {
+		enabled = false,
 	},
 })

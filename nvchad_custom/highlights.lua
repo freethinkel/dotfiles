@@ -55,6 +55,8 @@ M.override_hightlight = function()
 	hi("DiffText", { bg = mixColors(colors.black, colors.blue, 0.2) })
 	hi("DiffviewDiffAddAsDelete", { bg = mixColors(colors.black, colors.red, 0.15) })
 	hi("DiffviewDiffDelete", { fg = colors.black2 })
+	vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DiagnosticSignError", linehl = "", numhl = "" })
+	hi("DapBreakpoint", { fg = colors.pink })
 
 	--
 	--   {
