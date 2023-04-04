@@ -8,7 +8,10 @@ require("telescope").load_extension("flutter")
 
 flutter_tools.setup({
 	lsp = {
-		on_attach = require("custom.configs.lspconfig").on_attach,
+		on_attach = function(client, bufnr)
+			require("custom.configs.lspconfig").on_attach_format(client, bufnr)
+			require("custom.configs.lspconfig").on_attach(client, bufnr)
+		end,
 		color = {
 			enabled = true,
 			background = false,

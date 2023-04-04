@@ -5,6 +5,7 @@ local plugins = {
 	{
 		"williamboman/mason.nvim",
 		dependencies = { "williamboman/mason-lspconfig.nvim", "neovim/nvim-lspconfig" },
+		lazy = false,
 		build = ":MasonUpdate",
 		config = function()
 			require("custom.configs.lspconfig").setup()
@@ -12,8 +13,7 @@ local plugins = {
 	},
 	{
 		"jay-babu/mason-null-ls.nvim",
-		-- event = { "BufReadPre", "BufNewFile" },
-		event = "LspAttach",
+		lazy = false,
 		dependencies = {
 			"williamboman/mason.nvim",
 			"jose-elias-alvarez/null-ls.nvim",
@@ -24,7 +24,7 @@ local plugins = {
 	},
 	{
 		"glepnir/lspsaga.nvim",
-		event = "LspAttach",
+		lazy = false,
 		config = function()
 			require("custom.configs.lspconfig").lspsaga()
 		end,
@@ -109,8 +109,11 @@ local plugins = {
 	},
 	{
 		"imsnif/kdl.vim",
-		-- lazy = false,
 		event = { "BufEnter *.kdl" },
+	},
+	{
+		"stephenway/postcss.vim",
+		ft = "postcss",
 	},
 	{
 		"folke/zen-mode.nvim",

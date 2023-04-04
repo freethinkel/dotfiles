@@ -10,28 +10,32 @@ local lsps = {
 	-- web dev stuff
 	"cssls",
 	"html",
-	"denols",
 }
 
 local formatters = { "prettier", "stylua" }
 
-M.on_attach = function(client, bufnr)
-	local allowFormat = client.server_capabilities.documentFormattingProvider
-	if allowFormat then
+M.on_attach_format = function(client, bufnr)
+	if client.server_capabilities.documentFormattingProvider then
 		vim.api.nvim_create_autocmd("BufWritePre", {
 			desc = "Auto format before save",
 			callback = function()
-				vim.lsp.buf.format()
+				vim.lsp.buf.format({
+					timeout = 1000,
+					bufnr = bufnr,
+					filter = function(cl)
+						return cl.name == "null-ls"
+					end,
+				})
 			end,
 		})
 	end
+end
+
+M.on_attach = function(client, bufnr)
 	require("plugins.configs.lspconfig").on_attach(client, bufnr)
-	client.server_capabilities.documentFormattingProvider = allowFormat
 end
 
 M.setup = function()
-	require("plugins.configs.lspconfig")
-
 	local capabilities = require("plugins.configs.lspconfig").capabilities
 
 	require("mason").setup()
@@ -49,6 +53,7 @@ M.setup = function()
 			capabilities = capabilities,
 		})
 	end
+	require("plugins.configs.lspconfig")
 end
 
 M.null_ls = function()
@@ -57,7 +62,13 @@ M.null_ls = function()
 		automatic_setup = true,
 		ensure_installed = formatters,
 	})
-	require("null-ls").setup()
+	local null_ls = require("null-ls")
+	null_ls.setup({
+		on_attach = M.on_attach_format,
+		sources = {
+			require("custom.utils").merge_tb(null_ls.builtins.formatting.prettier, { filetypes = { "postcss" } }),
+		},
+	})
 	require("mason-null-ls").setup_handlers()
 end
 
