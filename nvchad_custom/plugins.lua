@@ -99,6 +99,30 @@ local plugins = {
 		"mg979/vim-visual-multi",
 		event = "BufEnter",
 	},
+	{
+		"folke/todo-comments.nvim",
+		dependencies = { "nvim-lua/plenary.nvim" },
+		event = { "BufReadPre" },
+		config = function()
+			require("custom.configs.todo-comments").setup()
+		end,
+	},
+	{
+		"imsnif/kdl.vim",
+		-- lazy = false,
+		event = { "BufEnter *.kdl" },
+	},
+	{
+		"folke/zen-mode.nvim",
+		cmd = "ZenMode",
+		config = function()
+			require("zen-mode").setup({
+				window = {
+					width = 0.8,
+				},
+			})
+		end,
+	},
 }
 
 return plugins

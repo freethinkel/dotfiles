@@ -9,6 +9,13 @@ require("telescope").load_extension("flutter")
 flutter_tools.setup({
 	lsp = {
 		on_attach = require("custom.configs.lspconfig").on_attach,
+		color = {
+			enabled = true,
+			background = false,
+			foreground = false,
+			virtual_text = true,
+			virtual_text_str = "■",
+		},
 	},
 	debugger = {
 		enabled = true,

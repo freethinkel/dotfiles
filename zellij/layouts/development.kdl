@@ -6,12 +6,15 @@ layout {
         }
     }
 
-    // tab focus=true {
-    //     pane borderless=true {
-    //       command "lvim"
-    //     }
-    //     pane size="20%"
-    // }
+    tab focus=true name="editor" {
+        pane borderless=true {
+          command "nvim"
+        }
+    }
+    tab name="terminal" {
+        pane
+        pane size="20%"
+    }
 }
 
 keybinds {
