@@ -17,6 +17,14 @@ M.general = {
 	},
 }
 
+-- M.tabufline = {
+-- 	n = {
+-- 		["H"] = {
+-- 			function() end,
+-- 		},
+-- 	},
+-- }
+
 M.telescope = {
 	n = {
 		["<C-p>"] = {
@@ -108,6 +116,17 @@ M.dap = {
 				end
 			end,
 			"Start debugger",
+		},
+	},
+}
+
+M.spectre = {
+	n = {
+		["<leader>fs"] = {
+			function()
+				require("custom.configs.spectre").open()
+			end,
+			"Find and replace",
 		},
 	},
 }

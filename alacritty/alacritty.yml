@@ -13,12 +13,10 @@ font:
   # mac_use_thin_fonts: true
   # use_thin_font: true
   size: 14
-  glyph_offset:
-    x: 0
-    y: 3
   offset:
-    x: 0
-    y: 3
+    y: 14
+  glyph_offset:
+    y: 9
   normal:
     # family: FiraCode Nerd Font
     # family: JetBrainsMono Nerd Font

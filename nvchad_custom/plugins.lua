@@ -1,6 +1,6 @@
 local overrides = require("custom.configs.overrides")
 
----@type NvPluginSpec[]
+---@type NvPluginS()
 local plugins = {
 	{
 		"williamboman/mason.nvim",
@@ -114,6 +114,12 @@ local plugins = {
 	{
 		"stephenway/postcss.vim",
 		ft = "postcss",
+	},
+	{
+		"nvim-pack/nvim-spectre",
+		config = function()
+			require("custom.configs.spectre").setup()
+		end,
 	},
 	{
 		"folke/zen-mode.nvim",
