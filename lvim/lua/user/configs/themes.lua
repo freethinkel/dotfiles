@@ -17,6 +17,15 @@ M.themes = {
   gruvbox_material = function()
     lvim.colorscheme = "gruvbox-material"
     vim.o.background = "dark"
+  end,
+  oxocarbon = function()
+    lvim.colorscheme = "oxocarbon";
+  end,
+  mountain = function()
+    lvim.colorscheme = "mountain"
+  end,
+  nord = function()
+    lvim.colorscheme = "nord"
   end
 }
 

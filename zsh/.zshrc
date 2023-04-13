@@ -76,3 +76,4 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 export PATH="${PATH}:/Users/freethinkel/Library/Python/3.10/lib/python/site-packages"
 export PATH="$PATH":"$HOME/.pub-cache/bin"
 export PATH="$WASMTIME_HOME/bin:$PATH"
+export PATH=$PATH:/Users/freethinkel/.spicetify

@@ -64,9 +64,9 @@ const main = () => {
     return;
   }
 
-  const filtered = windows.filter(
-    (window) => window.app.toLowerCase()[0] === command
-  );
+  const filtered = windows
+    .filter((window) => window.app.toLowerCase()[0] === command)
+    .sort((a, b) => a.id - b.id);
 
   const selectedApp = rotateArr(
     filtered,

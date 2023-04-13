@@ -32,7 +32,7 @@ yabai -m space 5 --label term
 # global settings
 yabai -m config mouse_follows_focus          off
 yabai -m config focus_follows_mouse          off
-yabai -m config window_border_radius         1
+yabai -m config window_border_radius         12
 yabai -m config window_placement             second_child
 yabai -m config window_topmost               off
 # yabai -m config window_shadow                float
@@ -41,7 +41,7 @@ yabai -m config window_opacity               off
 yabai -m config window_opacity_duration      0.1
 yabai -m config active_window_opacity        0.98
 yabai -m config normal_window_opacity        0.8
-yabai -m config window_border                off
+yabai -m config window_border                on
 yabai -m config window_border_width          4
 yabai -m config active_window_border_color   0xff81A1C1
 yabai -m config normal_window_border_color   0xff434C5E
@@ -56,7 +56,7 @@ yabai -m config mouse_drop_action            swap
 
 # general space settings
 yabai -m config layout                       bsp
-yabai -m config external_bar                 all:40:0
+# yabai -m config external_bar                 all:40:0
 yabai -m config top_padding                  8
 yabai -m config bottom_padding               8
 yabai -m config left_padding                 8

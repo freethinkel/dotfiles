@@ -47,6 +47,17 @@ lvim.plugins = {
     end,
   },
   {
+    "mountain-theme/vim",
+    lazy = false
+  },
+  {
+    "RRethy/nvim-base16",
+    config = function()
+      require("playground.themes.cheber").setup()
+    end
+  },
+  { "shaunsingh/nord.nvim" },
+  {
     "folke/todo-comments.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     event = { "BufReadPre" },
