@@ -189,11 +189,11 @@ local plugins = {
     end,
   },
   -- THEMES
-  { 'rose-pine/neovim', name = 'rose-pine' },
-  -- { "freethinkel/oshmes.nvim", },
-  {
-    dir = "~/Developer/dev/pet/oshmes.nvim/",
-  },
+  { 'rose-pine/neovim',        name = 'rose-pine' },
+  { "freethinkel/oshmes.nvim", },
+  -- {
+  --   dir = "~/Developer/dev/pet/oshmes.nvim/",
+  -- },
   {
     "folke/tokyonight.nvim",
     lazy = false,
