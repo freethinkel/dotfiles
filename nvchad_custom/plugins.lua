@@ -1,59 +1,29 @@
 local overrides = require("custom.configs.overrides")
 
----@type NvPluginS()
+---@type NvPluginSpec[]
 local plugins = {
-	{
-		"williamboman/mason.nvim",
-		dependencies = { "williamboman/mason-lspconfig.nvim", "neovim/nvim-lspconfig" },
-		lazy = false,
-		build = ":MasonUpdate",
-		config = function()
-			require("custom.configs.lspconfig").setup()
-		end,
-	},
-	{
-		"jay-babu/mason-null-ls.nvim",
-		lazy = false,
-		dependencies = {
-			"williamboman/mason.nvim",
-			"jose-elias-alvarez/null-ls.nvim",
-		},
-		config = function()
-			require("custom.configs.lspconfig").null_ls()
-		end,
-	},
-	{
-		"glepnir/lspsaga.nvim",
-		lazy = false,
-		config = function()
-			require("custom.configs.lspconfig").lspsaga()
-		end,
-		dependencies = {
-			{ "nvim-tree/nvim-web-devicons" },
-			{ "nvim-treesitter/nvim-treesitter" },
-		},
-	},
-	{
-		"nvim-treesitter/nvim-treesitter",
-		opts = overrides.treesitter,
-	},
+
+	-- Override plugin definition options
 
 	{
-		"nvim-tree/nvim-tree.lua",
-		opts = overrides.nvimtree,
-	},
-	{
-		"max397574/better-escape.nvim",
-		event = "InsertEnter",
+		"neovim/nvim-lspconfig",
+		dependencies = {
+			-- format & linting
+			{
+				"jose-elias-alvarez/null-ls.nvim",
+				config = function()
+					require("custom.configs.null-ls")
+				end,
+			},
+		},
 		config = function()
-			require("better_escape").setup()
-		end,
+			require("plugins.configs.lspconfig")
+			require("custom.configs.lspconfig")
+		end, -- Override to setup mason-lspconfig
 	},
-	{ "stephenway/postcss.vim" },
-
 	{
 		"akinsho/flutter-tools.nvim",
-		lazy = false,
+		ft = "dart",
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			"stevearc/dressing.nvim",
@@ -66,72 +36,52 @@ local plugins = {
 		"rcarriga/nvim-dap-ui",
 		dependencies = { "mfussenegger/nvim-dap" },
 		config = function()
-			require("custom.configs.dap").setup_ui()
+			-- require("custom.configs.dap").setup_ui()
 		end,
+	},
+	-- override plugin configs
+	{
+		"williamboman/mason.nvim",
+		opts = overrides.mason,
+	},
+
+	{
+		"nvim-treesitter/nvim-treesitter",
+		opts = overrides.treesitter,
+	},
+
+	{
+		"nvim-tree/nvim-tree.lua",
+		opts = overrides.nvimtree,
 	},
 	{
 		"lewis6991/gitsigns.nvim",
 		opts = overrides.gitsigns,
 	},
+
+	-- Install a plugin
 	{
-		"sindrets/diffview.nvim",
-		dependencies = { "nvim-lua/plenary.nvim" },
-		lazy = false,
+		"max397574/better-escape.nvim",
+		event = "InsertEnter",
 		config = function()
-			require("custom.configs.git").diffview()
+			---@diagnostic disable-next-line: different-requires
+			require("better_escape").setup()
 		end,
 	},
-	{
-		"NvChad/base46",
-		lazy = false,
-		config = function()
-			require("custom.highlights").override_hightlight()
-		end,
-	},
-	{
-		"aserowy/tmux.nvim",
-		lazy = false,
-		config = function()
-			require("tmux").setup()
-		end,
-	},
-	{
-		"mg979/vim-visual-multi",
-		event = "BufEnter",
-	},
-	{
-		"folke/todo-comments.nvim",
-		dependencies = { "nvim-lua/plenary.nvim" },
-		event = { "BufReadPre" },
-		config = function()
-			require("custom.configs.todo-comments").setup()
-		end,
-	},
-	{
-		"imsnif/kdl.vim",
-		event = { "BufEnter *.kdl" },
-	},
-	{
-		"stephenway/postcss.vim",
-		ft = "postcss",
-	},
-	{
-		"nvim-pack/nvim-spectre",
-		config = function()
-			require("custom.configs.spectre").setup()
-		end,
-	},
-	{
-		"folke/zen-mode.nvim",
-		cmd = "ZenMode",
-		config = function()
-			require("zen-mode").setup({
-				window = {
-					width = 0.8,
-				},
-			})
-		end,
-	},
+
+	-- To make a plugin not be loaded
+	-- {
+	--   "NvChad/nvim-colorizer.lua",
+	--   enabled = false
+	-- },
+
+	-- All NvChad plugins are lazy-loaded by default
+	-- For a plugin to be loaded, you will need to set either `ft`, `cmd`, `keys`, `event`, or set `lazy = false`
+	-- If you want a plugin to load on startup, add `lazy = false` to a plugin spec, for example
+	-- {
+	--   "mg979/vim-visual-multi",
+	--   lazy = false,
+	-- }
 }
 
 return plugins

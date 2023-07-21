@@ -1,92 +1,36 @@
 local M = {}
+local on_attach_core = require("plugins.configs.lspconfig").on_attach
+local capabilities = require("plugins.configs.lspconfig").capabilities
 
-local lsps = {
-	"lua_ls",
-	"tsserver",
-	"eslint",
-	"jsonls",
-	"emmet_ls",
+local lspconfig = require("lspconfig")
 
-	-- web dev stuff
-	"cssls",
-	"html",
-}
+-- if you just want default config for the servers then put them in a table
+local servers = { "html", "cssls", "tsserver", "clangd", "eslint" }
 
-local formatters = { "prettier", "stylua" }
-
-M.on_attach_format = function(client, bufnr)
-	if client.server_capabilities.documentFormattingProvider then
+M.on_attach = function(client, bufnr)
+	print(client.server_capabilities.documentFormattingProvider)
+	if
+		client.server_capabilities.documentFormattingProvider
+		or client.server_capabilities.documentRangeFormattingProvider
+	then
 		vim.api.nvim_create_autocmd("BufWritePre", {
 			desc = "Auto format before save",
 			callback = function()
-				vim.lsp.buf.format({
-					timeout = 1000,
-					bufnr = bufnr,
-					filter = function(cl)
-						return cl.name == "null-ls"
-					end,
-				})
+				vim.lsp.buf.format()
 			end,
 		})
 	end
+	on_attach_core(client, bufnr)
 end
 
-M.on_attach = function(client, bufnr)
-	require("plugins.configs.lspconfig").on_attach(client, bufnr)
-end
-
-M.setup = function()
-	local capabilities = require("plugins.configs.lspconfig").capabilities
-
-	require("mason").setup()
-	require("mason-lspconfig").setup({
-		ensure_installed = lsps,
-	})
-
-	local servers = require("mason-lspconfig").get_installed_servers()
-
-	local lspconfig = require("lspconfig")
-
-	for _, server in pairs(servers) do
-		lspconfig[server].setup({
-			on_attach = M.on_attach,
-			capabilities = capabilities,
-		})
-	end
-	require("plugins.configs.lspconfig")
-end
-
-M.null_ls = function()
-	require("mason").setup()
-	require("mason-null-ls").setup({
-		automatic_setup = true,
-		ensure_installed = formatters,
-	})
-	local null_ls = require("null-ls")
-	null_ls.setup({
-		on_attach = M.on_attach_format,
-		sources = {
-			require("custom.utils").merge_tb(null_ls.builtins.formatting.prettier, { filetypes = { "postcss" } }),
-		},
-	})
-	require("mason-null-ls").setup_handlers()
-end
-
-M.lspsaga = function()
-	require("lspsaga").setup({
-		ui = {
-			code_action = "",
-			title = true,
-			border = "single",
-			winblend = 0,
-			expand = "",
-			collapse = "",
-			incoming = " ",
-			outgoing = " ",
-			hover = " ",
-			kind = {},
-		},
+for _, lsp in ipairs(servers) do
+	lspconfig[lsp].setup({
+		on_attach = M.on_attach,
+		capabilities = capabilities,
 	})
 end
 
 return M
+
+--
+-- lspconfig.pyright.setup { blabla}

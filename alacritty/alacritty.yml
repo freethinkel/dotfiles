@@ -1,10 +1,10 @@
 window:
-  decorations: buttonless
-  opacity: 1
+  decorations: transparent
+  opacity: 0.5
   padding:
     x: 10
     y: 10
-# dynamic_padding: true
+  # dynamic_padding: true
 
 font:
   # builtin_box_drawing: true
@@ -21,6 +21,7 @@ font:
     # family: FiraCode Nerd Font
     # family: JetBrainsMono Nerd Font
     family: Iosevka Nerd Font
+    # family: MonoLisa
     style: Light
 
 key_bindings:
@@ -827,4 +828,4 @@ oxocarbon: &oxocarbon
     cyan: "#3ddbd9"
     white: "#ffffff"
 
-colors: *nord
+colors: *gruvbox

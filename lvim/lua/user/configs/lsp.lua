@@ -2,8 +2,8 @@ local M = {}
 
 M.setup = function()
   lvim.lsp.installer.setup.ensure_installed = {
-    "sumneko_lua",
-    "tsserver",
+    "lua_ls",
+     "tsserver",
     "eslint",
     "jsonls",
   }
@@ -25,6 +25,7 @@ M.setup = function()
   require("lvim.lsp.manager").setup("angularls")
   require("lvim.lsp.manager").setup("emmet_ls")
   require("lvim.lsp.manager").setup("rust_analyzer")
+  -- require("lvim.lsp.null-ls.linters").setup()
 end
 
 M.lspsaga = function()

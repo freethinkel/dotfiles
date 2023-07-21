@@ -2,10 +2,10 @@ local M = {}
 
 M.themes = {
   tokyonight = function()
-    lvim.colorscheme                                  = "tokyonight"
-    lvim.builtin.theme.name                           = "tokyonight"
-    lvim.builtin.theme.tokyonight.options.style       = "night"
-    lvim.builtin.theme.tokyonight.options.transparent = true
+    lvim.colorscheme                            = "tokyonight"
+    lvim.builtin.theme.name                     = "tokyonight"
+    lvim.builtin.theme.tokyonight.options.style = "night"
+    -- lvim.builtin.theme.tokyonight.options.transparent = true
   end,
   catppuccin = function()
     lvim.colorscheme = "catppuccin-frappe"
@@ -26,6 +26,16 @@ M.themes = {
   end,
   nord = function()
     lvim.colorscheme = "nord"
+    lvim.transparent_window = true
+  end,
+  monochrome = function()
+    lvim.colorscheme = "base16-grayscale-dark"
+  end,
+  rose_pine = function()
+    lvim.colorscheme = "rose-pine"
+  end,
+  oshmes = function()
+    lvim.colorscheme = "oshmes-dark"
   end
 }
 

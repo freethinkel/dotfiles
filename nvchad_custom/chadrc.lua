@@ -5,18 +5,18 @@ local M = {}
 local highlights = require("custom.highlights")
 
 M.ui = {
-	theme = "tokyonight",
-	theme_toggle = { "tokyonight", "one_light" },
-
-	hl_override = highlights.override,
-	hl_add = highlights.add,
-	nvdash = {
-		load_on_startup = true,
-	},
+  theme = "ayu_dark",
+  theme_toggle = { "ayu_dark", "one_light" },
+  nvdash = {
+    load_on_startup = true,
+  },
+  hl_override = highlights.override,
+  hl_add = highlights.add,
 }
 
 M.plugins = "custom.plugins"
 
+-- check core.mappings for table structure
 M.mappings = require("custom.mappings")
 
 return M

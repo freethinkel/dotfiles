@@ -13,5 +13,11 @@
         "${3rd}/luassert/library",
         "/Users/freethinkel/.local/share/lunarvim/site/pack/lazy/opt/plenary.nvim/lua",
         "${3rd}/luv/library"
+    ],
+    "diagnostics.disable": [
+        "undefined-field",
+        "need-check-nil",
+        "redundant-parameter",
+        "different-requires"
     ]
 }
