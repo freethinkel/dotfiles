@@ -7,3 +7,4 @@ lazygit/state.yml
 vimchik/plugin
 
 *.log
+.env

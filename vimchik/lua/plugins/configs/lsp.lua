@@ -37,9 +37,16 @@ M.setup = function()
   })
 
   local servers = require("mason-lspconfig").get_installed_servers()
+  vim.print(servers)
 
   for _, server in pairs(servers) do
-    M.setup_server(server, {})
+    if (server == "stylelint_lsp") then
+      M.setup_server(server, {
+        filetypes = { "css", "sass", "scss", "postcss" }
+      })
+    else
+      M.setup_server(server, {})
+    end
   end
 end
 

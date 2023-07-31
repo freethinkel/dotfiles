@@ -4,4 +4,5 @@ lvim.builtin.gitsigns.opts.signs.untracked    = {
   numhl = "GitSignsAddNr",
   linehl = "GitSignsAddLn",
 }
+
 lvim.builtin.gitsigns.opts.current_line_blame = true

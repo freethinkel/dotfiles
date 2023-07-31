@@ -5,6 +5,7 @@ config.color_scheme = "Catppuccin Frappe"
 
 config.font = wezterm.font('Iosevka Nerd Font')
 config.font_size = 14.0
+config.line_height = 1.6
 config.window_background_opacity = 0.9
 config.macos_window_background_blur = 60
 config.enable_tab_bar = false

@@ -1,4 +1,5 @@
-lvim.plugins = { { "mg979/vim-visual-multi" },
+lvim.plugins = {
+  { "mg979/vim-visual-multi" },
   { "christoomey/vim-tmux-navigator" },
   { "sainnhe/gruvbox-material" },
   {
@@ -49,11 +50,9 @@ lvim.plugins = { { "mg979/vim-visual-multi" },
     "mountain-theme/vim",
     lazy = false
   },
+  -- OWN THEME
   {
     dir = "~/Developer/dev/pet/oshmes.nvim/",
-  },
-  {
-    "RRethy/nvim-base16",
   },
   { "shaunsingh/nord.nvim" },
   { 'rose-pine/neovim',    name = 'rose-pine' },
@@ -65,4 +64,5 @@ lvim.plugins = { { "mg979/vim-visual-multi" },
       require("user.configs.todo-comments").setup()
     end,
   },
+  { "nvim-treesitter/playground" }
 }

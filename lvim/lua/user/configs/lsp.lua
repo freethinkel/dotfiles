@@ -3,7 +3,7 @@ local M = {}
 M.setup = function()
   lvim.lsp.installer.setup.ensure_installed = {
     "lua_ls",
-     "tsserver",
+    "tsserver",
     "eslint",
     "jsonls",
   }

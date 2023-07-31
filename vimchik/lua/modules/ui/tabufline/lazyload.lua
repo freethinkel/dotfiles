@@ -32,7 +32,11 @@ vim.api.nvim_create_autocmd({ "BufAdd", "BufEnter", "tabnew" }, {
         table.insert(bufs, args.buf)
 
         -- remove unnamed buffer which isnt current buf & modified
-        for index, bufnr in ipairs(bufs) do
+        local status = pcall(vim.api.nvim_buf_get_name, bufs)
+        if (not status) then
+          return
+        end
+        for index, bufnr in ipairs(bus) do
           if
               #vim.api.nvim_buf_get_name(bufnr) == 0
               and (vim.api.nvim_get_current_buf() ~= bufnr or bufs[index + 1])

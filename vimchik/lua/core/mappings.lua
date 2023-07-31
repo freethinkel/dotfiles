@@ -38,9 +38,9 @@ M.explorer = {
 M.tabufline = {
   plugin = true,
   n = {
-    ["H"] = { function() require("core.ui.tabufline").tabuflinePrev() end, "Tab prev" },
-    ["L"] = { function() require("core.ui.tabufline").tabuflineNext() end, "Tab next" },
-    ["<leader>c"] = { function() require("core.ui.tabufline").close_buffer() end, "Tab next" },
+    ["H"] = { function() require("modules.ui.tabufline").tabuflinePrev() end, "Tab prev" },
+    ["L"] = { function() require("modules.ui.tabufline").tabuflineNext() end, "Tab next" },
+    ["<leader>c"] = { function() require("modules.ui.tabufline").close_buffer() end, "Tab next" },
   }
 }
 

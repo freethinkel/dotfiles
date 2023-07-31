@@ -30,7 +30,7 @@ lvim.builtin.which_key.mappings["l"]["k"]  = {
 }
 lvim.lsp.buffer_mappings.normal_mode["gd"] = { "<cmd>Lspsaga goto_definition<cr>", "Goto definitions" }
 lvim.lsp.buffer_mappings.normal_mode["gp"] = { "<cmd>Lspsaga peek_definition<cr>", "Peek definitions" }
-lvim.lsp.buffer_mappings.normal_mode["gr"] = { "<cmd>Lspsaga lsp_finder<cr>", "Goto references" }
+lvim.lsp.buffer_mappings.normal_mode["gr"] = { "<cmd>Lspsaga finder<cr>", "Goto references" }
 lvim.lsp.buffer_mappings.normal_mode["K"]  = { "<cmd>Lspsaga hover_doc<cr>", "Show hover" }
 
 lvim.builtin.which_key.mappings["F"]       = {

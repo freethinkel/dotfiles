@@ -199,7 +199,8 @@ local plugins = {
     lazy = false,
     priority = 1000,
     opts = {},
-  }
+  },
+
 }
 
 return plugins;
