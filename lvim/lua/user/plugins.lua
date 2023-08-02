@@ -55,7 +55,8 @@ lvim.plugins = {
     dir = "~/Developer/dev/pet/oshmes.nvim/",
   },
   { "shaunsingh/nord.nvim" },
-  { 'rose-pine/neovim',    name = 'rose-pine' },
+  { 'rose-pine/neovim',               name = 'rose-pine' },
+  { "olivercederborg/poimandres.nvim" },
   {
     "folke/todo-comments.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },

@@ -40,6 +40,9 @@ M.themes = {
   monokai_pro = function()
     M.monokai_pro()
     lvim.colorscheme = "monokai-pro-default"
+  end,
+  poimandres = function()
+    lvim.colorscheme = "poimandres"
   end
 }
 
