@@ -25,6 +25,7 @@ M.setup = function()
     filetypes = { "css", "scss", "sass", "pcss", "postcss" }
   })
   require("lvim.lsp.manager").setup("cssmodules_ls")
+  require("lvim.lsp.manager").setup("cssls")
   require("lvim.lsp.manager").setup("eslint")
   require("lvim.lsp.manager").setup("angularls")
   require("lvim.lsp.manager").setup("emmet_ls")
