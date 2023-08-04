@@ -15,11 +15,15 @@ M.setup = function()
     {
       command = "prettier",
       extra_args = { "--print-with", "100" },
-      filetypes = { "typescript", "typescriptreact", "html", "css", "postcss", "javascript", "javascriptreact" },
+      filetypes = { "typescript", "typescriptreact", "html", "css", "scss", "sass", "pcss", "postcss", "javascript",
+        "javascriptreact" },
     },
   })
 
   require("lvim.lsp.manager").setup("lua_ls")
+  require("lvim.lsp.manager").setup("stylelint_lsp", {
+    filetypes = { "css", "scss", "sass", "pcss", "postcss" }
+  })
   require("lvim.lsp.manager").setup("cssmodules_ls")
   require("lvim.lsp.manager").setup("eslint")
   require("lvim.lsp.manager").setup("angularls")
