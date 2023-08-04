@@ -39,6 +39,8 @@ lvim.builtin.nvimtree.setup.tab.sync.open           = true
 lvim.builtin.nvimtree.setup.tab.sync.close          = true
 lvim.builtin.nvimtree.setup.git.timeout             = 500
 
+lvim.builtin.dap.ui.config.layouts[1].position      = "left"
+
 -- lvim.builtin.nvimtree.setup.renderer.icons.webdev_colors = false
 
 require("user.configs.gitsigns")

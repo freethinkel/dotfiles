@@ -65,5 +65,11 @@ lvim.plugins = {
       require("user.configs.todo-comments").setup()
     end,
   },
-  { "nvim-treesitter/playground" }
+  { "nvim-treesitter/playground" },
+  {
+    "phaazon/hop.nvim",
+    config = function()
+      require("user.configs.hop").setup()
+    end
+  }
 }

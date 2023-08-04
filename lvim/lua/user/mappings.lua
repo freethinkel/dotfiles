@@ -8,6 +8,9 @@ lvim.keys.normal_mode["<S-h>"]             = ":BufferLineCyclePrev<CR>"
 
 lvim.keys.normal_mode["<C-p>"]             = ":Telescope<cr>"
 
+-- HOP
+lvim.keys.normal_mode["fw"]                = ":HopChar1<cr>"
+
 lvim.builtin.which_key.mappings["l"]["a"]  = {
   "<cmd>Lspsaga code_action<cr>",
   "Code actions",
