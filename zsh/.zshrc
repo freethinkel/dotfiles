@@ -38,6 +38,7 @@ alias :qa="exit"
 alias tdev="tmux new -s DEV || tmux attach-session -t DEV"
 alias zr="zellij-runner"
 alias colors="msgcat --color=test"
+alias baresip="/opt/homebrew/Cellar/baresip/3.3.0/bin/baresip"
 
 # make sure gum is installed (brew install gum)
 function gch() {

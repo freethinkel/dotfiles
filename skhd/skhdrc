@@ -10,11 +10,13 @@ ctrl - return : /Applications/kitty.app/Contents/MacOS/kitty ~
 # ctrl - return : open /Applications/Cheber\ Terminal.app
 # ctrl - return : /Applications/Inmar.app/Contents/MacOS/inmar
 
-rcmd + alt - space : yabai -m window --toggle float 
-rcmd + alt - c : yabai -m window --toggle float; yabai -m window --grid 1:6:1:1:4:1
-rcmd + alt - f : yabai -m window --toggle zoom-fullscreen
+cmd + ctrl - space : yabai -m window --toggle float 
+cmd + ctrl - k : yabai -m window --toggle zoom-fullscreen
+cmd + ctrl - j : yabai -m window --toggle float; yabai -m window --grid 1:6:1:1:4:1
+cmd + ctrl - l : yabai -m window --resize bottom_right:50:0; yabai -m window --resize bottom_left:50:0
+cmd + ctrl - h : yabai -m window --resize bottom_right:-50:0; yabai -m window --resize bottom_left:-50:0
 
-rcmd - 0x2B : ~/Developer/dev/dotfiles/bin/rcmd toggle_layout
+# rcmd - 0x2B : ~/Developer/dev/dotfiles/bin/rcmd toggle_layout
 
 rcmd - a : ~/Developer/dev/dotfiles/bin/rcmd a
 rcmd - b : ~/Developer/dev/dotfiles/bin/rcmd b
@@ -27,11 +29,14 @@ rcmd - s : ~/Developer/dev/dotfiles/bin/rcmd s
 rcmd - v : ~/Developer/dev/dotfiles/bin/rcmd v
 rcmd - z : ~/Developer/dev/dotfiles/bin/rcmd z
 
-rcmd - 1 : yabai -m space --focus 1
-rcmd - 2 : yabai -m space --focus 2
-rcmd - 3 : yabai -m space --focus 3
-rcmd - 4 : yabai -m space --focus 4
-rcmd - 5 : yabai -m space --focus 5
-rcmd - 6 : yabai -m space --focus 6
-rcmd - 7 : yabai -m space --focus 7
-rcmd - 8 : yabai -m space --focus 8
+cmd + ctrl - 1 : yabai -m space --focus 1
+cmd + ctrl - 2 : yabai -m space --focus 2
+cmd + ctrl - 3 : yabai -m space --focus 3
+cmd + ctrl - 4 : yabai -m space --focus 4
+cmd + ctrl - 5 : yabai -m space --focus 5
+cmd + ctrl - 6 : yabai -m space --focus 6
+cmd + ctrl - 7 : yabai -m space --focus 7
+cmd + ctrl - 8 : yabai -m space --focus 8
+
+# Toggle Picture-in-Picture for the current window
+fn - p : yabai -m window --toggle pip

@@ -71,5 +71,13 @@ lvim.plugins = {
     config = function()
       require("user.configs.hop").setup()
     end
+  },
+  {
+    "nvim-pack/nvim-spectre",
+    config = function()
+      require("user.configs.spectre").setup()
+    end
   }
 }
+
+require("user.configs.dap_ui")

@@ -36,6 +36,7 @@ M.themes = {
   end,
   oshmes = function()
     lvim.colorscheme = "oshmes-dark"
+    -- lvim.transparent_window = true
   end,
   monokai_pro = function()
     M.monokai_pro()

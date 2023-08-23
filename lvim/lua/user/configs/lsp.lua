@@ -52,7 +52,6 @@ M.lspsaga = function()
 end
 
 M.flutter = function()
-  require("telescope").load_extension("flutter")
   require("flutter-tools").setup({
     lsp = {
       on_attach = require("lvim.lsp").common_on_attach,
@@ -70,13 +69,14 @@ M.flutter = function()
       exception_breakpoints = {},
       register_configurations = function(_)
         require("dap").configurations.dart = {}
-        require("dap.ext.vscode").load_launchjs()
+        require("dap.ext.vscode").load_launchjs(require("flutter-tools.lsp").get_lsp_root_dir() .. "/.vscode/launch.json")
       end,
     },
     dev_log = {
       enabled = false,
     },
   })
+  require("telescope").load_extension("flutter")
 end
 
 return M

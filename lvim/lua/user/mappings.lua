@@ -36,8 +36,12 @@ lvim.lsp.buffer_mappings.normal_mode["gp"] = { "<cmd>Lspsaga peek_definition<cr>
 lvim.lsp.buffer_mappings.normal_mode["gr"] = { "<cmd>Lspsaga finder<cr>", "Goto references" }
 lvim.lsp.buffer_mappings.normal_mode["K"]  = { "<cmd>Lspsaga hover_doc<cr>", "Show hover" }
 
-lvim.builtin.which_key.mappings["F"]       = {
+
+lvim.builtin.which_key.mappings["fr"]     = { function() require("spectre").open() end, "Spectre" }
+
+lvim.builtin.which_key.mappings["F"]      = {
   name = "Flutter",
+  F = { function() require('telescope').extensions.flutter.commands() end, "Flutter commands" },
   e = { ":FlutterEmulators<cr>", "FlutterEmulators" },
   r = { ":FlutterRun<cr>", "FlutterRun" },
   q = { ":FlutterQuit<cr>", "FlutterQuit" },
@@ -45,7 +49,7 @@ lvim.builtin.which_key.mappings["F"]       = {
   C = { ":FlutterLogClear<cr>", "FlutterLogClear" },
 }
 
-lvim.builtin.which_key.mappings["g"]["h"]  = {
+lvim.builtin.which_key.mappings["g"]["h"] = {
   function()
     local view = require("diffview.lib").get_current_view()
     if view then
@@ -56,7 +60,7 @@ lvim.builtin.which_key.mappings["g"]["h"]  = {
   end,
   "Git file history",
 }
-lvim.builtin.which_key.mappings['g']['m']  = {
+lvim.builtin.which_key.mappings['g']['m'] = {
   function()
     local view = require("diffview.lib").get_current_view()
     if view then
@@ -68,7 +72,7 @@ lvim.builtin.which_key.mappings['g']['m']  = {
   "Toggle Diffview",
 }
 
-lvim.builtin.which_key.mappings['d']['s']  = {
+lvim.builtin.which_key.mappings['d']['s'] = {
   function()
     if vim.bo.filetype == "dart" then
       vim.cmd("FlutterRun")
