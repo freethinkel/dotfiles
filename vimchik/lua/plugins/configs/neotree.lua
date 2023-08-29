@@ -1,5 +1,3 @@
-local utils = require("core.utils")
-
 require("neo-tree").setup({
   popup_border_style = "rounded",
   enable_git_status = true,
@@ -93,6 +91,8 @@ require("neo-tree").setup({
       noremap = true,
       nowait = true,
     },
-    mappings = {}
+    mappings = {
+      ["l"] = "open"
+    }
   }
 })

@@ -15,6 +15,8 @@ cmd + ctrl - k : yabai -m window --toggle zoom-fullscreen
 cmd + ctrl - j : yabai -m window --toggle float; yabai -m window --grid 1:6:1:1:4:1
 cmd + ctrl - l : yabai -m window --resize bottom_right:50:0; yabai -m window --resize bottom_left:50:0
 cmd + ctrl - h : yabai -m window --resize bottom_right:-50:0; yabai -m window --resize bottom_left:-50:0
+cmd + ctrl - left : yabai -m window --swap west
+cmd + ctrl - right : yabai -m window --swap east
 
 # rcmd - 0x2B : ~/Developer/dev/dotfiles/bin/rcmd toggle_layout
 

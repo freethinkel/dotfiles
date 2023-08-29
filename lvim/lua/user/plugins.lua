@@ -54,6 +54,9 @@ lvim.plugins = {
   {
     dir = "~/Developer/dev/pet/oshmes.nvim/",
   },
+  -- {
+  --   "freethinkel/oshmes.nvim"
+  -- },
   { "shaunsingh/nord.nvim" },
   { 'rose-pine/neovim',               name = 'rose-pine' },
   { "olivercederborg/poimandres.nvim" },

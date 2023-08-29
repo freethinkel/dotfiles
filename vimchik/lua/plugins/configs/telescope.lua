@@ -1,4 +1,3 @@
----@diagnostic disable: redundant-parameter
 require("telescope").setup({
   defaults = {
     vimgrep_arguments = {

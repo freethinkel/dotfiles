@@ -30,7 +30,7 @@ alias ssh_fix="eval \"$(ssh-agent -s)\" && ssh-add ~/.ssh/id_ed25519"
 alias cls="clear"
 alias ls="exa"
 alias lvim="$HOME/.local/bin/lvim"
-alias vim="lvim"
+alias vim="nvim"
 alias vimconfig="vim ~/.config/nvim/"
 alias v="vim"
 alias cat="bat"
@@ -64,7 +64,7 @@ function commit() {
 
 # Bun
 export BUN_INSTALL="/Users/freethinkel/.bun"
-export EDITOR="lvim"
+export EDITOR="vim"
 
 # pnpm
 export PNPM_HOME="/Users/freethinkel/Library/pnpm"

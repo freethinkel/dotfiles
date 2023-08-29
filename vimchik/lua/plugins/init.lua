@@ -11,7 +11,7 @@ local plugins = {
     branch = "v2.x",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+      "nvim-tree/nvim-web-devicons",
       "MunifTanjim/nui.nvim",
     },
     config = function()
@@ -19,6 +19,10 @@ local plugins = {
     end
   },
   -- LSP
+  {
+    "folke/neodev.nvim",
+    lazy = true,
+  },
   {
     "lewis6991/gitsigns.nvim",
     config = function()
@@ -68,7 +72,7 @@ local plugins = {
     "glepnir/lspsaga.nvim",
     event = "LspAttach",
     config = function()
-      require("plugins.configs.lsp").lspsaga()
+      -- require("plugins.configs.lsp").lspsaga()
     end,
     dependencies = {
       { "nvim-tree/nvim-web-devicons" },
@@ -82,8 +86,14 @@ local plugins = {
       require("plugins.configs.lsp").flutter()
     end,
   },
-  { "mfussenegger/nvim-dap" },
-  -- LSPEND
+  {
+    "rcarriga/nvim-dap-ui",
+    dependencies = { "mfussenegger/nvim-dap" },
+    config = function()
+      require("plugins.configs.dap");
+    end
+  },
+  -- LSPENDK
   {
     "aserowy/tmux.nvim",
     config = function()
@@ -180,27 +190,26 @@ local plugins = {
     "NvChad/nvim-colorizer.lua",
     config = function()
       require("plugins.configs.colorizer")
-      -- require("colorizer").setup(opts)
-
-      -- execute colorizer as soon as possible
-      -- vim.defer_fn(function()
-      --   require("colorizer").attach_to_buffer(0)
-      -- end, 0)
     end,
   },
   -- THEMES
-  { 'rose-pine/neovim',        name = 'rose-pine' },
-  { "freethinkel/oshmes.nvim", },
-  -- {
-  --   dir = "~/Developer/dev/pet/oshmes.nvim/",
-  -- },
+  { 'rose-pine/neovim', name = 'rose-pine' },
+  -- { "freethinkel/oshmes.nvim", },
+  {
+    dir = "~/Developer/dev/pet/oshmes.nvim/",
+  },
   {
     "folke/tokyonight.nvim",
     lazy = false,
     priority = 1000,
     opts = {},
   },
-
+  {
+    'akinsho/bufferline.nvim',
+    config = function()
+      require("plugins.configs.bufferline")
+    end
+  }
 }
 
 return plugins;

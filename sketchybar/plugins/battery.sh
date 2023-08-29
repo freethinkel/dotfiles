@@ -43,7 +43,7 @@ update() {
 
   [ "$CHARGING" != "" ] && ICON=${ICON_CHARGING}
 
-  sketchybar --set $NAME icon.color=$COLOR icon=$ICON
+  sketchybar --set $NAME label.color=$COLOR label=$ICON icon="$PERCENTAGE%" icon.color=$COLOR
 }
 
 mouse_clicked() {
