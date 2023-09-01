@@ -31,6 +31,7 @@ capabilities.textDocument.completion.completionItem = {
   resolveSupport = {
     properties = {
       "documentation",
+
       "detail",
       "additionalTextEdits",
     },
@@ -61,7 +62,6 @@ M.setup = function()
 end
 
 M.setup_servers = function()
-  M.setup_server("tsserver")
   M.setup_server("lua_ls", {
     settings = {
       Lua = {
@@ -93,16 +93,17 @@ M.setup_servers = function()
       },
     }
   })
+  M.setup_server("tsserver")
   M.setup_server("stylelint_lsp", {
     filetypes = { "css", "scss", "sass", "pcss", "postcss" }
   })
   M.setup_server("cssmodules_ls")
-
   M.setup_server("cssls")
   M.setup_server("eslint")
   M.setup_server("angularls")
   M.setup_server("emmet_ls")
   M.setup_server("rust_analyzer")
+  M.setup_server("svelte")
 end
 
 M.null_ls = function()

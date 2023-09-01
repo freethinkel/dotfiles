@@ -52,13 +52,32 @@ M.gitsigns = {
 	},
 	current_line_blame = true,
 }
-
 -- git support in nvimtree
 M.nvimtree = {
 	git = {
 		enable = true,
 	},
+	on_attach = function(bufnr)
+		local api = require("nvim-tree.api")
 
+		local function opts(desc)
+			return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+		end
+
+		local useful_keys = {
+			["l"] = { api.node.open.edit, opts("Open") },
+			["o"] = { api.node.open.edit, opts("Open") },
+			["<CR>"] = { api.node.open.edit, opts("Open") },
+			["v"] = { api.node.open.vertical, opts("Open: Vertical Split") },
+			["h"] = { api.node.navigate.parent_close, opts("Close Directory") },
+			["C"] = { api.tree.change_root_to_node, opts("CD") },
+		}
+		api.config.mappings.default_on_attach(bufnr)
+
+		for keybind, mapping_info in pairs(useful_keys) do
+			vim.keymap.set("n", keybind, mapping_info[1], mapping_info[2])
+		end
+	end,
 	renderer = {
 		highlight_git = true,
 		icons = {

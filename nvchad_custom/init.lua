@@ -4,6 +4,14 @@
 -- autocmd("VimResized", {
 --   pattern = "*",
 --   command = "tabdo wincmd =",
--- })
 --
-vim.opt.swapfile = false;
+local opt = vim.opt
+
+opt.fillchars = { eob = " " }
+opt.fillchars = opt.fillchars + "diff:╱"
+
+opt.so = 10
+opt.pumheight = 10
+opt.relativenumber = true
+opt.wrap = false
+opt.cursorline = true

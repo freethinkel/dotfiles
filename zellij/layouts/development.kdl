@@ -1,21 +1,3 @@
-layout {
-    default_tab_template {
-        children
-        pane size=1 borderless=true {
-            plugin location="file:/Users/freethinkel/.config/zellij/plugins/statusbar/target/wasm32-wasi/release/statusbar.wasm"
-        }
-    }
-
-    tab focus=true name="editor" {
-        pane borderless=true {
-          command "nvim"
-        }
-    }
-    tab name="terminal" {
-        pane
-        pane size="20%"
-    }
-}
 
 keybinds {
     tmux {

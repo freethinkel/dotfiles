@@ -1,10 +1,14 @@
-	require("telescope").load_extension("flutter")
+local M = {}
+
+M.setup = function()
+	local on_attach = require("plugins.configs.lspconfig").on_attach
+	local capabilities = require("plugins.configs.lspconfig").capabilities
+	print("flutter")
+
 	require("flutter-tools").setup({
 		lsp = {
-			capabilities = vim.lsp.protocol.make_client_capabilities(),
-			on_attach = function(client, bufnr)
-				require("custom.configs.lspconfig").on_attach(client, bufnr)
-			end,
+			on_attach = on_attach,
+			capabilities = capabilities,
 			color = {
 				enabled = true,
 				background = false,
@@ -26,3 +30,7 @@
 			enabled = false,
 		},
 	})
+	require("telescope").load_extension("flutter")
+end
+
+return M

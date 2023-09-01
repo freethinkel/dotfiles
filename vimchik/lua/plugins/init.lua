@@ -97,12 +97,21 @@ local plugins = {
   {
     "aserowy/tmux.nvim",
     config = function()
-      require("tmux").setup({
-        copy_sync = {
-          enable = false,
-        }
-      })
+      -- require("tmux").setup({
+      --   copy_sync = {
+      --     enable = false,
+      --   }
+      -- })
     end,
+  },
+
+  {
+    'Lilja/zellij.nvim',
+    config = function()
+      require('zellij').setup({
+        vimTmuxNavigatorKeybinds = true
+      })
+    end
   },
   {
     'nvim-telescope/telescope.nvim',

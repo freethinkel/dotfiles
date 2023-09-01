@@ -30,6 +30,7 @@ M.setup = function()
   require("lvim.lsp.manager").setup("angularls")
   require("lvim.lsp.manager").setup("emmet_ls")
   require("lvim.lsp.manager").setup("rust_analyzer")
+  require("lvim.lsp.manager").setup("astro")
   -- require("lvim.lsp.null-ls.linters").setup()
 end
 
