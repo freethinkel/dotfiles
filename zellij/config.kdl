@@ -14,7 +14,15 @@ pane_frames false
 // default_layout "development"
 copy_command "pbcopy"                     // osx
 copy_on_select true
-theme "tokyo-night-dark"
+theme "oshmes"
+
+keybinds {
+    unbind "Ctrl h"
+    normal {
+      bind "Ctrl h" { MoveFocus "Left"; }
+      bind "Ctrl j" { MoveFocus "Down"; }
+    }
+}
 
 // Path to the default editor to use to edit pane scrollbuffer
 // Default: $EDITOR or $VISUAL

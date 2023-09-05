@@ -3,7 +3,6 @@ local M = {}
 M.setup = function()
 	local on_attach = require("plugins.configs.lspconfig").on_attach
 	local capabilities = require("plugins.configs.lspconfig").capabilities
-	print("flutter")
 
 	require("flutter-tools").setup({
 		lsp = {

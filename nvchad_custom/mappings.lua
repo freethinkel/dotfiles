@@ -4,6 +4,11 @@ local M = {}
 M.disabled = {
 	n = {
 		["<leader>x"] = "",
+		["<leader>f"] = "",
+		["<leader>ra"] = "",
+		["<C-n>"] = "",
+		["[d"] = "",
+		["]d"] = "",
 	},
 }
 
@@ -69,6 +74,29 @@ M.lazygit = {
 
 M.lsp = {
 	n = {
+		["<leader>lf"] = {
+			function()
+				vim.diagnostic.open_float({ border = "rounded" })
+			end,
+			"Floating diagnostic",
+		},
+		["<leader>lk"] = {
+			function()
+				vim.diagnostic.goto_prev({ float = { border = "rounded" } })
+			end,
+			"Goto prev",
+		},
+
+		["<leader>lj"] = {
+			function()
+				vim.diagnostic.goto_next({ float = { border = "rounded" } })
+			end,
+			"Goto next",
+		},
+		["<leader>lr"] = {
+			vim.lsp.buf.rename,
+			"LSP rename",
+		},
 		["<leader>la"] = { vim.lsp.buf.code_action, opts = { silent = true, nowait = true } },
 	},
 }

@@ -1,0 +1,15 @@
+themes {
+    aquarium {
+        fg "#63718B"
+        bg "#20202a"
+        black  "#44495e"
+        red  "#EBB9B9"
+        green  "#B1DBA4"
+        yellow  "#E6DFB8"
+        blue  "#CDDBF9"
+        magenta  "#F6BBE7"
+        cyan  "#CDDBF9"
+        white  "#C6D0E9"
+        orange "#E6DFB8"
+    }
+}

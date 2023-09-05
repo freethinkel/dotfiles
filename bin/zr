@@ -1,0 +1,28 @@
+#!/bin/bash
+
+  SESSIONS=$(zellij list-sessions 2>&1)
+  SESSION_NAME="$1"
+
+  if [[ "$SESSIONS" == "No active zellij sessions found." ]]; then
+    if [ $SESSION_NAME ]; then
+      zellij --session "$SESSION_NAME"
+    else
+      NEW_SESSION=$(gum input --placeholder "Enter session name")
+      if [ $NEW_SESSION ]; then
+        zellij --session "$NEW_SESSION"
+      fi
+    fi 
+  else
+    if [ $SESSION_NAME ]; then
+      if [ $(echo "$SESSIONS" | grep -ic "$SESSION_NAME") -eq 1 ]; then
+        zellij attach "$SESSION_NAME"
+      else 
+        zellij --session "$SESSION_NAME"
+      fi
+    else 
+      SELECTED_SESSION=$(echo "$SESSIONS" | gum filter --placeholder "Pick session...")
+      if [ $SELECTED_SESSION ]; then
+        zellij attach "$SELECTED_SESSION"
+      fi
+    fi
+  fi

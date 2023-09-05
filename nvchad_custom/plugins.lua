@@ -109,15 +109,29 @@ local plugins = {
 			require("better_escape").setup()
 		end,
 	},
-
 	-- To make a plugin not be loaded
 	-- {
 	--   "NvChad/nvim-colorizer.lua",
 	--   enabled = false
 	-- },
 	{
-		"mg979/vim-visual-multi",
+		"smoka7/multicursors.nvim",
 		lazy = false,
+		dependencies = {
+			"nvim-treesitter/nvim-treesitter",
+			"smoka7/hydra.nvim",
+		},
+		keys = {
+			{
+				mode = { "v", "n" },
+				"<Leader>m",
+				"<cmd>MCstart<cr>",
+				desc = "Create a selection for selected text or word under the cursor",
+			},
+		},
+		config = function()
+			require("custom.configs.multicursors").setup()
+		end,
 	},
 	{
 		"aserowy/tmux.nvim",

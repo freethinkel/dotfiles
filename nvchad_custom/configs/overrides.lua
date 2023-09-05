@@ -1,5 +1,32 @@
 local M = {}
 
+local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
+M.lsp_on_attach = function(client, bufnr)
+	local on_attach = require("plugins.configs.lspconfig").on_attach
+
+	local documentFormattingProvider = client.server_capabilities.documentFormattingProvider
+	local documentRangeFormattingProvider = client.server_capabilities.documentRangeFormattingProvider
+	on_attach(client, bufnr)
+	client.server_capabilities.documentFormattingProvider = documentFormattingProvider
+	client.server_capabilities.documentRangeFormattingProvider = documentRangeFormattingProvider
+
+	vim.api.nvim_create_autocmd("FileType", {
+		pattern = "qf",
+		command = [[nnoremap <buffer> <CR> <CR>:cclose<CR>]],
+	})
+
+	if client.server_capabilities.documentFormattingProvider then
+		vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
+		vim.api.nvim_create_autocmd("BufWritePre", {
+			group = augroup,
+			buffer = bufnr,
+			callback = function()
+				vim.lsp.buf.format()
+			end,
+		})
+	end
+end
+
 M.treesitter = {
 	ensure_installed = {
 		"vim",
@@ -16,9 +43,7 @@ M.treesitter = {
 	auto_install = true,
 	indent = {
 		enable = true,
-		-- disable = {
-		--   "python"
-		-- },
+		disable = { "dart" },
 	},
 }
 
