@@ -4,16 +4,96 @@
 
 local M = {}
 
+M.override_highlights = function()
+	local colors = require("base46").get_theme_tb("base_30")
+	local hi = require("custom.utils").hi
+	local mixColors = require("custom.utils").mixColors
+
+	hi({
+		"DiagnosticWarn",
+		fg = colors.yellow,
+		bg = mixColors(colors.yellow, colors.black, 0.85),
+	})
+	hi({
+		"DiagnosticError",
+		fg = colors.red,
+		bg = mixColors(colors.red, colors.black, 0.85),
+	})
+	hi({
+		"DiagnosticInfo",
+		fg = colors.seablue or colors.blue,
+		bg = mixColors((colors.seablue or colors.blue), colors.black, 0.85),
+	})
+	hi({
+		"DiagnosticHint",
+		fg = colors.teal,
+		bg = mixColors(colors.teal, colors.black, 0.85),
+	})
+
+	hi({
+		"DiagnosticSignWarn",
+		fg = colors.yellow,
+		bg = "NONE",
+	})
+	hi({
+		"DiagnosticSignError",
+		fg = colors.red,
+		bg = "NONE",
+	})
+	hi({
+		"DiagnosticSignInfo",
+		fg = colors.seablue or colors.blue,
+		bg = "NONE",
+	})
+	hi({
+		"DiagnosticSignHint",
+		fg = colors.teal,
+		bg = "NONE",
+	})
+
+	hi({
+		"DiagnosticUnderlineWarn",
+		fg = "NONE",
+		bg = mixColors(colors.yellow, colors.black, 0.85),
+		sp = colors.yellow,
+		undercurl = true,
+	})
+	hi({
+		"DiagnosticUnderlineError",
+		fg = "NONE",
+		bg = mixColors(colors.red, colors.black, 0.85),
+		sp = colors.red,
+		undercurl = true,
+	})
+	hi({
+		"DiagnosticUnderlineInfo",
+		fg = "NONE",
+		bg = mixColors((colors.seablue or colors.blue), colors.black, 0.85),
+		sp = (colors.seablue or colors.blue),
+		undercurl = true,
+	})
+	hi({
+		"DiagnosticUnderlineHint",
+		fg = "NONE",
+		bg = mixColors(colors.teal, colors.black, 0.85),
+		sp = colors.teal,
+		undercurl = true,
+	})
+end
+
 ---@type Base46HLGroupsList
 M.override = {
-  Comment = {
-    italic = true,
-  },
+	Comment = {
+		italic = true,
+	},
+	NvimTreeFolderName = { fg = "grey_fg" },
+	NvimTreeGitNew = { fg = "teal" },
+	NvimTreeGitDirty = {
+		fg = "seablue",
+	},
 }
 
 ---@type HLTable
-M.add = {
-  NvimTreeOpenedFolderName = { fg = "green", bold = true },
-}
+M.add = {}
 
 return M

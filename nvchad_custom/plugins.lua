@@ -2,17 +2,20 @@ local overrides = require("custom.configs.overrides")
 
 ---@type NvPluginSpec[]
 local plugins = {
-
-	-- Override plugin definition options
-
+	{
+		"NvChad/base46",
+		lazy = false,
+		config = function()
+			require("custom.highlights").override_highlights()
+		end,
+	},
 	{
 		"neovim/nvim-lspconfig",
 		dependencies = {
-			-- format & linting
 			{
-				"jose-elias-alvarez/null-ls.nvim",
+				"stevearc/conform.nvim",
 				config = function()
-					require("custom.configs.null-ls")
+					require("custom.configs.conform")
 				end,
 			},
 		},
@@ -20,29 +23,6 @@ local plugins = {
 			require("plugins.configs.lspconfig")
 			require("custom.configs.lspconfig")
 		end, -- Override to setup mason-lspconfig
-	},
-
-	-- override plugin configs
-	{
-		"williamboman/mason.nvim",
-		opts = overrides.mason,
-	},
-
-	{
-		"nvim-treesitter/nvim-treesitter",
-		opts = overrides.treesitter,
-	},
-	{
-		"folke/neodev.nvim",
-		lazy = true,
-	},
-	{
-		"rcarriga/nvim-dap-ui",
-		lazy = false,
-		dependencies = { "mfussenegger/nvim-dap" },
-		config = function()
-			require("custom.configs.dap").setup()
-		end,
 	},
 	{
 		"akinsho/flutter-tools.nvim",
@@ -57,6 +37,28 @@ local plugins = {
 		end,
 	},
 	{
+		"rcarriga/nvim-dap-ui",
+		lazy = false,
+		dependencies = { "mfussenegger/nvim-dap" },
+		config = function()
+			require("custom.configs.dap").setup()
+		end,
+	},
+	{
+		"williamboman/mason.nvim",
+		opts = overrides.mason,
+	},
+
+	{
+		"nvim-treesitter/nvim-treesitter",
+		opts = overrides.treesitter,
+	},
+	{
+		"folke/neodev.nvim",
+		lazy = true,
+	},
+
+	{
 		"nvim-tree/nvim-tree.lua",
 		opts = overrides.nvimtree,
 	},
@@ -65,20 +67,25 @@ local plugins = {
 		opts = overrides.gitsigns,
 	},
 	{
+		"kdheepak/lazygit.nvim",
+		keys = {
+			{ "<leader>gg", "<cmd>LazyGit<cr>", desc = "Toggle lazy git" },
+		},
+	},
+	{ "christoomey/vim-tmux-navigator", lazy = false },
+	{
+		"max397574/better-escape.nvim",
+		event = "InsertEnter",
+		config = function()
+			require("better_escape").setup()
+		end,
+	},
+	{
 		"windwp/nvim-ts-autotag",
 		config = function()
 			require("nvim-ts-autotag").setup()
 		end,
 	},
-	{
-		dir = "~/Developer/dev/pet/oshmes.nvim/",
-	},
-	-- {
-	--   "freethinkel/oshmes.nvim"
-	-- },
-	{ "rose-pine/neovim", name = "rose-pine" },
-	{ "olivercederborg/poimandres.nvim" },
-	{ "loctvl842/monokai-pro.nvim" },
 	{
 		"folke/todo-comments.nvim",
 		dependencies = { "nvim-lua/plenary.nvim" },
@@ -100,46 +107,9 @@ local plugins = {
 			require("spectre").setup()
 		end,
 	},
-
-	-- Install a plugin
 	{
-		"max397574/better-escape.nvim",
-		event = "InsertEnter",
-		config = function()
-			require("better_escape").setup()
-		end,
-	},
-	-- To make a plugin not be loaded
-	-- {
-	--   "NvChad/nvim-colorizer.lua",
-	--   enabled = false
-	-- },
-	{
-		"smoka7/multicursors.nvim",
+		"mg979/vim-visual-multi",
 		lazy = false,
-		dependencies = {
-			"nvim-treesitter/nvim-treesitter",
-			"smoka7/hydra.nvim",
-		},
-		keys = {
-			{
-				mode = { "v", "n" },
-				"<Leader>m",
-				"<cmd>MCstart<cr>",
-				desc = "Create a selection for selected text or word under the cursor",
-			},
-		},
-		config = function()
-			require("custom.configs.multicursors").setup()
-		end,
-	},
-	{
-		"aserowy/tmux.nvim",
-		opts = {
-			copy_sync = {
-				enable = false,
-			},
-		},
 	},
 }
 

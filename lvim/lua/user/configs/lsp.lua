@@ -9,6 +9,10 @@ M.setup = function()
   }
 
   local formatters                          = require("lvim.lsp.null-ls.formatters")
+  local linters                             = require("lvim.lsp.null-ls.linters")
+  -- linters.setup({
+  --   { command = "cspell" }
+  -- })
   formatters.setup({
     { command = "black", filetypes = { "python" } },
     { command = "isort", filetypes = { "python" } },
@@ -31,7 +35,6 @@ M.setup = function()
   require("lvim.lsp.manager").setup("emmet_ls")
   require("lvim.lsp.manager").setup("rust_analyzer")
   require("lvim.lsp.manager").setup("astro")
-  -- require("lvim.lsp.null-ls.linters").setup()
 end
 
 M.lspsaga = function()

@@ -9,10 +9,20 @@ M.disabled = {
 		["<C-n>"] = "",
 		["[d"] = "",
 		["]d"] = "",
+		-- for tmux plugin navigation
+		["<C-j>"] = "",
+		["<C-k>"] = "",
+		["<C-h>"] = "",
+		["<C-l>"] = "",
 	},
 }
 
 M.general = {
+	i = {
+		["jj"] = { "<Esc>", "Exit insert mode", opts = { silent = true } },
+		["jk"] = { "<Esc>", "Exit insert mode", opts = { silent = true } },
+		["kj"] = { "<Esc>", "Exit insert mode", opts = { silent = true } },
+	},
 	n = {
 		[";"] = { ":", "enter command mode", opts = { nowait = true } },
 		["<leader>h"] = { ":nohl<cr>", "", opts = { nowait = true, silent = true } },
@@ -20,11 +30,6 @@ M.general = {
 		["<A-j>"] = { ":m .+1<CR>==", "Move down" },
 		["<A-k>"] = { ":m .-2<CR>==", "Move up" },
 		["<leader>qq"] = { ":qa!<cr>" },
-	},
-	i = {
-		["jj"] = { "<Esc>", "Exit insert mode", opts = { silent = true } },
-		["jk"] = { "<Esc>", "Exit insert mode", opts = { silent = true } },
-		["kj"] = { "<Esc>", "Exit insert mode", opts = { silent = true } },
 	},
 	x = {
 		["<A-j>"] = { ":m '>+1<CR>gv-gv", "Move down", opts = { noremap = true, silent = true } },
@@ -61,14 +66,19 @@ M.tabs = {
 	},
 }
 
-M.lazygit = {
+M.flutter = {
 	n = {
-		["<leader>gg"] = {
+		["<leader>FF"] = {
 			function()
-				require("custom.modules.lazygit").toggle()
+				require("telescope").extensions.flutter.commands()
 			end,
-			"Open lazygit",
+			"Flutter commands",
 		},
+		["<leader>Fe"] = { ":FlutterEmulators<cr>", "FlutterEmulators" },
+		["<leader>Fr"] = { ":FlutterRun<cr>", "FlutterRun" },
+		["<leader>Fq"] = { ":FlutterQuit<cr>", "FlutterQuit" },
+		["<leader>FR"] = { ":FlutterRestart<cr>", "FlutterRestart" },
+		["<leader>FC"] = { ":FlutterLogClear<cr>", "FlutterLogClear" },
 	},
 }
 
@@ -98,22 +108,6 @@ M.lsp = {
 			"LSP rename",
 		},
 		["<leader>la"] = { vim.lsp.buf.code_action, opts = { silent = true, nowait = true } },
-	},
-}
-
-M.flutter = {
-	n = {
-		["<leader>FF"] = {
-			function()
-				require("telescope").extensions.flutter.commands()
-			end,
-			"Flutter commands",
-		},
-		["<leader>Fe"] = { ":FlutterEmulators<cr>", "FlutterEmulators" },
-		["<leader>Fr"] = { ":FlutterRun<cr>", "FlutterRun" },
-		["<leader>Fq"] = { ":FlutterQuit<cr>", "FlutterQuit" },
-		["<leader>FR"] = { ":FlutterRestart<cr>", "FlutterRestart" },
-		["<leader>FC"] = { ":FlutterLogClear<cr>", "FlutterLogClear" },
 	},
 }
 

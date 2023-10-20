@@ -1,32 +1,5 @@
 local M = {}
 
-local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
-M.lsp_on_attach = function(client, bufnr)
-	local on_attach = require("plugins.configs.lspconfig").on_attach
-
-	local documentFormattingProvider = client.server_capabilities.documentFormattingProvider
-	local documentRangeFormattingProvider = client.server_capabilities.documentRangeFormattingProvider
-	on_attach(client, bufnr)
-	client.server_capabilities.documentFormattingProvider = documentFormattingProvider
-	client.server_capabilities.documentRangeFormattingProvider = documentRangeFormattingProvider
-
-	vim.api.nvim_create_autocmd("FileType", {
-		pattern = "qf",
-		command = [[nnoremap <buffer> <CR> <CR>:cclose<CR>]],
-	})
-
-	if client.server_capabilities.documentFormattingProvider then
-		vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
-		vim.api.nvim_create_autocmd("BufWritePre", {
-			group = augroup,
-			buffer = bufnr,
-			callback = function()
-				vim.lsp.buf.format()
-			end,
-		})
-	end
-end
-
 M.treesitter = {
 	ensure_installed = {
 		"vim",
@@ -43,7 +16,9 @@ M.treesitter = {
 	auto_install = true,
 	indent = {
 		enable = true,
-		disable = { "dart" },
+		-- disable = {
+		--   "python"
+		-- },
 	},
 }
 
@@ -59,6 +34,9 @@ M.mason = {
 		"typescript-language-server",
 		"deno",
 		"prettier",
+		"eslint-lsp",
+		"stylelint-lsp",
+		"cssmodules-language-server",
 
 		-- c/cpp stuff
 		"clangd",
@@ -77,11 +55,15 @@ M.gitsigns = {
 	},
 	current_line_blame = true,
 }
+
 -- git support in nvimtree
 M.nvimtree = {
 	git = {
 		enable = true,
 	},
+
+	hijack_cursor = false,
+	auto_reload_on_write = true,
 	on_attach = function(bufnr)
 		local api = require("nvim-tree.api")
 
@@ -103,12 +85,37 @@ M.nvimtree = {
 			vim.keymap.set("n", keybind, mapping_info[1], mapping_info[2])
 		end
 	end,
+	view = {
+		signcolumn = "yes",
+	},
 	renderer = {
 		highlight_git = true,
+
+		indent_markers = {
+			enable = false,
+		},
 		icons = {
 			show = {
 				git = false,
 			},
+			glyphs = {
+				folder = {
+					arrow_closed = "",
+					arrow_open = "",
+				},
+				git = {
+					unstaged = "M",
+					staged = "S",
+					unmerged = "M",
+					renamed = "R",
+					untracked = "U",
+					deleted = "D",
+					ignored = "",
+				},
+			},
+			git_placement = "after",
+			diagnostics_placement = "signcolumn",
+			modified_placement = "after",
 		},
 	},
 }

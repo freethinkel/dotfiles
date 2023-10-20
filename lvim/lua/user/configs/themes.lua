@@ -34,6 +34,12 @@ M.themes = {
   rose_pine = function()
     lvim.colorscheme = "rose-pine"
   end,
+  rose_pine_moon = function()
+    lvim.colorscheme = "rose-pine-moon"
+  end,
+  pomandres = function()
+    lvim.colorscheme = "poimandres"
+  end,
   oshmes = function()
     lvim.colorscheme = "oshmes-dark"
     -- lvim.transparent_window = true
@@ -42,9 +48,6 @@ M.themes = {
     M.monokai_pro()
     lvim.colorscheme = "monokai-pro-default"
   end,
-  poimandres = function()
-    lvim.colorscheme = "poimandres"
-  end
 }
 
 M.set_theme = function(theme)

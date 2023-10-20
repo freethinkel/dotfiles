@@ -1,6 +1,6 @@
 lvim.plugins = {
   { "mg979/vim-visual-multi" },
-  { "christoomey/vim-tmux-navigator" },
+  { "christoomey/vim-tmux-navigator", lazy = false },
   { "sainnhe/gruvbox-material" },
   {
     "akinsho/flutter-tools.nvim",
@@ -80,7 +80,14 @@ lvim.plugins = {
     config = function()
       require("user.configs.spectre").setup()
     end
-  }
+  },
+  {
+    "NvChad/nvim-colorizer.lua",
+    lazy = false,
+    config = function()
+      require("colorizer").setup()
+    end
+  },
 }
 
 require("user.configs.dap_ui")

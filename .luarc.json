@@ -18,6 +18,7 @@
         "undefined-field",
         "need-check-nil",
         "redundant-parameter",
-        "different-requires"
+        "different-requires",
+        "param-type-mismatch"
     ]
 }

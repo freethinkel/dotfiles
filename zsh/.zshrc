@@ -30,7 +30,7 @@ alias ssh_fix="eval \"$(ssh-agent -s)\" && ssh-add ~/.ssh/id_ed25519"
 alias cls="clear"
 alias ls="exa"
 alias lvim="$HOME/.local/bin/lvim"
-alias vim="lvim"
+alias vim="nvim"
 alias vimconfig="vim ~/.config/nvim/"
 alias v="vim"
 alias cat="bat"
@@ -44,7 +44,7 @@ alias baresip="/opt/homebrew/Cellar/baresip/3.3.0/bin/baresip"
 
 # Bun
 export BUN_INSTALL="/Users/freethinkel/.bun"
-export EDITOR="lvim"
+export EDITOR="nvim"
 
 # pnpm
 export PNPM_HOME="/Users/freethinkel/Library/pnpm"
@@ -62,3 +62,5 @@ export PATH="$PATH":"$HOME/.spicetify"
 export PATH="$PATH":"$HOME/Developer/dev/dotfiles/bin"
 
 export LANG=en_US.UTF-8
+
+[ -s "/Users/freethinkel/.bun/_bun" ] && source "/Users/freethinkel/.bun/_bun"
