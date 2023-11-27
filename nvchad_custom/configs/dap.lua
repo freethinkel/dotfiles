@@ -6,22 +6,12 @@ M.setup = function()
 	})
 	require("dapui").setup({
 		icons = { expanded = "", collapsed = "", current_frame = "" },
-		controls = {
-			icons = {
-				pause = " ",
-				play = "契",
-				step_into = " ",
-				step_over = " ",
-				step_out = " ",
-				step_back = " ",
-				run_last = " ",
-				terminate = " ",
-			},
-		},
 		floating = {
 			border = "single",
 		},
 	})
+
+	vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "@error", linehl = "", numhl = "" })
 
 	require("core.utils").load_mappings("dap")
 end

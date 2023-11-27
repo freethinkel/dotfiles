@@ -28,13 +28,15 @@ fi
 # MY ALIASES
 alias ssh_fix="eval \"$(ssh-agent -s)\" && ssh-add ~/.ssh/id_ed25519"
 alias cls="clear"
-alias ls="exa"
+alias ls="exa --icons"
+alias lst="ls --tree"
 alias lvim="$HOME/.local/bin/lvim"
 alias vim="nvim"
 alias vimconfig="vim ~/.config/nvim/"
 alias v="vim"
 alias cat="bat"
 alias :qa="exit"
+alias :q="exit"
 alias tdev="tmux new -s DEV || tmux attach-session -t DEV"
 alias colors="msgcat --color=test"
 alias baresip="/opt/homebrew/Cellar/baresip/3.3.0/bin/baresip"
@@ -64,3 +66,5 @@ export PATH="$PATH":"$HOME/Developer/dev/dotfiles/bin"
 export LANG=en_US.UTF-8
 
 [ -s "/Users/freethinkel/.bun/_bun" ] && source "/Users/freethinkel/.bun/_bun"
+
+source /Users/freethinkel/.manter.sh

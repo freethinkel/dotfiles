@@ -1,5 +1,16 @@
 local M = {}
 
+local _on_attach = require("plugins.configs.lspconfig").on_attach
+M.on_attach = function(client, bufnr)
+	local documentFormattingProvider = client.server_capabilities.documentFormattingProvider
+	local documentRangeFormattingProvider = client.server_capabilities.documentRangeFormattingProvider
+
+	_on_attach(client, bufnr)
+
+	client.server_capabilities.documentFormattingProvider = documentFormattingProvider
+	client.server_capabilities.documentRangeFormattingProvider = documentRangeFormattingProvider
+end
+
 M.treesitter = {
 	ensure_installed = {
 		"vim",
@@ -13,13 +24,14 @@ M.treesitter = {
 		"markdown",
 		"markdown_inline",
 	},
-	auto_install = true,
-	indent = {
+	highlight = {
 		enable = true,
-		-- disable = {
-		--   "python"
-		-- },
 	},
+	auto_install = true,
+	autotag = {
+		enable = true,
+	},
+	indent = { enable = false, disable = { "yaml", "python", "dart" } },
 }
 
 M.mason = {
@@ -54,70 +66,6 @@ M.gitsigns = {
 		untracked = { hl = "GitSignsAdd", text = "▍", numhl = "GitSignsAddNr", linehl = "GitSignsAddLn" },
 	},
 	current_line_blame = true,
-}
-
--- git support in nvimtree
-M.nvimtree = {
-	git = {
-		enable = true,
-	},
-
-	hijack_cursor = false,
-	auto_reload_on_write = true,
-	on_attach = function(bufnr)
-		local api = require("nvim-tree.api")
-
-		local function opts(desc)
-			return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
-		end
-
-		local useful_keys = {
-			["l"] = { api.node.open.edit, opts("Open") },
-			["o"] = { api.node.open.edit, opts("Open") },
-			["<CR>"] = { api.node.open.edit, opts("Open") },
-			["v"] = { api.node.open.vertical, opts("Open: Vertical Split") },
-			["h"] = { api.node.navigate.parent_close, opts("Close Directory") },
-			["C"] = { api.tree.change_root_to_node, opts("CD") },
-		}
-		api.config.mappings.default_on_attach(bufnr)
-
-		for keybind, mapping_info in pairs(useful_keys) do
-			vim.keymap.set("n", keybind, mapping_info[1], mapping_info[2])
-		end
-	end,
-	view = {
-		signcolumn = "yes",
-	},
-	renderer = {
-		highlight_git = true,
-
-		indent_markers = {
-			enable = false,
-		},
-		icons = {
-			show = {
-				git = false,
-			},
-			glyphs = {
-				folder = {
-					arrow_closed = "",
-					arrow_open = "",
-				},
-				git = {
-					unstaged = "M",
-					staged = "S",
-					unmerged = "M",
-					renamed = "R",
-					untracked = "U",
-					deleted = "D",
-					ignored = "",
-				},
-			},
-			git_placement = "after",
-			diagnostics_placement = "signcolumn",
-			modified_placement = "after",
-		},
-	},
 }
 
 return M

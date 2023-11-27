@@ -18,9 +18,14 @@ theme "oshmes"
 
 keybinds {
     unbind "Ctrl h"
+
     normal {
       bind "Ctrl h" { MoveFocus "Left"; }
       bind "Ctrl j" { MoveFocus "Down"; }
+    }
+
+    pane {
+      bind "s" { NextSwapLayout; }
     }
 }
 

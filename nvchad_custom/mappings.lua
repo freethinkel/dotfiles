@@ -131,6 +131,7 @@ M.spectre = {
 M.dap = {
 	plugin = true,
 	n = {
+		["<leader>dt"] = { "<cmd>DapToggleBreakpoint<cr>", "Toggle breakpoint" },
 		["<leader>du"] = {
 			function()
 				require("dapui").toggle()

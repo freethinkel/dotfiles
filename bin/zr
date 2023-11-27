@@ -1,6 +1,8 @@
 #!/bin/bash
 
-  SESSIONS=$(zellij list-sessions 2>&1)
+zellij delete-all-sessions -y
+
+  SESSIONS=$(zellij list-sessions --short 2>&1)
   SESSION_NAME="$1"
 
   if [[ "$SESSIONS" == "No active zellij sessions found." ]]; then

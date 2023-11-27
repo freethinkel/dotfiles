@@ -2,11 +2,26 @@ local overrides = require("custom.configs.overrides")
 
 ---@type NvPluginSpec[]
 local plugins = {
+	-- {
+	-- 	"yamatsum/nvim-nonicons",
+	-- 	dependencies = { "kyazdani42/nvim-web-devicons" },
+	-- 	lazy = false,
+	-- 	config = function()
+	-- 		require("nvim-nonicons").setup({})
+	-- 	end,
+	-- },
+	{
+		"nvim-telescope/telescope-media-files.nvim",
+		config = function()
+			require("telescope").load_extension("media_files")
+		end,
+	},
 	{
 		"NvChad/base46",
 		lazy = false,
 		config = function()
 			require("custom.highlights").override_highlights()
+			require("base46").load_all_highlights()
 		end,
 	},
 	{
@@ -51,6 +66,9 @@ local plugins = {
 
 	{
 		"nvim-treesitter/nvim-treesitter",
+		dependencies = {
+			"windwp/nvim-ts-autotag",
+		},
 		opts = overrides.treesitter,
 	},
 	{
@@ -60,7 +78,9 @@ local plugins = {
 
 	{
 		"nvim-tree/nvim-tree.lua",
-		opts = overrides.nvimtree,
+		config = function()
+			require("custom.configs.nvimtree")
+		end,
 	},
 	{
 		"lewis6991/gitsigns.nvim",
@@ -111,6 +131,15 @@ local plugins = {
 		"mg979/vim-visual-multi",
 		lazy = false,
 	},
+	-- {
+	-- 	name = "project-info",
+	-- 	dir = "~/Developer/dev/pet/project_info",
+	-- 	lazy = false,
+	-- 	dev = true,
+	-- 	config = function()
+	-- 		vim.print(require("project-info"))
+	-- 	end,
+	-- },
 }
 
 return plugins

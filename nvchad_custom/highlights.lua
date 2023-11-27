@@ -21,8 +21,8 @@ M.override_highlights = function()
 	})
 	hi({
 		"DiagnosticInfo",
-		fg = colors.seablue or colors.blue,
-		bg = mixColors((colors.seablue or colors.blue), colors.black, 0.85),
+		fg = colors.blue,
+		bg = mixColors(colors.blue, colors.black, 0.85),
 	})
 	hi({
 		"DiagnosticHint",
@@ -42,7 +42,7 @@ M.override_highlights = function()
 	})
 	hi({
 		"DiagnosticSignInfo",
-		fg = colors.seablue or colors.blue,
+		fg = colors.blue,
 		bg = "NONE",
 	})
 	hi({
@@ -68,8 +68,8 @@ M.override_highlights = function()
 	hi({
 		"DiagnosticUnderlineInfo",
 		fg = "NONE",
-		bg = mixColors((colors.seablue or colors.blue), colors.black, 0.85),
-		sp = (colors.seablue or colors.blue),
+		bg = mixColors(colors.blue, colors.black, 0.85),
+		sp = colors.blue,
 		undercurl = true,
 	})
 	hi({
@@ -87,9 +87,9 @@ M.override = {
 		italic = true,
 	},
 	NvimTreeFolderName = { fg = "grey_fg" },
-	NvimTreeGitNew = { fg = "teal" },
+	NvimTreeGitNew = { fg = "green" },
 	NvimTreeGitDirty = {
-		fg = "seablue",
+		fg = "orange",
 	},
 }
 

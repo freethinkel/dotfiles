@@ -1,8 +1,11 @@
 local M = {}
 
+local on_attach = require("custom.configs.overrides").on_attach
+
 M.setup = function()
 	require("flutter-tools").setup({
 		lsp = {
+			on_attach = on_attach,
 			color = {
 				enabled = true,
 				background = false,

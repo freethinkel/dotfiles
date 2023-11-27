@@ -5,9 +5,9 @@ local M = {}
 local highlights = require("custom.highlights")
 
 M.ui = {
-	theme = "poimandres",
+	theme = "catppuccin",
 	transparent = true,
-	theme_toggle = { "poimandres", "github_light" },
+	theme_toggle = { "catppuccin", "github_light" },
 	nvdash = { load_on_startup = true },
 	statusline = {
 		theme = "vscode_colored", -- default/vscode/vscode_colored/minimal
