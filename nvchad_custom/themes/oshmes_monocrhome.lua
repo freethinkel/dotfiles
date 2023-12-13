@@ -1,3 +1,7 @@
+-- Thanks to original theme for existing https://github.com/microsoft/vscode/blob/main/extensions/theme-defaults/themes/dark_plus.json
+-- this is a modified version of it
+
+-- TODO: in progess
 local M = {}
 
 M.base_30 = {
@@ -40,47 +44,39 @@ M.base_16 = {
 	base02 = "#344253",
 	base03 = "#3C3C3C",
 	base04 = "#464646",
-	base05 = "#F97583",
-	base06 = "#E9E9E9",
+	base05 = "#bbbbbb",
+	base06 = "#bbbbbb",
 	base07 = "#FFFFFF",
-	base08 = "#B392F0",
-	base09 = M.base_30.blue,
-	base0A = "#ffab70",
-	base0B = "#ffab70",
-	base0C = "#9CDCFE",
-	base0D = "#B392F0",
-	base0E = "#F97583",
+	base08 = "#bbbbbb",
+	base09 = "#bbbbbb",
+	base0A = "#bbbbbb",
+	base0B = "#bbbbbb",
+	base0C = "#bbbbbb",
+	base0D = "#bbbbbb",
+	base0E = "#bbbbbb",
 	base0F = M.base_30.white,
 }
 
 M.polish_hl = {
-	["@parameter"] = { fg = M.base_30.blue },
-	["@keyword"] = { fg = M.base_30.red, bold = true },
+	["@parameter"] = { fg = M.base_30.white, bold = true },
+	["@keyword"] = { fg = M.base_30.white, bold = true },
 	["@variable"] = { fg = M.base_30.cyan },
 	["@field.key"] = { fg = M.base_30.green1 },
 	["@field"] = { fg = M.base_30.white },
-	["@text"] = { fg = M.base_30.white },
-	["@keyword.return"] = { fg = M.base_16.base0E, bold = true },
-	["@keyword.function"] = { fg = M.base_30.blue, bold = true },
-	["@type.builtin"] = { fg = M.base_30.blue },
-	["Type"] = { fg = M.base_30.purple },
+	["@keyword.return"] = { fg = M.base_16.base0E },
+	["@keyword.function"] = { fg = M.base_30.white },
+	["@type.builtin"] = { fg = M.base_16.base0E },
+	["Type"] = { fg = M.base_16.base0E },
 	["@none"] = { fg = M.base_30.white },
 	["@property"] = { fg = M.base_30.white },
-	Include = { fg = M.base_30.red },
+	Include = { fg = M.base_30.white, bold = true },
 	Normal = { fg = M.base_30.white },
 	PmenuSel = { fg = "NONE", bold = true },
 	Search = { bg = "#564133", fg = "NONE" },
 }
 
-M.add_hl = {
-	NvimTreeExecFile = { fg = M.base_30.green },
-	NvimTreeGitStaged = { fg = M.base_30.green },
-	NvimTreeGitNew = { fg = M.base_30.green },
-	NvimTreeGitDirty = { fg = M.base_30.orange },
-}
-
 M.type = "dark"
 
-M = require("base46").override_theme(M, "oshmes")
+M = require("base46").override_theme(M, "oshmes_monochrome")
 
 return M

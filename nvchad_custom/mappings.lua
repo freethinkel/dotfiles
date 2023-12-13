@@ -30,6 +30,13 @@ M.general = {
 		["<A-j>"] = { ":m .+1<CR>==", "Move down" },
 		["<A-k>"] = { ":m .-2<CR>==", "Move up" },
 		["<leader>qq"] = { ":qa!<cr>" },
+		["qq"] = { ":q!<cr>" },
+		["<leader>tt"] = {
+			function()
+				require("base46").toggle_theme()
+			end,
+			"Toggle theme",
+		},
 	},
 	x = {
 		["<A-j>"] = { ":m '>+1<CR>gv-gv", "Move down", opts = { noremap = true, silent = true } },
@@ -41,30 +48,40 @@ M.general = {
 	},
 }
 
-M.tabs = {
+M.zenmode = {
 	n = {
-		["<leader>c"] = {
+		["<leader>zz"] = {
 			function()
-				require("nvchad.tabufline").close_buffer()
+				require("zen-mode").toggle()
 			end,
-			"Close buffer",
-		},
-		["<S-h>"] = {
-			function()
-				require("nvchad.tabufline").tabuflinePrev()
-			end,
-			"Prev tab",
-			{ silten = true },
-		},
-		["<S-l>"] = {
-			function()
-				require("nvchad.tabufline").tabuflineNext()
-			end,
-			"Next tab",
-			{ silten = true },
 		},
 	},
 }
+
+-- M.tabs = {
+-- 	n = {
+-- 		["<leader>c"] = {
+-- 			function()
+-- 				require("nvchad.tabufline").close_buffer()
+-- 			end,
+-- 			"Close buffer",
+-- 		},
+-- 		["<S-h>"] = {
+-- 			function()
+-- 				require("nvchad.tabufline").tabuflinePrev()
+-- 			end,
+-- 			"Prev tab",
+-- 			{ silten = true },
+-- 		},
+-- 		["<S-l>"] = {
+-- 			function()
+-- 				require("nvchad.tabufline").tabuflineNext()
+-- 			end,
+-- 			"Next tab",
+-- 			{ silten = true },
+-- 		},
+-- 	},
+-- }
 
 M.flutter = {
 	n = {
@@ -137,6 +154,32 @@ M.dap = {
 				require("dapui").toggle()
 			end,
 			"Toggle dap ui",
+		},
+	},
+}
+
+M.harpoon = {
+	-- plugin = true,
+	n = {
+		["<leader>H"] = {
+			function()
+				require("harpoon.ui").toggle_quick_menu()
+			end,
+		},
+		["M"] = {
+			function()
+				require("harpoon.mark").add_file()
+			end,
+		},
+		["H"] = {
+			function()
+				require("harpoon.ui").nav_next()
+			end,
+		},
+		["L"] = {
+			function()
+				require("harpoon.ui").nav_prev()
+			end,
 		},
 	},
 }

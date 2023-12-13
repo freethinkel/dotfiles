@@ -1,93 +1,94 @@
 lvim.plugins = {
-  { "mg979/vim-visual-multi" },
-  { "christoomey/vim-tmux-navigator", lazy = false },
-  { "sainnhe/gruvbox-material" },
+  { 'mg979/vim-visual-multi' },
+  { 'christoomey/vim-tmux-navigator', lazy = false },
+  { 'sainnhe/gruvbox-material' },
+  { 'rktjmp/lush.nvim' },
   {
-    "akinsho/flutter-tools.nvim",
+    'akinsho/flutter-tools.nvim',
     dependencies = {
-      "nvim-lua/plenary.nvim",
-      "stevearc/dressing.nvim",
+      'nvim-lua/plenary.nvim',
+      'stevearc/dressing.nvim',
     },
     config = function()
-      require("user.configs.lsp").flutter()
+      require('user.configs.lsp').flutter()
     end,
   },
-  { "imsnif/kdl.vim" },
+  { 'imsnif/kdl.vim' },
   {
-    "sindrets/diffview.nvim",
-    event = "BufRead",
+    'sindrets/diffview.nvim',
+    event = 'BufRead',
   },
   {
-    "windwp/nvim-ts-autotag",
+    'windwp/nvim-ts-autotag',
     config = function()
-      require("nvim-ts-autotag").setup()
+      require('nvim-ts-autotag').setup()
     end,
   },
   {
-    "glepnir/lspsaga.nvim",
-    branch = "main",
+    'glepnir/lspsaga.nvim',
+    branch = 'main',
     config = function()
-      require("user.configs.lsp").lspsaga()
+      require('user.configs.lsp').lspsaga()
     end,
   },
-  { "nyoom-engineering/oxocarbon.nvim" },
-  { "catppuccin/nvim",                 name = "catppuccin" },
-  { "stephenway/postcss.vim" },
+  { 'nyoom-engineering/oxocarbon.nvim' },
+  { 'catppuccin/nvim', name = 'catppuccin' },
+  { 'stephenway/postcss.vim' },
   {
-    "loctvl842/monokai-pro.nvim",
+    'loctvl842/monokai-pro.nvim',
     config = function()
-      require("user.configs.themes").monokai_pro()
+      require('user.configs.themes').monokai_pro()
     end,
   },
   {
-    "projekt0n/github-nvim-theme",
-    version = "v0.0.7",
+    'projekt0n/github-nvim-theme',
+    version = 'v0.0.7',
     config = function()
-      require("user.configs.themes").github()
+      require('user.configs.themes').github()
     end,
   },
   {
-    "mountain-theme/vim",
-    lazy = false
+    'mountain-theme/vim',
+    lazy = false,
   },
   -- OWN THEME
   {
-    dir = "~/Developer/dev/pet/oshmes.nvim/",
+    dir = '~/Developer/dev/pet/oshmes.nvim/',
   },
   -- {
   --   "freethinkel/oshmes.nvim"
   -- },
-  { "shaunsingh/nord.nvim" },
-  { 'rose-pine/neovim',               name = 'rose-pine' },
-  { "olivercederborg/poimandres.nvim" },
+  { 'shaunsingh/nord.nvim' },
+  { 'rose-pine/neovim', name = 'rose-pine' },
+  { 'olivercederborg/poimandres.nvim' },
   {
-    "folke/todo-comments.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    event = { "BufReadPre" },
+    'folke/todo-comments.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    event = { 'BufReadPre' },
     config = function()
-      require("user.configs.todo-comments").setup()
+      require('user.configs.todo-comments').setup()
     end,
   },
-  { "nvim-treesitter/playground" },
+  { 'nvim-treesitter/playground' },
   {
-    "phaazon/hop.nvim",
+    'phaazon/hop.nvim',
     config = function()
-      require("user.configs.hop").setup()
-    end
+      require('user.configs.hop').setup()
+    end,
   },
   {
-    "nvim-pack/nvim-spectre",
+    'nvim-pack/nvim-spectre',
     config = function()
-      require("user.configs.spectre").setup()
-    end
+      require('user.configs.spectre').setup()
+    end,
   },
   {
-    "NvChad/nvim-colorizer.lua",
+    'NvChad/nvim-colorizer.lua',
     lazy = false,
     config = function()
-      require("colorizer").setup()
-    end
+      require('colorizer').setup()
+    end,
   },
 }
 
-require("user.configs.dap_ui")
+require('user.configs.dap_ui')

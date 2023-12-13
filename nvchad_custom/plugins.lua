@@ -11,9 +11,23 @@ local plugins = {
 	-- 	end,
 	-- },
 	{
+		"folke/zen-mode.nvim",
+		lazy = false,
+		config = function()
+			require("custom.configs.zen-mode").setup()
+		end,
+	},
+	{
 		"nvim-telescope/telescope-media-files.nvim",
 		config = function()
 			require("telescope").load_extension("media_files")
+		end,
+	},
+	{
+		"NvChad/ui",
+		config = function()
+			-- require("plugins.configs.others").nvchad_ui()
+			vim.opt.statusline = ""
 		end,
 	},
 	{
@@ -130,6 +144,13 @@ local plugins = {
 	{
 		"mg979/vim-visual-multi",
 		lazy = false,
+	},
+	{
+		"ThePrimeagen/harpoon",
+		lazy = false,
+		config = function()
+			require("custom.configs.harpoon").setup()
+		end,
 	},
 	-- {
 	-- 	name = "project-info",

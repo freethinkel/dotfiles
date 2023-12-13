@@ -49,6 +49,7 @@ M.mason = {
 		"eslint-lsp",
 		"stylelint-lsp",
 		"cssmodules-language-server",
+		"emmet-ls",
 
 		-- c/cpp stuff
 		"clangd",

@@ -87,10 +87,6 @@ M.override = {
 		italic = true,
 	},
 	NvimTreeFolderName = { fg = "grey_fg" },
-	NvimTreeGitNew = { fg = "green" },
-	NvimTreeGitDirty = {
-		fg = "orange",
-	},
 }
 
 ---@type HLTable

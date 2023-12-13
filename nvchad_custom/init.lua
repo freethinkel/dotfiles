@@ -5,6 +5,12 @@
 --   pattern = "*",
 --   command = "tabdo wincmd =",
 -- })
+--
+-- TODO:
+-- add [mappings
+-- fix harpoon tabs
+-- add zen mode plugin
+--
 
 vim.cmd("au BufNewFile,BufRead *.pcss set ft=css")
 vim.cmd("au BufNewFile,BufRead *.mdx set ft=markdown")
