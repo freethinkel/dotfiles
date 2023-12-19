@@ -68,15 +68,15 @@ export LANG=en_US.UTF-8
 
 [ -s "/Users/freethinkel/.bun/_bun" ] && source "/Users/freethinkel/.bun/_bun"
 
-case "$OSTYPE" in
-  darwin*)
-    # ...
+case `uname` in
+  Darwin)
+    # commands for OS X go here
   ;;
-  linux*)
+  Linux)
     export TERM=xterm-256color
-    # ...
+    # commands for Linux go here
   ;;
-  dragonfly*|freebsd*|netbsd*|openbsd*)
-    # ...
+  FreeBSD)
+    # commands for FreeBSD go here
   ;;
 esac
