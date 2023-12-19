@@ -73,6 +73,18 @@ case `uname` in
   ;;
   Linux)
     export TERM=xterm-256color
+
+    if [ -d "$HOME/.local/bin" ] ; then
+        PATH="$HOME/.local/bin:$PATH"
+    fi
+    export PGHOST=10.0.204.21
+    export PGUSER=callcenter
+    export PGDATABASE=callcenter
+    export RAILS_ENV=development
+    export GIT_SSH_VARIANT=ssh
+    export PATH="$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+    export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
     # commands for Linux go here
   ;;
   FreeBSD)
