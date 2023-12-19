@@ -8,19 +8,34 @@ M.ui = {
 	theme = "oshmes",
 	transparent = true,
 	theme_toggle = { "oshmes", "github_light" },
-	nvdash = { load_on_startup = true },
-	tabufline = {
-		enabled = false,
+	nvdash = {
+		load_on_startup = true,
+		header = {
+			"        ▓████████████▓        ",
+			"       ▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓       ",
+			"       █▒▒▒▒▒▒▒▒▒▒▒▒▒▒█       ",
+			"       █▒▒▓██▓▒▒▓██▓▒▒█       ",
+			"       █▒▒▓██▓▒▒▓██▓▒▒█       ",
+			"       █▒▒▒▒▒▒▒▒▒▒▒▒▒▒█       ",
+			"       ▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓       ",
+			"        ▓████████████▓        ",
+		},
+		buttons = {
+			{ "  Find File", "Spc f f", "Telescope find_files" },
+			{ "󰈚  Recent Files", "Spc f o", "Telescope oldfiles" },
+			{ "󰈭  Find Word", "Spc f w", "Telescope live_grep" },
+			{ "  Bookmarks", "Spc m a", "Telescope marks" },
+			{ "  Themes", "Spc t h", "Telescope themes" },
+			{ "  Mappings", "Spc c h", "NvCheatsheet" },
+			{
+				"  Restore Session",
+				"s",
+				function()
+					require("persistence").load()
+				end,
+			},
+		},
 	},
-	-- statusline = {
-	-- 	enabled = false,
-	-- 	theme = "vscode_colored", -- default/vscode/vscode_colored/minimal
-	-- 	separator_style = "default",
-	-- 	overriden_modules = function(modules)
-	-- 		modules[1] = modules[1] .. "%#St_Mode#"
-	-- 		-- comp.separator = left and { right = '' } or { left = '' }
-	-- 	end,
-	-- },
 	hl_override = highlights.override,
 	hl_add = highlights.add,
 }

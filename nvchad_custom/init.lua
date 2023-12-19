@@ -9,8 +9,14 @@
 -- TODO:
 -- add [mappings
 -- fix harpoon tabs
--- add zen mode plugin
 --
+
+-- OTHER
+vim.cmd([[let &t_Cs = "\e[4:3m"]])
+vim.cmd([[let &t_Ce = "\e[4:0m"]])
+-- WEZTERM
+-- vim.cmd([[let &t_Cs = "\e[60m"]])
+-- vim.cmd([[let &t_Ce = "\e[24m"]])
 
 vim.cmd("au BufNewFile,BufRead *.pcss set ft=css")
 vim.cmd("au BufNewFile,BufRead *.mdx set ft=markdown")

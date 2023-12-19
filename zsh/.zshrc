@@ -68,4 +68,3 @@ export LANG=en_US.UTF-8
 
 [ -s "/Users/freethinkel/.bun/_bun" ] && source "/Users/freethinkel/.bun/_bun"
 
-source /Users/freethinkel/.manter.sh

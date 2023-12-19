@@ -32,7 +32,7 @@ lvim.plugins = {
     end,
   },
   { 'nyoom-engineering/oxocarbon.nvim' },
-  { 'catppuccin/nvim', name = 'catppuccin' },
+  { 'catppuccin/nvim',                 name = 'catppuccin' },
   { 'stephenway/postcss.vim' },
   {
     'loctvl842/monokai-pro.nvim',
@@ -59,7 +59,7 @@ lvim.plugins = {
   --   "freethinkel/oshmes.nvim"
   -- },
   { 'shaunsingh/nord.nvim' },
-  { 'rose-pine/neovim', name = 'rose-pine' },
+  { 'rose-pine/neovim',               name = 'rose-pine' },
   { 'olivercederborg/poimandres.nvim' },
   {
     'folke/todo-comments.nvim',

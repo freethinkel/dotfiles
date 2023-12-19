@@ -87,6 +87,15 @@ M.override = {
 		italic = true,
 	},
 	NvimTreeFolderName = { fg = "grey_fg" },
+	NvDashAscii = {
+		bg = "none",
+		fg = "blue",
+	},
+
+	-- NvDashButtons = {
+	-- 	bg = "none",
+	-- 	fg = "light_grey",
+	-- },
 }
 
 ---@type HLTable

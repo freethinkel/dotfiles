@@ -6,7 +6,7 @@ M.setup = function()
 			tmux = { enabled = true }, -- disables the tmux statusline
 			kitty = {
 				enabled = true,
-				font = "+2", -- font size increment
+				font = "20", -- font size increment
 			},
 		},
 	})

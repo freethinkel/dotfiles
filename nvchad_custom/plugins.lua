@@ -11,6 +11,10 @@ local plugins = {
 	-- 	end,
 	-- },
 	{
+		lazy = false,
+		"fladson/vim-kitty",
+	},
+	{
 		"folke/zen-mode.nvim",
 		lazy = false,
 		config = function()
@@ -52,6 +56,50 @@ local plugins = {
 			require("plugins.configs.lspconfig")
 			require("custom.configs.lspconfig")
 		end, -- Override to setup mason-lspconfig
+	},
+	{
+		"davidmh/cspell.nvim",
+		lazy = false,
+		dependencies = {
+			"nvimtools/none-ls.nvim",
+		},
+		config = function()
+			local function split(str, sep)
+				local result = {}
+				local regex = ("([^%s]+)"):format(sep)
+				for each in str:gmatch(regex) do
+					table.insert(result, each)
+				end
+				return result
+			end
+			local cspell = require("cspell")
+			local config = {
+				find_json = function(cwd)
+					print(cwd)
+
+					return cwd .. "/allowedWords.txt"
+					-- return
+				end,
+				decode_json = function(cspell_str)
+					print("decode")
+					return split(cspell_str, "\n")
+				end,
+				encode_json = function(cspell_str)
+					print(cspell_str)
+					return cspell_str
+				end,
+			}
+
+			local on_attach = overrides.on_attach
+
+			require("null-ls").setup({
+				on_attach = on_attach,
+				sources = {
+					cspell.diagnostics.with({ config = config }),
+					cspell.code_actions.with({ config = config }),
+				},
+			})
+		end,
 	},
 	{
 		"akinsho/flutter-tools.nvim",
@@ -146,11 +194,9 @@ local plugins = {
 		lazy = false,
 	},
 	{
-		"ThePrimeagen/harpoon",
-		lazy = false,
-		config = function()
-			require("custom.configs.harpoon").setup()
-		end,
+		"folke/persistence.nvim",
+		event = "BufReadPre",
+		opts = {},
 	},
 	-- {
 	-- 	name = "project-info",

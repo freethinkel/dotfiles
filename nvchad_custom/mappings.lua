@@ -58,30 +58,30 @@ M.zenmode = {
 	},
 }
 
--- M.tabs = {
--- 	n = {
--- 		["<leader>c"] = {
--- 			function()
--- 				require("nvchad.tabufline").close_buffer()
--- 			end,
--- 			"Close buffer",
--- 		},
--- 		["<S-h>"] = {
--- 			function()
--- 				require("nvchad.tabufline").tabuflinePrev()
--- 			end,
--- 			"Prev tab",
--- 			{ silten = true },
--- 		},
--- 		["<S-l>"] = {
--- 			function()
--- 				require("nvchad.tabufline").tabuflineNext()
--- 			end,
--- 			"Next tab",
--- 			{ silten = true },
--- 		},
--- 	},
--- }
+M.tabs = {
+	n = {
+		["<leader>c"] = {
+			function()
+				require("nvchad.tabufline").close_buffer()
+			end,
+			"Close buffer",
+		},
+		["<S-h>"] = {
+			function()
+				require("nvchad.tabufline").tabuflinePrev()
+			end,
+			"Prev tab",
+			{ silten = true },
+		},
+		["<S-l>"] = {
+			function()
+				require("nvchad.tabufline").tabuflineNext()
+			end,
+			"Next tab",
+			{ silten = true },
+		},
+	},
+}
 
 M.flutter = {
 	n = {
@@ -158,30 +158,39 @@ M.dap = {
 	},
 }
 
-M.harpoon = {
-	-- plugin = true,
-	n = {
-		["<leader>H"] = {
-			function()
-				require("harpoon.ui").toggle_quick_menu()
-			end,
-		},
-		["M"] = {
-			function()
-				require("harpoon.mark").add_file()
-			end,
-		},
-		["H"] = {
-			function()
-				require("harpoon.ui").nav_next()
-			end,
-		},
-		["L"] = {
-			function()
-				require("harpoon.ui").nav_prev()
-			end,
-		},
-	},
-}
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "nvdash",
+	callback = function()
+		vim.keymap.set("n", "s", function()
+			require("persistence").load()
+		end, {})
+	end,
+})
+
+-- M.harpoon = {
+-- 	-- plugin = true,
+-- 	n = {
+-- 		["<leader>H"] = {
+-- 			function()
+-- 				require("harpoon.ui").toggle_quick_menu()
+-- 			end,
+-- 		},
+-- 		["M"] = {
+-- 			function()
+-- 				require("harpoon.mark").add_file()
+-- 			end,
+-- 		},
+-- 		["H"] = {
+-- 			function()
+-- 				require("harpoon.ui").nav_next()
+-- 			end,
+-- 		},
+-- 		["L"] = {
+-- 			function()
+-- 				require("harpoon.ui").nav_prev()
+-- 			end,
+-- 		},
+-- 	},
+-- }
 
 return M

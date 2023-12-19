@@ -25,7 +25,8 @@ local servers = {
 	"rust_analyzer",
 	"emmet_ls",
 	"cssmodules_ls",
-	"angularls",
+	-- "angularls",
+	"grammarly",
 }
 
 for _, lsp in ipairs(servers) do
