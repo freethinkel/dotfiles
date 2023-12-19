@@ -35,7 +35,6 @@ alias v="vim"
 alias :qa="exit"
 alias :q="exit"
 alias tdev="tmux new -s DEV || tmux attach-session -t DEV"
-alias colors="msgcat --color=test"
 alias baresip="/opt/homebrew/Cellar/baresip/3.3.0/bin/baresip"
 alias notes="cd /Users/freethinkel/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/notes/"
 
@@ -70,6 +69,7 @@ case `uname` in
     alias ls="exa --icons"
     alias lst="ls --tree"
     alias cat="bat"
+    alias colors="msgcat --color=test"
   ;;
   Linux)
     export TERM=xterm-256color
