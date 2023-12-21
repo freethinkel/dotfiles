@@ -60,6 +60,7 @@ local plugins = {
 	{
 		"davidmh/cspell.nvim",
 		lazy = false,
+		enabled = false,
 		dependencies = {
 			"nvimtools/none-ls.nvim",
 		},
@@ -114,6 +115,13 @@ local plugins = {
 		end,
 	},
 	{
+		"simrat39/rust-tools.nvim",
+		ft = "rust",
+		config = function()
+			require("custom.configs.rust")
+		end,
+	},
+	{
 		"rcarriga/nvim-dap-ui",
 		lazy = false,
 		dependencies = { "mfussenegger/nvim-dap" },
@@ -137,9 +145,22 @@ local plugins = {
 		"folke/neodev.nvim",
 		lazy = true,
 	},
-
+	{
+		"nvim-neo-tree/neo-tree.nvim",
+		lazy = false,
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+			"MunifTanjim/nui.nvim",
+			"3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
+		},
+		config = function()
+			require("custom.configs.neotree").setup()
+		end,
+	},
 	{
 		"nvim-tree/nvim-tree.lua",
+		enabled = false,
 		config = function()
 			require("custom.configs.nvimtree")
 		end,

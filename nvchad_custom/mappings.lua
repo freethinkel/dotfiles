@@ -48,6 +48,18 @@ M.general = {
 	},
 }
 
+M.neotree = {
+	plugin = true,
+
+	n = {
+		-- toggle
+		["<C-n>"] = { "<cmd> Neotree toggle <CR>", "Toggle neotree" },
+
+		-- focus
+		["<leader>e"] = { "<cmd> Neotree <CR>", "Focus neotree" },
+	},
+}
+
 M.zenmode = {
 	n = {
 		["<leader>zz"] = {
@@ -160,10 +172,12 @@ M.dap = {
 
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "nvdash",
-	callback = function()
+	callback = function(data)
 		vim.keymap.set("n", "s", function()
 			require("persistence").load()
-		end, {})
+		end, {
+			buffer = data.buf,
+		})
 	end,
 })
 

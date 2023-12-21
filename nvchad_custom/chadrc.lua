@@ -4,10 +4,30 @@ local M = {}
 -- Path to overriding theme and highlights files
 local highlights = require("custom.highlights")
 
+local function getNvimTreeWidth()
+	for _, win in pairs(vim.api.nvim_tabpage_list_wins(0)) do
+		if vim.bo[vim.api.nvim_win_get_buf(win)].ft == "neo-tree" then
+			return vim.api.nvim_win_get_width(win) + 1
+		end
+	end
+	return 0
+end
+
 M.ui = {
 	theme = "oshmes",
 	transparent = true,
 	theme_toggle = { "oshmes", "github_light" },
+	tabufline = {
+		overriden_modules = function(modules)
+			table.remove(modules, 1)
+			table.insert(
+				modules,
+				1,
+				"%#NvimTreeNormal#" .. (vim.g.nvimtree_side == "right" and "" or string.rep(" ", getNvimTreeWidth()))
+			)
+			-- or modules[1] = ""
+		end,
+	},
 	nvdash = {
 		load_on_startup = true,
 		header = {

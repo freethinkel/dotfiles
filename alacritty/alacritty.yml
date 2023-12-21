@@ -1,28 +1,30 @@
 window:
-  decorations: transparent
+  decorations: full 
   opacity: 0.5
+  blur: true
+  resize_increments: true
   padding:
-    x: 10
-    y: 10
+    x: 0
+    y: 0
   # dynamic_padding: true
 
 font:
-  # builtin_box_drawing: true
+  builtin_box_drawing: true
   # use_thin_strokes: true
   # draw_bold_text_with_bright_colors: true
   # mac_use_thin_fonts: true
   # use_thin_font: true
   size: 14
   offset:
-    y: 14
+    y: 20
   glyph_offset:
     y: 9
   normal:
-    # family: FiraCode Nerd Font
+    family: FiraCode Nerd Font
     # family: JetBrainsMono Nerd Font
-    family: Iosevka Nerd Font
+    # family: Iosevka Nerd Font
     # family: MonoLisa
-    style: Light
+    # style: Light
 
 key_bindings:
   - { key: Left, mods: Alt, chars: "\x1bb" } # one word left
@@ -130,8 +132,8 @@ key_bindings:
 # tabspaces: 2
 
 env:
-  # TERM: xterm-256color
-  TERM: alacritty
+  TERM: xterm-256color
+  # TERM: alacritty
 
 schemes:
   catppuccin: &catppuccin
@@ -828,4 +830,4 @@ oxocarbon: &oxocarbon
     cyan: "#3ddbd9"
     white: "#ffffff"
 
-colors: *gruvbox
+colors: *mountain

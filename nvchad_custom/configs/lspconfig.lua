@@ -22,7 +22,6 @@ local servers = {
 	"clangd",
 	"eslint",
 	"svelte",
-	"rust_analyzer",
 	"emmet_ls",
 	"cssmodules_ls",
 	-- "angularls",
@@ -41,6 +40,3 @@ lspconfig["stylelint_lsp"].setup({
 	capabilities = capabilities,
 	filetypes = { "css", "scss", "sass", "pcss", "postcss" },
 })
-
---
--- lspconfig.pyright.setup { blabla}

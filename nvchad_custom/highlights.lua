@@ -99,6 +99,18 @@ M.override = {
 }
 
 ---@type HLTable
-M.add = {}
+M.add = {
+	NeoTreeNormal = { link = "NvimTreeNormal" },
+	NeoTreeNormalNC = { link = "NvimTreeNormal" },
+	NeoTreeWinSeparator = { link = "NvimTreeWinSeparator" },
+	NeoTreeDirectoryName = { link = "NvimTreeFolderName" },
+	NeoTreeDirectoryIcon = { link = "NvimTreeFolderIcon" },
+	NeoTreeGitUntracked = { link = "NvimTreeGitNew" },
+	NeoTreeGitUnstaged = {},
+	NeoTreeGitAdded = { link = "NvimTreeGitNew" },
+	NeoTreeGitModified = { link = "NvimTreeGitDirty" },
+	NeoTreeCursorLine = { link = "NvimTreeCursorLine" },
+	NeoTreeGitDeleted = { link = "NvimTreeGitDeleted" },
+}
 
 return M
