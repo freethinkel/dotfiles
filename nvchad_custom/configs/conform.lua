@@ -16,7 +16,7 @@ require("conform").setup({
 		html = { "prettier" },
 		json = { "prettier" },
 		javascriptreact = { "prettier" },
-		svelte = { "prettier", "svelte" }, -- auto format with lsp
+		-- svelte = { "prettier", "svelte" }, -- auto format with lsp
 	},
 	formatters = {
 		injected = { options = { ignore_errors = true } },

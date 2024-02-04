@@ -1,0 +1,3 @@
+#!/bin/bash
+
+SCRIPTS=$(cat ./package.json)

@@ -14,9 +14,9 @@ local function getNvimTreeWidth()
 end
 
 M.ui = {
-	theme = "oshmes",
-	transparent = true,
-	theme_toggle = { "oshmes", "github_light" },
+	theme = "vesper",
+	transparency = false,
+	theme_toggle = { "vesper", "github_light" },
 	tabufline = {
 		overriden_modules = function(modules)
 			table.remove(modules, 1)
@@ -25,7 +25,6 @@ M.ui = {
 				1,
 				"%#NvimTreeNormal#" .. (vim.g.nvimtree_side == "right" and "" or string.rep(" ", getNvimTreeWidth()))
 			)
-			-- or modules[1] = ""
 		end,
 	},
 	nvdash = {

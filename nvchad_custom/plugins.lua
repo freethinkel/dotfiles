@@ -57,6 +57,36 @@ local plugins = {
 			require("custom.configs.lspconfig")
 		end, -- Override to setup mason-lspconfig
 	},
+	{ "JoosepAlviste/nvim-ts-context-commentstring", lazy = false },
+	{
+		"xbase-lab/xbase",
+		ft = "swift",
+		build = "make install", -- or "make install && make free_space" (not recommended, longer build time)
+		dependencies = {
+			"neovim/nvim-lspconfig",
+			-- "nvim-telescope/telescope.nvim", -- optional
+			-- "nvim-lua/plenary.nvim", -- optional/requirement of telescope.nvim
+			-- "stevearc/dressing.nvim", -- optional (in case you don't use telescope but something else)
+		},
+		config = function()
+			require("xbase").setup({
+				log_level = vim.log.levels.DEBUG,
+				simctl = {
+					iOS = {
+						"iPhone 15 Pro",
+					},
+				},
+				mappings = {
+					build_picker = 0,
+					run_picker = 0,
+					watch_picker = 0,
+					all_picker = 0,
+					toggle_split_log_buffer = 0,
+					toggle_vsplit_log_buffer = 0,
+				},
+			}) -- see default configuration bellow
+		end,
+	},
 	{
 		"davidmh/cspell.nvim",
 		lazy = false,
@@ -218,6 +248,21 @@ local plugins = {
 		"folke/persistence.nvim",
 		event = "BufReadPre",
 		opts = {},
+	},
+	{
+		"nvim-treesitter/nvim-treesitter-context",
+		event = "BufReadPost",
+		opts = {
+			throttle = true,
+			max_lines = 0,
+			patterns = {
+				default = {
+					"class",
+					"function",
+					"method",
+				},
+			},
+		},
 	},
 	-- {
 	-- 	name = "project-info",

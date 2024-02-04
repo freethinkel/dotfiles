@@ -95,3 +95,4 @@ case `uname` in
     # commands for FreeBSD go here
   ;;
 esac
+export PATH=$PATH:/Users/freethinkel/.spicetify

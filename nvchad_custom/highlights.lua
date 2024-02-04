@@ -89,7 +89,7 @@ M.override = {
 	NvimTreeFolderName = { fg = "grey_fg" },
 	NvDashAscii = {
 		bg = "none",
-		fg = "blue",
+		fg = "green",
 	},
 
 	-- NvDashButtons = {

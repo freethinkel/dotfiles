@@ -136,6 +136,20 @@ M.lsp = {
 			vim.lsp.buf.rename,
 			"LSP rename",
 		},
+		["<leader>lR"] = {
+			function()
+				local restartFlutter = function()
+					vim.cmd("FlutterLspRestart")
+				end
+				local generalLspRestart = function()
+					vim.cmd("LspRestart")
+				end
+
+				pcall(restartFlutter)
+				pcall(generalLspRestart)
+			end,
+			"Lsp Restart",
+		},
 		["<leader>la"] = { vim.lsp.buf.code_action, opts = { silent = true, nowait = true } },
 	},
 }
