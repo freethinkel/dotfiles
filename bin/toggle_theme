@@ -1,0 +1,74 @@
+#!/usr/bin/env node
+
+const { execSync, exec } = require("child_process");
+const fs = require("fs");
+const path = require("path");
+
+const KITTY_THEMES = {
+  dark: "Vesper",
+  light: "Ayu Light",
+};
+
+const VIM_THEMES = {
+  dark: "vesper",
+  light: "ayu_light",
+};
+
+const main = async () => {
+  const theme = getCurrentSystemTheme();
+  changeSystemTheme(theme === "dark" ? "light" : "dark");
+
+  processKitty();
+  processVim();
+};
+
+const processVim = async () => {
+  const systemTheme = getCurrentSystemTheme();
+  const socketsFolder = path.resolve(process.env.HOME, ".cache/nvim");
+  const allVimSockets = fs
+    .readdirSync(socketsFolder)
+    .filter((file) => file.indexOf("server_") === 0 && file.endsWith(".pipe"))
+    .map((file) => path.resolve(socketsFolder, file));
+
+  allVimSockets.forEach((socket) => {
+    exec(
+      [
+        `nvim --server ${socket} --remote-send`,
+        `":lua vim.g.nvchad_theme = '${VIM_THEMES[systemTheme]}';`,
+        `require(\\"base46\\").load_all_highlights();`,
+        `vim.api.nvim_exec_autocmds(\\"User\\", { pattern = \\"NvChadThemeReload\\" })<CR>:<esc>"`,
+      ].join(" "),
+    );
+  });
+};
+
+const processKitty = async () => {
+  const systemTheme = getCurrentSystemTheme();
+  exec(`kitten themes --reload-in=all ${KITTY_THEMES[systemTheme]}`);
+};
+
+const changeSystemTheme = (mode) => {
+  if (mode === "dark") {
+    execSync(
+      `osascript -e 'tell app "System Events" to tell appearance preferences to set dark mode to true'`,
+    );
+  } else {
+    execSync(
+      `osascript -e 'tell app "System Events" to tell appearance preferences to set dark mode to false'`,
+    );
+  }
+};
+
+const getCurrentSystemTheme = () => {
+  try {
+    const res = (
+      execSync("defaults read -g AppleInterfaceStyle 2> /dev/null") + ""
+    ).trim();
+
+    return res === "Dark" ? "dark" : "light";
+  } catch (err) {
+    return "light";
+  }
+};
+
+main();

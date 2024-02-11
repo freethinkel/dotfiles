@@ -51,6 +51,7 @@ lvim.plugins = {
     'mountain-theme/vim',
     lazy = false,
   },
+  { 'datsfilipe/vesper.nvim' },
   -- OWN THEME
   {
     dir = '~/Developer/dev/pet/oshmes.nvim/',

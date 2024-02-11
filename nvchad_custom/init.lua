@@ -23,6 +23,7 @@ vim.cmd("au BufNewFile,BufRead *.mdx set ft=markdown")
 
 vim.opt.swapfile = false
 vim.opt.wrap = false
+vim.opt.so = 8
 
 vim.api.nvim_create_autocmd({ "ColorScheme" }, {
 	pattern = "*",

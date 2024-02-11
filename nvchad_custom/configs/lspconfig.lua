@@ -1,8 +1,9 @@
 local capabilities = require("plugins.configs.lspconfig").capabilities
+local on_attach = require("plugins.configs.lspconfig").on_attach
 
 local lspconfig = require("lspconfig")
 
-local on_attach = require("custom.configs.overrides").on_attach
+-- local on_attach = require("custom.configs.overrides").on_attach
 
 -- local on_attach = function(client, bufnr)
 -- 	local documentFormattingProvider = client.server_capabilities.documentFormattingProvider
@@ -21,11 +22,10 @@ local servers = {
 	"tsserver",
 	"clangd",
 	"eslint",
-	"svelte",
 	"emmet_ls",
 	"cssmodules_ls",
 	-- "angularls",
-	"grammarly",
+	-- "grammarly",
 }
 
 for _, lsp in ipairs(servers) do
@@ -34,6 +34,19 @@ for _, lsp in ipairs(servers) do
 		capabilities = capabilities,
 	})
 end
+
+lspconfig["svelte"].setup({
+	on_attach = function(client, bufnr)
+		on_attach(client, bufnr)
+		vim.api.nvim_create_autocmd("BufWritePost", {
+			pattern = { "*.js", "*.ts" },
+			callback = function(ctx)
+				-- Here use ctx.match instead of ctx.file
+				client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
+			end,
+		})
+	end,
+})
 
 lspconfig["stylelint_lsp"].setup({
 	on_attach = on_attach,

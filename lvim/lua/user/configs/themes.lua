@@ -48,6 +48,9 @@ M.themes = {
     M.monokai_pro()
     lvim.colorscheme = "monokai-pro-default"
   end,
+  vesper = function()
+    lvim.colorscheme = "vesper"
+  end
 }
 
 M.set_theme = function(theme)

@@ -1,6 +1,7 @@
 local M = {}
 
-local on_attach = require("custom.configs.overrides").on_attach
+-- local on_attach = require("custom.configs.overrides").on_attach
+local on_attach = require("plugins.configs.lspconfig").on_attach
 
 M.setup = function()
 	require("flutter-tools").setup({

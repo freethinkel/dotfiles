@@ -1,15 +1,16 @@
 local M = {}
 
-local _on_attach = require("plugins.configs.lspconfig").on_attach
-M.on_attach = function(client, bufnr)
-	local documentFormattingProvider = client.server_capabilities.documentFormattingProvider
-	local documentRangeFormattingProvider = client.server_capabilities.documentRangeFormattingProvider
-
-	_on_attach(client, bufnr)
-
-	client.server_capabilities.documentFormattingProvider = documentFormattingProvider
-	client.server_capabilities.documentRangeFormattingProvider = documentRangeFormattingProvider
-end
+-- local _on_attach = require("plugins.configs.lspconfig").on_attach
+-- M.on_attach = function(client, bufnr)
+-- 	_on_attach(client, bufnr)
+-- 	-- local documentFormattingProvider = client.server_capabilities.documentFormattingProvider
+-- 	-- local documentRangeFormattingProvider = client.server_capabilities.documentRangeFormattingProvider
+-- 	--
+-- 	-- _on_attach(client, bufnr)
+-- 	--
+-- 	-- client.server_capabilities.documentFormattingProvider = documentFormattingProvider
+-- 	-- client.server_capabilities.documentRangeFormattingProvider = documentRangeFormattingProvider
+-- end
 
 M.treesitter = {
 	ensure_installed = {

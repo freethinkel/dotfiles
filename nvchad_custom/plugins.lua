@@ -264,6 +264,22 @@ local plugins = {
 			},
 		},
 	},
+	{
+		{
+			"Wansmer/treesj",
+			keys = { { "<leader>lt", "<CMD>TSJToggle<CR>", desc = "Toggle Treesitter Join" } },
+			cmd = { "TSJToggle" },
+			opts = { use_default_keymaps = false },
+			init = function()
+				require("core.mappings").treesj = {
+					n = {
+						["<leader>lt"] = { "<CMD>TSJToggle<CR>", "Toggle Treesitter Join/Split" },
+					},
+				}
+				require("core.utils").load_mappings("treesj")
+			end,
+		},
+	},
 	-- {
 	-- 	name = "project-info",
 	-- 	dir = "~/Developer/dev/pet/project_info",

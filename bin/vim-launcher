@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ID=$RANDOM
+# echo "$HOME/.cache/nvim/server_$ID.pipe" | xargs 
+echo "$1"
+nvim --listen "$HOME/.cache/nvim/server_$ID.pipe" $1
+

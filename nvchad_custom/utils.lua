@@ -1,5 +1,14 @@
 local M = {}
 
+local function getNvimTreeWidth()
+	for _, win in pairs(vim.api.nvim_tabpage_list_wins(0)) do
+		if vim.bo[vim.api.nvim_win_get_buf(win)].ft == "neo-tree" then
+			return vim.api.nvim_win_get_width(win) + 1
+		end
+	end
+	return 0
+end
+
 local _mixColorChannel = function(channelA, channelB, amount)
 	return (channelA * amount) + (channelB * (1 - amount))
 end
@@ -55,6 +64,15 @@ M.hi = function(config)
 	end
 
 	vim.cmd(cmd)
+end
+
+M.fix_tabufline = function(modules)
+	table.remove(modules, 1)
+	table.insert(
+		modules,
+		1,
+		"%#NvimTreeNormal#" .. (vim.g.nvimtree_side == "right" and "" or string.rep(" ", getNvimTreeWidth()))
+	)
 end
 
 return M
