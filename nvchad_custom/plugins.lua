@@ -59,6 +59,20 @@ local plugins = {
 	},
 	{ "JoosepAlviste/nvim-ts-context-commentstring", lazy = false },
 	{
+		"numToStr/Comment.nvim",
+		init = function()
+			require("core.utils").load_mappings("comment")
+		end,
+		dependencies = {
+			"JoosepAlviste/nvim-ts-context-commentstring",
+		},
+		config = function(_, opts)
+			require("Comment").setup({
+				pre_hook = require("ts_context_commentstring.integrations.comment_nvim").create_pre_hook(),
+			})
+		end,
+	},
+	{
 		"xbase-lab/xbase",
 		ft = "swift",
 		build = "make install", -- or "make install && make free_space" (not recommended, longer build time)
@@ -279,6 +293,18 @@ local plugins = {
 				require("core.utils").load_mappings("treesj")
 			end,
 		},
+	},
+	{
+		"sindrets/diffview.nvim",
+		cmd = { "DiffviewOpen" },
+		config = function()
+			require("custom.configs.diffview").setup()
+		end,
+	},
+	{
+		"lukas-reineke/headlines.nvim",
+		dependencies = "nvim-treesitter/nvim-treesitter",
+		config = true, -- or `opts = {}`
 	},
 	-- {
 	-- 	name = "project-info",

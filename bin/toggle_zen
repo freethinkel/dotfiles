@@ -4,56 +4,31 @@ const { execSync, exec } = require("child_process");
 const fs = require("fs");
 const { resolve } = require("path");
 
-const KITTY_THEMES = {
-  dark: "vesper",
-  light: "ayu_light",
-};
-
-const VIM_THEMES = {
-  dark: "vesper",
-  light: "ayu_light",
-};
-
-const main = async () => {
-  const themeController = new ThemeController();
+const main = () => {
   const kittyConfig = new KittyConfig("~/.config/kitty/kitty.conf");
   const vimController = new VimController();
-  const theme = themeController.getTheme();
-  const newTheme = theme === "dark" ? "light" : "dark";
+  const tmuxController = new TmuxController();
 
-  themeController.setTheme(newTheme);
+  const currentFont = kittyConfig.getFontFamily();
+  const isZenMode = currentFont === "Writer";
 
-  kittyConfig.setTheme(KITTY_THEMES[newTheme]);
-  vimController.setTheme(VIM_THEMES[newTheme]);
+  if (isZenMode) {
+    vimController.disableZenMode();
+    kittyConfig.setFontFamily("FiraCode Nerd Font");
+    kittyConfig.setFontSize(13);
+    tmuxController.showStatus();
+    tmuxController.restoreCurrentPane();
+  } else {
+    vimController.enableZenMode();
+    kittyConfig.setFontFamily("Writer");
+    kittyConfig.setFontSize(16);
+    tmuxController.hideStatus();
+    tmuxController.maximizeCurrentPane();
+  }
 
   kittyConfig.save();
   kittyConfig.reloadConfig();
 };
-
-class ThemeController {
-  setTheme(mode) {
-    if (mode === "dark") {
-      execSync(
-        `osascript -e 'tell app "System Events" to tell appearance preferences to set dark mode to true'`,
-      );
-    } else {
-      execSync(
-        `osascript -e 'tell app "System Events" to tell appearance preferences to set dark mode to false'`,
-      );
-    }
-  }
-  getTheme() {
-    try {
-      const res = (
-        execSync("defaults read -g AppleInterfaceStyle 2> /dev/null") + ""
-      ).trim();
-
-      return res === "Dark" ? "dark" : "light";
-    } catch (err) {
-      return "light";
-    }
-  }
-}
 
 class KittyConfig {
   #config;
@@ -97,18 +72,9 @@ class KittyConfig {
   }
 
   getFontFamily() {
-    const [_, line] = this.findLine("font_family");
+    const [index, line] = this.findLine("font_family");
 
     return line.replace("font_family", "").trim();
-  }
-
-  setTheme(theme) {
-    const [index, line] = this.findLine("include themes/");
-    this.#config = [
-      ...this.configLines.slice(0, index),
-      `include themes/${theme}.conf`,
-      ...this.configLines.slice(index + 1),
-    ].join("\n");
   }
 
   setFontFamily(ff) {
@@ -158,6 +124,24 @@ class VimController {
 
   disableZenMode() {
     this.#exec(`":lua require(\\"zen-mode\\").close()<cr>:<esc>"`);
+  }
+}
+
+class TmuxController {
+  showStatus() {
+    exec("tmux set status on");
+  }
+
+  hideStatus() {
+    exec("tmux set status off");
+  }
+
+  maximizeCurrentPane() {
+    exec("tmux list-panes -F '#F' | grep -q Z || tmux resize-pane -Z");
+  }
+
+  restoreCurrentPane() {
+    exec("tmux list-panes -F '#F' | grep -q Z && tmux resize-pane -Z");
   }
 }
 

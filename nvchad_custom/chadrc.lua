@@ -1,4 +1,4 @@
----@type ChadrcConfig
+---@class ChadrcConfig
 local M = {}
 
 -- Path to overriding theme and highlights files
@@ -6,7 +6,8 @@ local highlights = require("custom.highlights")
 
 M.ui = {
 	theme = "vesper",
-	transparency = false,
+
+	-- transparency = true,
 	theme_toggle = { "vesper", "ayu_light" },
 	tabufline = {
 		overriden_modules = require("custom.utils").fix_tabufline,

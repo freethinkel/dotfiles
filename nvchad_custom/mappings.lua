@@ -6,6 +6,7 @@ M.disabled = {
 		["<leader>x"] = "",
 		["<leader>f"] = "",
 		["<leader>ra"] = "",
+		-- ["<leader>/"] = "",
 		["<C-n>"] = "",
 		["[d"] = "",
 		["]d"] = "",
@@ -33,7 +34,8 @@ M.general = {
 		["qq"] = { ":q!<cr>" },
 		["<leader>tt"] = {
 			function()
-				require("base46").toggle_theme()
+				vim.cmd("!toggle_theme")
+				-- require("base46").toggle_theme()
 			end,
 			"Toggle theme",
 		},
@@ -64,7 +66,8 @@ M.zenmode = {
 	n = {
 		["<leader>zz"] = {
 			function()
-				require("zen-mode").toggle()
+				vim.cmd("!toggle_zen")
+				-- require("zen-mode").toggle()
 			end,
 		},
 	},

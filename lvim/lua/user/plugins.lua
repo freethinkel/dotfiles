@@ -15,10 +15,6 @@ lvim.plugins = {
   },
   { 'imsnif/kdl.vim' },
   {
-    'sindrets/diffview.nvim',
-    event = 'BufRead',
-  },
-  {
     'windwp/nvim-ts-autotag',
     config = function()
       require('nvim-ts-autotag').setup()
@@ -32,7 +28,7 @@ lvim.plugins = {
     end,
   },
   { 'nyoom-engineering/oxocarbon.nvim' },
-  { 'catppuccin/nvim',                 name = 'catppuccin' },
+  { 'catppuccin/nvim', name = 'catppuccin' },
   { 'stephenway/postcss.vim' },
   {
     'loctvl842/monokai-pro.nvim',
@@ -60,7 +56,7 @@ lvim.plugins = {
   --   "freethinkel/oshmes.nvim"
   -- },
   { 'shaunsingh/nord.nvim' },
-  { 'rose-pine/neovim',               name = 'rose-pine' },
+  { 'rose-pine/neovim', name = 'rose-pine' },
   { 'olivercederborg/poimandres.nvim' },
   {
     'folke/todo-comments.nvim',
@@ -88,6 +84,42 @@ lvim.plugins = {
     lazy = false,
     config = function()
       require('colorizer').setup()
+    end,
+  },
+  {
+    'sindrets/diffview.nvim',
+    cmd = { 'DiffviewOpen' },
+    config = function()
+      require('diffview').setup({
+        enhanced_diff_hl = true,
+        -- enhanced_diff_hl = false,
+        hooks = {
+          ---@param view StandardView
+          view_opened = function(view)
+            -- Highlight 'DiffChange' as 'DiffDelete' on the left, and 'DiffAdd' on
+            -- the right.
+            local function post_layout()
+              -- utils.tbl_ensure(view, 'winopts.diff2.a')
+              -- utils.tbl_ensure(view, 'winopts.diff2.b')
+              view.winopts.diff2.a = utils.tbl_union_extend(view.winopts.diff2.a, {
+                winhl = {
+                  'DiffChange:DiffAddAsDelete',
+                  'DiffText:DiffDeleteText',
+                },
+              })
+              view.winopts.diff2.b = utils.tbl_union_extend(view.winopts.diff2.b, {
+                winhl = {
+                  'DiffChange:DiffAdd',
+                  'DiffText:DiffAddText',
+                },
+              })
+            end
+
+            view.emitter:on('post_layout', post_layout)
+            post_layout()
+          end,
+        },
+      })
     end,
   },
 }

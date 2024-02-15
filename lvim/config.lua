@@ -4,4 +4,4 @@ require('user.configs.lsp').setup()
 require('user.mappings')
 require('user.plugins')
 
-require('user.configs.themes').set_theme(require('user.configs.themes').themes.vesper)
+require('user.configs.themes').set_theme(require('user.configs.themes').themes.tokyonight)

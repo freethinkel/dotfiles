@@ -1,15 +1,4 @@
--- local autocmd = vim.api.nvim_create_autocmd
-
--- Auto resize panes when resizing nvim window
--- autocmd("VimResized", {
---   pattern = "*",
---   command = "tabdo wincmd =",
--- })
---
--- TODO:
--- add [mappings
--- fix harpoon tabs
---
+vim.opt.fillchars = vim.opt.fillchars + "diff:╱" + "eob: "
 
 -- OTHER
 vim.cmd([[let &t_Cs = "\e[4:3m"]])
@@ -23,7 +12,9 @@ vim.cmd("au BufNewFile,BufRead *.mdx set ft=markdown")
 
 vim.opt.swapfile = false
 vim.opt.wrap = false
-vim.opt.so = 8
+vim.opt.relativenumber = true
+-- vim.opt.so = 8
+-- vim.opt.diffopt = "internal,filler,closeoff,iwhite"
 
 vim.api.nvim_create_autocmd({ "ColorScheme" }, {
 	pattern = "*",

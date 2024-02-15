@@ -50,7 +50,6 @@ M.override_highlights = function()
 		fg = colors.teal,
 		bg = "NONE",
 	})
-
 	hi({
 		"DiagnosticUnderlineWarn",
 		fg = "NONE",
@@ -65,6 +64,83 @@ M.override_highlights = function()
 		sp = colors.red,
 		undercurl = true,
 	})
+	-- hi({
+	-- 	"DiffAdded",
+	-- 	fg = "NONE",
+	-- 	bg = "green",
+	-- })
+	hi({
+		"diffChanged",
+		fg = colors.blue,
+	})
+	hi({
+		"DiffAdd",
+		fg = "NONE",
+		bg = mixColors(colors.green, colors.black, 0.85),
+	})
+	hi({
+		"DiffDelete",
+		fg = "NONE",
+		bg = mixColors(colors.red, colors.black, 0.85),
+	})
+	hi({
+		"DiffText",
+		fg = "NONE",
+		bg = mixColors(colors.green, colors.black, 0.6),
+	})
+	hi({
+		"DiffChange",
+		fg = "NONE",
+		bg = mixColors(colors.green, colors.black, 0.85),
+	})
+	hi({
+		"DiffDeleteText",
+		bg = mixColors(colors.red, colors.black, 0.6),
+	})
+	hi({
+		"DiffAddAsDelete",
+		bg = mixColors(colors.red, colors.black, 0.85),
+	})
+	hi({
+		"DiffAddText",
+		bg = mixColors(colors.green, colors.black, 0.6),
+	})
+
+	-- vim.cmd([[highlight DiffAdd gui=none guifg=none guibg=#103235]])
+	-- vim.cmd([[highlight DiffChange gui=none guifg=none guibg=#272D43]])
+	-- vim.cmd([[highlight DiffText gui=none guifg=none guibg=#394b70]])
+	-- vim.cmd([[highlight DiffDelete gui=none guifg=none guibg=#3F2D3D]])
+	-- vim.cmd([[highlight DiffviewDiffAddAsDelete guibg=#3f2d3d gui=none guifg=none]])
+	-- vim.cmd([[highlight DiffviewDiffDelete gui=none guifg=#3B4252 guibg=none]])
+	--
+	-- -- Left panel
+	-- -- "DiffChange:DiffAddAsDelete",
+	-- -- "DiffText:DiffDeleteText",
+	-- vim.cmd([[highlight DiffAddAsDelete gui=none guifg=none guibg=#3F2D3D]])
+	-- vim.cmd([[highlight DiffDeleteText gui=none guifg=none guibg=#4B1818]])
+	--
+	-- -- Right panel
+	-- -- "DiffChange:DiffAdd",
+	-- -- "DiffText:DiffAddText",
+	-- vim.cmd([[highlight DiffAddText gui=none guifg=none guibg=#1C5458]])
+
+	-- FIX GITSIGNS
+	hi({
+		"GitSignsAdd",
+		bg = "NONE",
+		fg = colors.green,
+	})
+	hi({
+		"GitSignsAddLn",
+		bg = "NONE",
+		fg = colors.green,
+	})
+	hi({
+		"GitSignsChange",
+		bg = "NONE",
+		fg = colors.blue,
+	})
+
 	hi({
 		"DiagnosticUnderlineInfo",
 		fg = "NONE",
@@ -90,6 +166,10 @@ M.override = {
 	NvDashAscii = {
 		bg = "none",
 		fg = "green",
+	},
+
+	FoldColumn = {
+		bg = "black",
 	},
 
 	-- NvDashButtons = {
