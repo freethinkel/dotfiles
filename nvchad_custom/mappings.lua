@@ -75,11 +75,25 @@ M.zenmode = {
 
 M.tabs = {
 	n = {
-		["<leader>c"] = {
+		["<leader>bp"] = {
+			"<cmd>bp<cr>",
+			"Buffer [P]rev",
+		},
+		["<leader>bn"] = {
+			"<cmd>bn<cr>",
+			"Buffer [N]ext",
+		},
+		["<leader>bd"] = {
 			function()
 				require("nvchad.tabufline").close_buffer()
 			end,
-			"Close buffer",
+			"Buffer [D]elete",
+		},
+		["<leader>bo"] = {
+			function()
+				require("nvchad.tabufline").closeOtherBufs()
+			end,
+			"Close [O]ther buffers",
 		},
 		["<S-h>"] = {
 			function()

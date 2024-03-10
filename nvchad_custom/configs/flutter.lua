@@ -9,8 +9,8 @@ M.setup = function()
 			on_attach = on_attach,
 			color = {
 				enabled = true,
-				background = false,
-				foreground = false,
+				background = true,
+				foreground = true,
 				virtual_text = true,
 				virtual_text_str = "■",
 			},

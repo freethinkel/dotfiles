@@ -3,18 +3,6 @@ local on_attach = require("plugins.configs.lspconfig").on_attach
 
 local lspconfig = require("lspconfig")
 
--- local on_attach = require("custom.configs.overrides").on_attach
-
--- local on_attach = function(client, bufnr)
--- 	local documentFormattingProvider = client.server_capabilities.documentFormattingProvider
--- 	local documentRangeFormattingProvider = client.server_capabilities.documentRangeFormattingProvider
---
--- 	_on_attach(client, bufnr)
---
--- 	client.server_capabilities.documentFormattingProvider = documentFormattingProvider
--- 	client.server_capabilities.documentRangeFormattingProvider = documentRangeFormattingProvider
--- end
-
 -- if you just want default config for the servers then put them in a table
 local servers = {
 	"html",
@@ -24,6 +12,9 @@ local servers = {
 	"eslint",
 	"emmet_ls",
 	"cssmodules_ls",
+	"autotools_ls",
+	"jsonls",
+	"astro",
 	-- "angularls",
 	-- "grammarly",
 }
@@ -41,7 +32,6 @@ lspconfig["svelte"].setup({
 		vim.api.nvim_create_autocmd("BufWritePost", {
 			pattern = { "*.js", "*.ts" },
 			callback = function(ctx)
-				-- Here use ctx.match instead of ctx.file
 				client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
 			end,
 		})

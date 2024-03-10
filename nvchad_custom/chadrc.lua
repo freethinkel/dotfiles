@@ -5,10 +5,9 @@ local M = {}
 local highlights = require("custom.highlights")
 
 M.ui = {
-	theme = "vesper",
-
+	theme = "nules",
 	-- transparency = true,
-	theme_toggle = { "vesper", "ayu_light" },
+	theme_toggle = { "nules", "ayu_light" },
 	tabufline = {
 		overriden_modules = require("custom.utils").fix_tabufline,
 	},
