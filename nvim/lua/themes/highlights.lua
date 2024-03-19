@@ -113,6 +113,12 @@ M.setup = function(theme)
 	hi("NvimTreeNormal", { bg = tint_background })
 	hi("NvimTreeWindowPicker", { bg = colors.blue, fg = schema.base00 })
 
+	-- NEOTREE
+	hi("NeoTreeNormal", { bg = tint_background })
+	hi("NeoTreeNormalNC", { bg = tint_background })
+	hi("NeoTreeGitUntracked", { fg = colors.green })
+	hi("NeoTreeGitModified", { fg = colors.yellow })
+
 	-- Syntax
 	hi("Boolean", { fg = schema.base09 })
 	hi("Character", { fg = schema.base08 })

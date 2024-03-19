@@ -19,7 +19,8 @@ return {
 				html = { "prettier" },
 				json = { "prettier" },
 				javascriptreact = { "prettier" },
-				svelte = { "prettier", "svelte" }, -- auto format with lsp
+				svelte = { "svelte" }, -- auto format with lsp
+				svg = { "prettier" },
 			},
 		},
 	},

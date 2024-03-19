@@ -1,6 +1,9 @@
 return {
 	{ -- Highlight, edit, and navigate code
 		"nvim-treesitter/nvim-treesitter",
+		dependencies = {
+			"windwp/nvim-ts-autotag",
+		},
 		build = ":TSUpdate",
 		config = function()
 			-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -10,6 +13,12 @@ return {
 				ensure_installed = { "bash", "c", "html", "lua", "markdown", "vim", "vimdoc" },
 				-- Autoinstall languages that are not installed
 				auto_install = true,
+				autotag = {
+					enable = true,
+					enable_rename = true,
+					enable_close = true,
+					enable_close_on_slash = true,
+				},
 				highlight = { enable = true },
 				indent = { enable = true },
 			})

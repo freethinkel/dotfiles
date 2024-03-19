@@ -4,6 +4,7 @@ return {
 		dependencies = {
 			"nvim-tree/nvim-web-devicons",
 		},
+		enabled = false,
 		keys = {
 			{ "<leader>e", "<cmd>NvimTreeToggle<cr>", "Toggle explorer" },
 		},
