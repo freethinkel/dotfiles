@@ -6,6 +6,8 @@ require("config.autocmds")
 -- vim.cmd.colorscheme("github_dark_dimmed")
 require("themes")
 
+vim.opt.wrap = true
+
 if vim.g.neovide then
 	-- vim.o.guifont = "FiraCode Nerd Font:h14"
 	-- vim.opt.linespace = 1

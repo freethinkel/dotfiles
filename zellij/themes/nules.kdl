@@ -1,0 +1,16 @@
+themes {
+    nules {
+        fg "#bbbbbb"
+        bg "#1B1B1B"
+        black "#353535"
+        red "#ff8080"
+        green "#A1FFC1"
+        yellow "#ffc799"
+        blue  "#A9F0FD"
+        magenta "#d8a8ff"
+        cyan "#87f2ff"
+        white "#bbbbbb"
+        orange "#D08770"
+    }
+}
+

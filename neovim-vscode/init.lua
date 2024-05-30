@@ -43,8 +43,11 @@ end)
 
 map("x", "<A-j>", ":m '>+1<CR>gv-gv")
 map("x", "<A-k>", ":m '<-2<CR>gv-gv")
+map("n", "<Esc>", ":nohl<CR>", { silent = true })
 
-
+-- LSP
+map("n", "]d", function() vscode.call("editor.action.marker.prevInFiles") end)
+map("n", "]d", function() vscode.call("editor.action.marker.next") end)
 
 -- ["<A-j>"] = { ":m .+1<CR>==", "Move down" },
 -- ["<A-k>"] = { ":m .-2<CR>==", "Move up" },

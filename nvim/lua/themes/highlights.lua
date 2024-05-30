@@ -22,6 +22,10 @@ M.setup = function(theme)
 	hi("VertSplit", { fg = tint_background, bg = tint_background })
 	hi("Directory", { fg = schema.base04 })
 
+	-- CMP
+	hi("CmpItemAbbrDeprecatedDefault", { fg = colors.red, strikethrough = true })
+	hi("CmpItemKindDefault", { fg = schema.base08 })
+
 	-- Mini statusline
 	hi("MiniStatuslineModeNormal", { fg = schema.base00, bg = colors.blue })
 	hi("MiniStatuslineModeInsert", { fg = schema.base00, bg = mixColors(colors.red, colors.blue, 0.2) })
@@ -32,6 +36,10 @@ M.setup = function(theme)
 	hi("MiniStatuslineFilename", { fg = schema.base05, bg = schema.base01 })
 
 	-- lsp
+	hi("LspReferenceText", { bg = mixColors(schema.base00, colors.green, 0.1) })
+	hi("LspReferenceRead", { bg = mixColors(schema.base00, colors.blue, 0.1) })
+	hi("LspReferenceWrite", { bg = mixColors(schema.base00, colors.blue, 0.1) })
+
 	hi("DiagnosticError", { bg = mixColors(colors.red, schema.base00, 0.9), fg = colors.red })
 	hi("DiagnosticSignError", { bg = "none", fg = colors.red })
 	hi(
@@ -100,7 +108,7 @@ M.setup = function(theme)
 	hi("QuickFixLine", { bg = schema.base01 })
 	hi("PMenu", { fg = schema.base05, bg = schema.base01 })
 	hi("PMenuSel", { fg = schema.base01, bg = schema.base05 })
-	hi("TabLine", { fg = schema.base03, bg = schema.base01 })
+	hi("TabLine", { fg = schema.base03, bg = schema.base00 })
 	hi("TabLineFill", { fg = schema.base03, bg = schema.base01 })
 	hi("TabLineSel", { fg = schema.base0B, bg = schema.base01 })
 

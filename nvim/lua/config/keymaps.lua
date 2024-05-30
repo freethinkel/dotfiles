@@ -16,10 +16,30 @@ map("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]ui
 
 -- Buffers
 map("n", "<leader>bb", "<cmd>Telescope buffers<cr>", { desc = "List [B]uffers" })
-map("n", "<leader>bd", "<cmd>bd<cr>", { desc = "[B]uffer delete" })
+map("n", "<leader>bd", function()
+	local allBuffers = require("config.utils").get_buffers()
+	local currentBuffer = vim.api.nvim_get_current_buf()
+
+	vim.api.nvim_set_current_buf(
+		require("config.utils").getNextCycleValue(
+			allBuffers,
+			require("config.utils").indexOf(allBuffers, currentBuffer)
+		)
+	)
+	vim.api.nvim_buf_delete(currentBuffer, {})
+end, { desc = "[B]uffer delete" })
 
 map("n", "[b", "<cmd>bp<cr>", { desc = "Go to previous [B]uffer " })
 map("n", "]b", "<cmd>bn<cr>", { desc = "Go to next [B]buffer" })
+map("n", "<leader>co", function()
+	local buffer_ids = require("config.utils").get_buffers()
+
+	for _, buf in ipairs(buffer_ids) do
+		if buf ~= vim.api.nvim_get_current_buf() then
+			vim.api.nvim_buf_delete(buf, {})
+		end
+	end
+end, { desc = "[C]lose [O]ther buffers" })
 
 map("x", "<A-j>", ":m '>+1<cr>gv-gv", { desc = "Move down", noremap = true, silent = true })
 map("x", "<A-k>", ":m '<-2<CR>gv-gv", { desc = "Move up", noremap = true, silent = true })

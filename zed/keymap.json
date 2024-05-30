@@ -1,0 +1,87 @@
+[
+  {
+    "context": "Editor && vim_mode == insert",
+    "bindings": {
+      "j k": ["workspace::SendKeystrokes", "escape"],
+      "k j": ["workspace::SendKeystrokes", "escape"],
+      "tab": "menu::SelectNext",
+      "shift-tab": "menu::SelectPrev"
+    }
+  },
+  {
+    "context": "Editor && vim_mode == visual || vim_mode == normal",
+    "bindings": {
+      "space /": "editor::ToggleComments",
+      "alt-k": "editor::MoveLineUp",
+      "alt-j": "editor::MoveLineDown"
+    }
+  },
+  {
+    "context": "ProjectPanel && not_editing",
+    "bindings": {
+      "h": "project_panel::CollapseSelectedEntry",
+      // "l": "project_panel::ExpandSelectedEntry",
+      "l": "project_panel::OpenPermanent",
+      "j": "menu::SelectNext",
+      "k": "menu::SelectPrev",
+      "o": "menu::Confirm",
+      "r": "project_panel::Rename",
+      "z c": "project_panel::CollapseSelectedEntry",
+      "z o": "project_panel::ExpandSelectedEntry",
+      "s": "project_panel::RevealInFinder",
+      "x": "project_panel::Cut",
+      "c": "project_panel::Copy",
+      "p": "project_panel::Paste",
+      "d": "project_panel::Delete",
+      "a": "project_panel::NewFile",
+      "shift-a": "project_panel::NewDirectory",
+      "shift-y": "project_panel::CopyRelativePath",
+      "g y": "project_panel::CopyPath"
+    }
+  },
+  {
+    "context": "Editor && VimControl && !VimWaiting && !menu",
+    "bindings": {
+      "g r": "editor::FindAllReferences",
+      // Doc hover
+      "K": "editor::Hover",
+      // buffer :bn :bp
+      "] b": "pane::ActivateNextItem",
+      "[ b": "pane::ActivatePrevItem",
+      // quick fix
+      "space c a": "editor::ToggleCodeActions",
+      "] d": "editor::GoToDiagnostic",
+      "[ d": "editor::GoToPrevDiagnostic",
+      "g m": "editor::ExpandMacroRecursively",
+      // LSP rename    "ga" multi cursor
+      "space r n": "editor::Rename",
+      // symbol search   "gs"
+      "space o": "project_symbols::Toggle",
+      // NERDTree
+      "space e": "project_panel::ToggleFocus",
+      "space x": "workspace::CloseAllDocks",
+      // Terminal Pannel(shell)
+      "space s h": "terminal_panel::ToggleFocus",
+      // trouble toggle
+      "space t": "diagnostics::Deploy"
+    }
+  },
+  {
+    "context": "Editor && VimControl && !VimWaiting && !menu",
+    "bindings": {
+      "ctrl-h": ["workspace::ActivatePaneInDirection", "Left"],
+      "ctrl-l": ["workspace::ActivatePaneInDirection", "Right"],
+      "ctrl-k": ["workspace::ActivatePaneInDirection", "Up"],
+      "ctrl-j": ["workspace::ActivatePaneInDirection", "Down"]
+    }
+  },
+  {
+    "context": "Dock",
+    "bindings": {
+      "ctrl-h": ["workspace::ActivatePaneInDirection", "Left"],
+      "ctrl-l": ["workspace::ActivatePaneInDirection", "Right"],
+      "ctrl-k": ["workspace::ActivatePaneInDirection", "Up"],
+      "ctrl-j": ["workspace::ActivatePaneInDirection", "Down"]
+    }
+  }
+]

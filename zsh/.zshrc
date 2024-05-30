@@ -18,7 +18,9 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-export PATH="$PATH:$HOME/.dev/flutter/bin:$HOME/.rvm/bin:$HOME/.dev/bin:$HOME/Library/Application Support/neovim/bin"
+export PATH="$PATH:$HOME/fvm/default/bin:$HOME/.rvm/bin:$HOME/.dev/bin:$HOME/Library/Application Support/neovim/bin"
+# alias dart="fvm dart"
+# alias flutter="fvm flutter"
 
 if [ -d "$HOME/.cargo" ]; 
 then
@@ -53,7 +55,7 @@ export PATH="$PNPM_HOME:$PATH"
 export WASMTIME_HOME="$HOME/.wasmtime"
 
 export PATH="$BUN_INSTALL/bin:$PATH"
-export PATH="${PATH}":"$HOME/Library/Python/3.10/lib/python/site-packages"
+export PATH="$PATH":"$HOME/Library/Python/3.10/lib/python/site-packages"
 export PATH="$PATH":"$HOME/.pub-cache/bin"
 export PATH="$WASMTIME_HOME/bin:$PATH"
 export PATH="$PATH":"$HOME/.spicetify"
@@ -95,4 +97,4 @@ case `uname` in
     # commands for FreeBSD go here
   ;;
 esac
-export PATH=$PATH:/Users/freethinkel/.spicetify
+

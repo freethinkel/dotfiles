@@ -1,0 +1,75 @@
+{
+  "enable_language_server": true,
+  "vim_mode": true,
+  "buffer_font_family": "FiraCode Nerd Font",
+  "default_dock_anchor": "bottom",
+  "buffer_font_size": 14,
+  "ui_font_family": "Zed Sans",
+  "buffer_line_height": {
+    "custom": 1.8
+  },
+  "tab_size": 2,
+  "vim": {
+    "use_system_clipboard": "always"
+  },
+  "theme": "Nules dark",
+  "format_on_save": "on",
+  "auto_update": true,
+  "inlay_hints": {
+    "enabled": false
+  },
+  "lsp": {
+    "biome": {
+      "root": "package.json",
+      "enabled": false,
+      "filetypes": ["typescript"]
+    },
+    "eslint": {
+      "settings": {
+        "problems": {
+          "shortenToSingleLine": true
+        }
+      }
+    }
+  },
+  "languages": {
+    "CSS": {
+      "formatter": "prettier"
+    },
+    "Dart": {
+      "formatter": "language_server",
+      "format_on_save": "on",
+      "code_actions_on_format": {
+        "source.organizeImports": true
+      }
+    },
+    "Svelte": {
+      "format_on_save": "on",
+      "formatter": "language_server"
+    },
+    "JavaScript": {
+      "formatter": "prettier",
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      }
+    },
+    "TypeScript": {
+      "formatter": "prettier",
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      }
+    },
+    "TSX": {
+      "formatter": "prettier",
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      }
+    }
+  },
+  "relative_line_numbers": true,
+  "show_whitespaces": "selection",
+  "formatter": "prettier",
+  "file_types": {
+    "CSS": ["pcss"]
+  }
+}

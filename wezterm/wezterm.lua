@@ -21,6 +21,7 @@ local config = {
 	},
 	colors = themes.nules_dark,
 	window_decorations = "RESIZE",
+	-- window_decorations = "TITLE",
 	hide_tab_bar_if_only_one_tab = true,
 	-- enable_tab_bar = false,
 	native_macos_fullscreen_mode = true,
@@ -28,9 +29,11 @@ local config = {
 	adjust_window_size_when_changing_font_size = false,
 	debug_key_events = false,
 	disable_default_key_bindings = true,
-	-- window_background_opacity = 1,
+	-- window_background_opacity = 0.9,
 	-- macos_window_background_blur = 20,
 	underline_position = "-0.2cell",
+	underline_thickness = "2px",
+	-- },
 	-- background = {
 	-- 	{
 	-- 		source = { File = { path = "/Users/freethinkel/Developer/dev/dotfiles/wallpapers/pic_1653828646713.jpg" } },
@@ -54,9 +57,11 @@ local config = {
 		WSLENV = "TERMINFO_DIRS",
 	},
 	term = "wezterm",
+	cursor_thickness = "2px",
 	-- use_ime = false,
 	-- default_cursor_style = "SteadyBar",
 	-- != =>
+	--
 	-- ==> == >>== !== !=
 	-- ()   () [] []
 	-- !~ !==|  |  {. .}

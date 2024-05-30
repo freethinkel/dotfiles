@@ -2,7 +2,16 @@ local opt = vim.opt
 
 vim.g.mapleader = " "
 
-opt.so = 80
+-- Undercurl
+-- vim.cmd([[let &t_Cs = "\e[60m"]])
+-- vim.cmd([[let &t_Ce = "\e[24m"]])
+-- " Inform vim how to enable undercurl in wezterm
+-- let &t_Cs = "\e[60m"
+-- " Inform vim how to disable undercurl in wezterm (this disables all underline modes)
+-- let &t_Ce = "\e[24m"
+
+opt.so = 15
+opt.pumheight = 10
 
 opt.swapfile = false
 opt.wrap = false
