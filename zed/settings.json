@@ -1,40 +1,65 @@
 {
+  "language_models": {
+    "openai": {
+      "version": "1"
+    }
+  },
+  "assistant": {
+    "default_model": {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo"
+    },
+    "version": "2",
+    "default_open_ai_model": "gpt-4o",
+    "provider": null
+  },
+  "preview_tabs": {
+    "enable_preview_from_code_navigation": true
+  },
+  "completion_documentation_secondary_query_debounce": 100,
   "enable_language_server": true,
   "vim_mode": true,
   "buffer_font_family": "FiraCode Nerd Font",
   "default_dock_anchor": "bottom",
   "buffer_font_size": 14,
-  "ui_font_family": "Zed Sans",
+  // "ui_font_family": "Zed Sans",
   "buffer_line_height": {
-    "custom": 1.8
+    "custom": 2
   },
   "tab_size": 2,
   "vim": {
     "use_system_clipboard": "always"
   },
-  "theme": "Nules dark",
+  "theme": {
+    "dark": "Min Dark",
+    "light": "Nules light",
+    "mode": "system"
+  },
+
   "format_on_save": "on",
   "auto_update": true,
   "inlay_hints": {
     "enabled": false
+  },
+  "terminal": {
+    "env": {
+      "GIT_EDITOR": "zed --preview --wait"
+    }
   },
   "lsp": {
     "biome": {
       "root": "package.json",
       "enabled": false,
       "filetypes": ["typescript"]
-    },
-    "eslint": {
-      "settings": {
-        "problems": {
-          "shortenToSingleLine": true
-        }
-      }
     }
   },
   "languages": {
     "CSS": {
       "formatter": "prettier"
+    },
+    "Prisma": {
+      "formatter": "language_server",
+      "format_on_save": "on"
     },
     "Dart": {
       "formatter": "language_server",
@@ -45,7 +70,8 @@
     },
     "Svelte": {
       "format_on_save": "on",
-      "formatter": "language_server"
+      // "formatter": "language_server"
+      "formatter": "prettier"
     },
     "JavaScript": {
       "formatter": "prettier",
@@ -55,12 +81,14 @@
     },
     "TypeScript": {
       "formatter": "prettier",
+      // "language_servers": ["!typescript-language-server", "vtsls", "eslint"],
       "code_actions_on_format": {
         "source.fixAll.eslint": true
       }
     },
     "TSX": {
       "formatter": "prettier",
+      // "language_servers": ["!typescript-language-server", "vtsls", "eslint"],
       "code_actions_on_format": {
         "source.fixAll.eslint": true
       }

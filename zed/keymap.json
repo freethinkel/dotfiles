@@ -42,6 +42,17 @@
   {
     "context": "Editor && VimControl && !VimWaiting && !menu",
     "bindings": {
+      "space g g": [
+        "workspace::SendKeystrokes",
+        ": new center terminal enter lazygit&&exit enter"
+      ],
+      "space z z": [
+        "workspace::SendKeystrokes",
+        ": togglecenter enter : toggleleft enter"
+      ],
+      "space d d": "task::Spawn",
+      // "": "workspace::ToggleLeftDock",
+      // "space g g": ["task::Spawn", { "task_name": "Open lazygit" }],
       "g r": "editor::FindAllReferences",
       // Doc hover
       "K": "editor::Hover",
@@ -57,10 +68,8 @@
       "space r n": "editor::Rename",
       // symbol search   "gs"
       "space o": "project_symbols::Toggle",
-      // NERDTree
       "space e": "project_panel::ToggleFocus",
       "space x": "workspace::CloseAllDocks",
-      // Terminal Pannel(shell)
       "space s h": "terminal_panel::ToggleFocus",
       // trouble toggle
       "space t": "diagnostics::Deploy"
@@ -76,7 +85,6 @@
     }
   },
   {
-    "context": "Dock",
     "bindings": {
       "ctrl-h": ["workspace::ActivatePaneInDirection", "Left"],
       "ctrl-l": ["workspace::ActivatePaneInDirection", "Right"],

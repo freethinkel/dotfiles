@@ -1,0 +1,12 @@
+{
+  "header 1": {
+    "prefix": "h1",
+    "body": ["# ${0}"],
+    "description": "Add header level 1"
+  },
+  "header 2": {
+    "prefix": "h2",
+    "body": ["## ${0}"],
+    "description": "Add header level 2"
+  }
+}

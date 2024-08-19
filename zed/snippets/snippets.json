@@ -1,0 +1,7 @@
+{
+  "equation": {
+    "prefix": "BEQ",
+    "body": "\\begin{equation}\n\t$0\n\\end{equation}",
+    "description": "equation environment"
+  }
+}

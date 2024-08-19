@@ -17,16 +17,22 @@ copy_on_select true
 theme "nules"
 
 keybinds {
-    unbind "Ctrl h"
+  unbind "Ctrl h"
+  unbind "Ctrl q"
 
-    normal {
-      bind "Ctrl h" { MoveFocus "Left"; }
-      bind "Ctrl j" { MoveFocus "Down"; }
-    }
+  session {
+    bind "q" { Quit; }
+  }
 
-    pane {
-      bind "s" { NextSwapLayout; }
-    }
+  normal {
+    bind "Ctrl h" { MoveFocus "Left"; }
+    bind "Ctrl j" { MoveFocus "Down"; }
+    unbind "Ctrl q"
+  }
+
+  pane {
+    bind "s" { NextSwapLayout; }
+  }
 }
 
 // Path to the default editor to use to edit pane scrollbuffer

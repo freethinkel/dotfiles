@@ -1,10 +1,15 @@
-// Static tasks configuration.
-//
-// Example:
 [
   {
     "label": "Flutter: Debug (macos)",
     "command": "flutter run -d macos",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "Open lazygit",
+    "command": "lazygit",
+    "tags": ["git"],
     "use_new_terminal": true,
     "allow_concurrent_runs": false,
     "reveal": "always"

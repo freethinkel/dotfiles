@@ -17,9 +17,9 @@ return {
 	-- sdfsd
 	-- k.cmd_to_tmux_prefix("_", '"'),
 	-- k.send_string("CMD", "_", "\x02\x22"),
-	k.send_string("CMD|SHIFT", "_", "\x02\x22"),
 
-	k.mapping("CMD", "-", wezterm.action.DecreaseFontSize),
+	k.send_string("CMD|SHIFT", "_", "\x02\x22"),
+	-- k.mapping("CMD", "-", wezterm.action.DecreaseFontSize),
 	k.cmd_key("=", wezterm.action.IncreaseFontSize),
 
 	-- CHANGE TMUX TABS

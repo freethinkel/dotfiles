@@ -1,0 +1,44 @@
+{
+  "stateless_widget": {
+    "prefix": "stl",
+    "body": [
+      "class $0 extends StatelessWidget {",
+      "  const $0({super.key});",
+      "",
+      "  @override",
+      "  build(BuildContext context) {",
+      "    return const Placeholder();",
+      "  }",
+      "}"
+    ],
+    "description": "Flutter StatelessWidget"
+  },
+  "stateful_widget": {
+    "prefix": "stf",
+    "body": [
+      "class $0 extends StatefulWidget {",
+      "  const $0({super.key});",
+      "",
+      "@override",
+      "createState() => _$0State();",
+      "}",
+      "",
+      "class _$0State extends State<$0> {",
+      "  @override",
+      "  Widget build(BuildContext context) {",
+      "    return const Placeholder();",
+      "  }",
+      "}"
+    ],
+    "description": "Flutter StatefulWidget"
+  },
+  "log": {
+    "prefix": "log",
+    "body": ["print($0);"]
+  },
+  "main": {
+    "prefix": "main",
+    "description": "Insert a main function, used as an entry point.",
+    "body": ["void main(List<String> args) {", "  $0", "}"]
+  }
+}

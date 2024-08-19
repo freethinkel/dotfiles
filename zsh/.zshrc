@@ -27,11 +27,10 @@ then
   source $HOME/.cargo/env
 fi
 
-# MY ALIASES
 alias ssh_fix="eval \"$(ssh-agent -s)\" && ssh-add ~/.ssh/id_ed25519"
 alias cls="clear"
 alias lvim="$HOME/.local/bin/lvim"
-alias vim="vim-launcher"
+alias vim="nvim"
 alias vimconfig="vim ~/.config/nvim/"
 alias v="vim"
 alias :qa="exit"
@@ -62,7 +61,7 @@ export PATH="$PATH":"$HOME/.spicetify"
 # OWN SCRIPTS
 export PATH="$PATH":"$HOME/Developer/dev/dotfiles/bin"
 
-export LANG=en_US.UTF-8
+ export LANG=en_US.UTF-8
 
 [ -s "/Users/freethinkel/.bun/_bun" ] && source "/Users/freethinkel/.bun/_bun"
 
@@ -71,7 +70,6 @@ case `uname` in
     alias ls="exa --icons"
     alias lst="ls --tree"
     alias cat="bat"
-    alias colors="msgcat --color=test"
   ;;
   Linux)
     export TERM=xterm-256color
