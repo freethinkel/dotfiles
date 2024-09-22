@@ -58,6 +58,8 @@ export PATH="$PATH":"$HOME/Library/Python/3.10/lib/python/site-packages"
 export PATH="$PATH":"$HOME/.pub-cache/bin"
 export PATH="$WASMTIME_HOME/bin:$PATH"
 export PATH="$PATH":"$HOME/.spicetify"
+export PATH="$PATH:$HOME/Library/Python/3.11/lib/python/site-packages"
+export PATH="$PATH:/usr/local/go/bin"
 # OWN SCRIPTS
 export PATH="$PATH":"$HOME/Developer/dev/dotfiles/bin"
 

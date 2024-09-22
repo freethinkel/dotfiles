@@ -1,10 +1,10 @@
 local theme = {
 	foreground = "#ffffff",
 	background = "#1B1B1B",
-	cursor_bg = "#75FB9F",
+	cursor_bg = "#ffffff",
 	-- cursor_fg = "black",
 	-- selection_fg = 'black',
-	selection_bg = "#35583F",
+	selection_bg = "#353535",
 	compose_cursor = "orange",
 	scrollbar_thumb = "#353535",
 	ansi = {

@@ -6,8 +6,8 @@
   },
   "assistant": {
     "default_model": {
-      "provider": "openai",
-      "model": "gpt-3.5-turbo"
+      "provider": "copilot_chat",
+      "model": "gpt-4o"
     },
     "version": "2",
     "default_open_ai_model": "gpt-4o",
@@ -16,10 +16,14 @@
   "preview_tabs": {
     "enable_preview_from_code_navigation": true
   },
-  "completion_documentation_secondary_query_debounce": 100,
+  "completion_documentation_secondary_query_debounce": 500,
   "enable_language_server": true,
   "vim_mode": true,
-  "buffer_font_family": "FiraCode Nerd Font",
+  "show_completions_on_input": true,
+  // "buffer_font_family": "FiraCode Nerd Font",
+  "buffer_font_fallbacks": ["FiraCode Nerd Font"],
+  "buffer_font_family": "Iosevka Nerd Font",
+  "ui_font_family": "Iosevka Nerd Font",
   "default_dock_anchor": "bottom",
   "buffer_font_size": 14,
   // "ui_font_family": "Zed Sans",
@@ -31,8 +35,8 @@
     "use_system_clipboard": "always"
   },
   "theme": {
-    "dark": "Min Dark",
-    "light": "Nules light",
+    "dark": "Ayu Mirage",
+    "light": "Ayu Light",
     "mode": "system"
   },
 
@@ -43,7 +47,7 @@
   },
   "terminal": {
     "env": {
-      "GIT_EDITOR": "zed --preview --wait"
+      "GIT_EDITOR": "zed --wait"
     }
   },
   "lsp": {
@@ -54,6 +58,9 @@
     }
   },
   "languages": {
+    "Rust": {
+      "formatter": "language_server"
+    },
     "CSS": {
       "formatter": "prettier"
     },
@@ -70,8 +77,8 @@
     },
     "Svelte": {
       "format_on_save": "on",
-      // "formatter": "language_server"
-      "formatter": "prettier"
+      "formatter": "language_server"
+      // "formatter": "prettier"
     },
     "JavaScript": {
       "formatter": "prettier",
@@ -99,5 +106,8 @@
   "formatter": "prettier",
   "file_types": {
     "CSS": ["pcss"]
+  },
+  "performance": {
+    "show_in_status_bar": true
   }
 }

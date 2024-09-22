@@ -25,8 +25,8 @@ keybinds {
   }
 
   normal {
-    bind "Ctrl h" { MoveFocus "Left"; }
-    bind "Ctrl j" { MoveFocus "Down"; }
+    // bind "Ctrl h" { MoveFocus "Left"; }
+    // bind "Ctrl j" { MoveFocus "Down"; }
     unbind "Ctrl q"
   }
 

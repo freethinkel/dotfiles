@@ -48,6 +48,9 @@ map("n", "<Esc>", ":nohl<CR>", { silent = true })
 -- LSP
 map("n", "]d", function() vscode.call("editor.action.marker.prevInFiles") end)
 map("n", "]d", function() vscode.call("editor.action.marker.next") end)
+map("n", 'gr', function()
+	vscode.call("editor.action.goToReferences")
+end)
 
 -- ["<A-j>"] = { ":m .+1<CR>==", "Move down" },
 -- ["<A-k>"] = { ":m .-2<CR>==", "Move up" },

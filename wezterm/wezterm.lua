@@ -4,7 +4,9 @@ local themes = require("themes")
 local config = {
 	font_size = 13,
 	line_height = 1.5,
+	use_resize_increments = true,
 	font = wezterm.font("FiraCode Nerd Font", {}),
+	-- font = wezterm.font_with_fallback({ "Writer", "FiraCode Nerd Font" }),
 	harfbuzz_features = {
 		"zero",
 		"cv05",
@@ -19,7 +21,7 @@ local config = {
 		"ss10",
 		"cv06",
 	},
-	colors = themes.nules_dark,
+	colors = require("utils.theme").get_theme({ dark = themes.sod, light = themes.nules_light }),
 	window_decorations = "RESIZE",
 	-- window_decorations = "TITLE",
 	hide_tab_bar_if_only_one_tab = true,
@@ -58,6 +60,7 @@ local config = {
 	},
 	term = "wezterm",
 	cursor_thickness = "2px",
+	enable_scroll_bar = true,
 	-- use_ime = false,
 	-- default_cursor_style = "SteadyBar",
 	-- != =>

@@ -82,7 +82,7 @@ return {
 				-- clangd = {},
 				-- gopls = {},
 				-- pyright = {},
-				tsserver = {},
+				vlts = {},
 				rust_analyzer = {},
 				astro = {},
 				eslint = {},

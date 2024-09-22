@@ -1,10 +1,10 @@
 #SKHD STUFF
 
-ctrl + alt + cmd - y : /opt/homebrew/bin/brew services restart yabai
-ctrl + alt + cmd - s : /opt/homebrew/bin/brew services restart skhd
+# ctrl + alt + cmd - y : /opt/homebrew/bin/brew services restart yabai
+# ctrl + alt + cmd - s : /opt/homebrew/bin/brew services restart skhd
 
 ## open terminal
-ctrl - return : /Applications/kitty.app/Contents/MacOS/kitty ~
+# ctrl - return : /Applications/kitty.app/Contents/MacOS/kitty ~
 # ctrl - return :  open /Applications/Klin.app
 # ctrl - return : /Applications/Alacritty.app/Contents/MacOS/alacritty
 # ctrl - return : /Applications/WezTerm.app/Contents/MacOS/wezterm

@@ -19,8 +19,10 @@ return {
 	-- k.send_string("CMD", "_", "\x02\x22"),
 
 	k.send_string("CMD|SHIFT", "_", "\x02\x22"),
-	-- k.mapping("CMD", "-", wezterm.action.DecreaseFontSize),
+	k.mapping("CMD", "-", wezterm.action.DecreaseFontSize),
 	k.cmd_key("=", wezterm.action.IncreaseFontSize),
+	k.cmd_key("v", wezterm.action.PasteFrom("Clipboard")),
+	k.cmd_key("c", wezterm.action.CopyTo("Clipboard")),
 
 	-- CHANGE TMUX TABS
 	k.send_string("CMD|SHIFT", "]", "\x02\x6e"),
