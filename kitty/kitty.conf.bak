@@ -95,6 +95,6 @@ map cmd+9             send_text all \x02\x39
 
 
 # BEGIN_KITTY_THEME
-# Jeju Dark
+# Catppuccin-Latte
 include current-theme.conf
 # END_KITTY_THEME
