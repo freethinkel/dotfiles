@@ -22,10 +22,10 @@
   "show_completions_on_input": true,
   // "buffer_font_family": "FiraCode Nerd Font",
   "buffer_font_fallbacks": ["FiraCode Nerd Font"],
-  "buffer_font_family": "Iosevka Nerd Font",
-  "ui_font_family": "Iosevka Nerd Font",
+  "buffer_font_family": "Writer",
+  "ui_font_family": "Writer",
   "default_dock_anchor": "bottom",
-  "buffer_font_size": 14,
+  "buffer_font_size": 13,
   // "ui_font_family": "Zed Sans",
   "buffer_line_height": {
     "custom": 2

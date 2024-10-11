@@ -5,10 +5,16 @@ local config = {
 	font_size = 13,
 	line_height = 1.5,
 	use_resize_increments = true,
-	font = wezterm.font("FiraCode Nerd Font", {}),
-	-- font = wezterm.font_with_fallback({ "Writer", "FiraCode Nerd Font" }),
+	-- font = wezterm.font("JetBrainsMono Nerd Font", { weight = "Regular" }),
+	-- font = wezterm.font("FiraCode Nerd Font", {}),
+	-- font = wezterm.font("Pragmasevka Nerd Font", {}),
+	-- font = wezterm.font("Essential PragmataPro", {}),
+	-- === !== !== =>
+	font = wezterm.font_with_fallback({ "Writer", "FiraCode Nerd Font" }),
+	-- [ERROR]
 	harfbuzz_features = {
 		"zero",
+		"calt",
 		"cv05",
 		"cv14",
 		"ss09",
@@ -21,7 +27,8 @@ local config = {
 		"ss10",
 		"cv06",
 	},
-	colors = require("utils.theme").get_theme({ dark = themes.sod, light = themes.nules_light }),
+	-- 0/1
+	colors = require("utils.theme").get_theme({ dark = themes.jeju_dark, light = themes.nules_light }),
 	window_decorations = "RESIZE",
 	-- window_decorations = "TITLE",
 	hide_tab_bar_if_only_one_tab = true,

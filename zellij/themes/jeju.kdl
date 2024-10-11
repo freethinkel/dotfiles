@@ -1,0 +1,17 @@
+
+themes {
+    jeju {
+        fg "#ACBDC3"
+        bg "#272B31"
+        black "#373c44"
+        red "#FA7583"
+        green "#BDB969"
+        yellow "#EBD2A7"
+        blue  "#8ECCFF"
+        magenta "#B08CBA"
+        cyan "#7FB2C7"
+        white "#ACBDC3"
+        orange "#D08770"
+    }
+}
+

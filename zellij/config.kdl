@@ -14,7 +14,7 @@ pane_frames false
 // default_layout "development"
 copy_command "pbcopy"                     // osx
 copy_on_select true
-theme "nules"
+theme "jeju"
 
 keybinds {
   unbind "Ctrl h"
