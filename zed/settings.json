@@ -1,4 +1,16 @@
 {
+  "ssh_connections": [
+    {
+      "host": "kolesnikov.thv04.voiso.dev",
+      "username": "app",
+      "port": 1355,
+      "projects": [
+        {
+          "paths": ["~/web"]
+        }
+      ]
+    }
+  ],
   "language_models": {
     "openai": {
       "version": "1"
@@ -22,8 +34,8 @@
   "show_completions_on_input": true,
   // "buffer_font_family": "FiraCode Nerd Font",
   "buffer_font_fallbacks": ["FiraCode Nerd Font"],
-  "buffer_font_family": "Writer",
-  "ui_font_family": "Writer",
+  "buffer_font_family": "FiraCode Nerd Font",
+  "ui_font_family": "FiraCode Nerd Font",
   "default_dock_anchor": "bottom",
   "buffer_font_size": 13,
   // "ui_font_family": "Zed Sans",
@@ -35,7 +47,7 @@
     "use_system_clipboard": "always"
   },
   "theme": {
-    "dark": "35mil Dark Theme",
+    "dark": "Snowfall dark",
     "light": "Ayu Light",
     "mode": "system"
   },

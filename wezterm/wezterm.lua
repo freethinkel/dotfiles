@@ -10,7 +10,8 @@ local config = {
 	-- font = wezterm.font("Pragmasevka Nerd Font", {}),
 	-- font = wezterm.font("Essential PragmataPro", {}),
 	-- === !== !== =>
-	font = wezterm.font_with_fallback({ "Writer", "FiraCode Nerd Font" }),
+	font = wezterm.font("Writer"),
+	-- font = wezterm.font_with_fallback({ "Writer", "FiraCode Nerd Font" }),
 	-- [ERROR]
 	harfbuzz_features = {
 		"zero",

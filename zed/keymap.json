@@ -50,6 +50,9 @@
         "workspace::SendKeystrokes",
         ": togglecenter enter : toggleleft enter"
       ],
+      "space b d": "pane::CloseActiveItem",
+      "H": "pane::ActivatePrevItem",
+      "L": "pane::ActivateNextItem",
       "space d d": "task::Spawn",
       // "": "workspace::ToggleLeftDock",
       // "space g g": ["task::Spawn", { "task_name": "Open lazygit" }],

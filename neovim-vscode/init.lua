@@ -19,6 +19,14 @@ map({ "x", "n" }, "<C-l>", function()
 	vscode.call("workbench.action.navigateRight")
 end, opts)
 
+map("n", "H", function()
+	vscode.call("workbench.action.previousEditor")
+end)
+
+map("n", "L", function()
+	vscode.call("workbench.action.nextEditor")
+end)
+
 map({ "n", "v" }, "<Space>", function()
 	vscode.call("whichkey.show")
 end, opts)
@@ -33,11 +41,9 @@ map("n", "K", function()
 end)
 
 map("n", "<A-j>", function()
-	-- vim.cmd(":m .+1<CR>==")
 	vscode.call("editor.action.moveLinesDownAction")
 end)
 map("n", "<A-k>", function()
-	-- vim.cmd(":m .-2<CR>==")
 	vscode.call("editor.action.moveLinesUpAction")
 end)
 
@@ -46,16 +52,8 @@ map("x", "<A-k>", ":m '<-2<CR>gv-gv")
 map("n", "<Esc>", ":nohl<CR>", { silent = true })
 
 -- LSP
-map("n", "]d", function() vscode.call("editor.action.marker.prevInFiles") end)
+map("n", "[d", function() vscode.call("editor.action.marker.prevInFiles") end)
 map("n", "]d", function() vscode.call("editor.action.marker.next") end)
 map("n", 'gr', function()
 	vscode.call("editor.action.goToReferences")
 end)
-
--- ["<A-j>"] = { ":m .+1<CR>==", "Move down" },
--- ["<A-k>"] = { ":m .-2<CR>==", "Move up" },
--- x = {
-
--- 	["<A-j>"] = { ":m '>+1<CR>gv-gv", "Move down", opts = { noremap = true, silent = true } },
--- 	["<A-k>"] = { ":m '<-2<CR>gv-gv", "Move up", opts = { noremap = true, silent = true } },
--- },

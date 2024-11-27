@@ -53,9 +53,9 @@
         // icons
         "icon": "#7fb2c8",
         "icon.muted": "#ff0000",
-        "icon.disabled": "#ff0000",
-        "icon.placeholder": "#ff0000",
-        "icon.accent": "#ff0000",
+        "icon.disabled": "#648697",
+        "icon.placeholder": "#0000ff",
+        "icon.accent": "#ff00ff",
 
         // elements
         "element.background": "#3a3d43",
@@ -354,12 +354,12 @@
             "font_weight": null
           },
           "string.special": {
-            "color": "#0000ff",
+            "color": "#bdb968",
             "font_style": null,
             "font_weight": null
           },
           "string.special.symbol": {
-            "color": "#0000ff",
+            "color": "#ff00ff",
             "font_style": null,
             "font_weight": null
           },

@@ -1,0 +1,29 @@
+font-family = "FiraCode Nerd Font"
+font-family-bold = "FiraCode Nerd Font"
+font-family-italic = "FiraCode Nerd Font"
+font-family-bold-italic = "FireCode Nerd Font"
+
+adjust-cell-width = -5%
+adjust-cell-height = 40%
+adjust-underline-position = 50%
+adjust-underline-thickness = 50%
+adjust-cursor-thickness = 150%
+
+adjust-underline-position = 30%
+
+# Mouse
+mouse-hide-while-typing = true
+mouse-scroll-multiplier = 2
+
+# Theme
+window-theme = ghostty
+
+cursor-style = bar
+background-blur-radius = 20
+background-opacity = 0.9
+
+macos-titlebar-style = hidden
+# macos-titlebar-style = tabs
+
+window-colorspace = display-p3
+window-step-resize = true

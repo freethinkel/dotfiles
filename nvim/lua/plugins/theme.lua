@@ -32,7 +32,7 @@ return {
       -- colorscheme = "catppuccin",
       -- colorscheme = "rose-pine-dawn",
       -- colorscheme = "nules-dark",
-      colorscheme = "jeju-dark",
+      colorscheme = "snowfall-dark",
     },
   },
 }
