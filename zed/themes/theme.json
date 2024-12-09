@@ -7,25 +7,44 @@
       "appearance": "dark",
       "name": "Snowfall dark",
       "style": {
-        "border": "#24272d",
+        "background": "#24272d",
+        "border": "#2f3339",
         "border.disabled": "#202328",
-        "border.focused": "#24272d",
+        "border.focused": "#5a7c8c",
         "border.selected": "#84c4df",
         "border.transparent": "#24272d00",
-        "border.variant": "#24272d",
+        "border.variant": "#2f3339",
+        "conflict": "#fa7583",
+        "created": "#bdb969",
+        "deleted": "#fa7583",
+        "drop_target.background": "#84c4df26",
+        "editor.active_line_number": "#91a2a6",
         "editor.background": "#24272d",
+        "editor.document_highlight.read_background": "#84c4df33",
         "editor.foreground": "#91a2a6",
         "editor.gutter.background": "#24272d",
+        "editor.line_number": "#91a2a666",
         "element.active": "#84c4df19",
         "element.background": "#84c4df",
         "element.disabled": "#ff0000",
         "element.hover": "#84c4df19",
         "element.selected": "#84c4df19",
+        "elevated_surface.background": "#202328",
+        "error": "#fa7583",
+        "error.background": "#fa758319",
+        "hint": "#91a2a67f",
+        "hint.background": "#9bcaff19",
+        "hint.border": "#9bcaff33",
         "icon": "#0000ff",
         "icon.accent": "#0000ff",
         "icon.disabled": "#0000ff",
         "icon.muted": "#0000ff",
         "icon.placeholder": "#0000ff",
+        "info": "#9bcaff",
+        "info.background": "#9bcaff19",
+        "info.border": "#ff00000",
+        "link_text.hover": "#9bcaff",
+        "modified": "#84c4df",
         "panel.background": "#202328",
         "players": [
           {
@@ -34,7 +53,11 @@
             "selection": "#84c4df33"
           }
         ],
+        "predictive": "#657176",
+        "selected": "#84c4df",
         "status_bar.background": "#202328",
+        "success": "#bdb969",
+        "surface.background": "#202328",
         "syntax": {
           "attribute": {
             "color": "#ebd2a7",
@@ -167,7 +190,7 @@
             "font_weight": null
           },
           "string.escape": {
-            "color": "#0000ff",
+            "color": "#ebd2a7",
             "font_style": null,
             "font_weight": null
           },
@@ -243,8 +266,12 @@
         "terminal.ansi.yellow": "#f0c674",
         "terminal.background": "#24272d",
         "terminal.foreground": "#91a2a6",
+        "text.accent": "#84c4df",
         "title_bar.background": "#202328",
-        "toolbar.background": "#24272d"
+        "toolbar.background": "#24272d",
+        "warning": "#ebd2a7",
+        "warning.background": "#ebd2a719",
+        "warning.border": "#ebd2a733"
       }
     }
   ]

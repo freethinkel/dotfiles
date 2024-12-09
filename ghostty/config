@@ -2,14 +2,17 @@ font-family = "FiraCode Nerd Font"
 font-family-bold = "FiraCode Nerd Font"
 font-family-italic = "FiraCode Nerd Font"
 font-family-bold-italic = "FireCode Nerd Font"
+font-size = 14
 
 adjust-cell-width = -5%
-adjust-cell-height = 40%
+adjust-cell-height = 80%
 adjust-underline-position = 50%
 adjust-underline-thickness = 50%
 adjust-cursor-thickness = 150%
 
 adjust-underline-position = 30%
+shell-integration-features = cursor,sudo,no-title
+window-vsync = true
 
 # Mouse
 mouse-hide-while-typing = true
@@ -22,8 +25,33 @@ cursor-style = bar
 background-blur-radius = 20
 background-opacity = 0.9
 
-macos-titlebar-style = hidden
-# macos-titlebar-style = tabs
+# macos-titlebar-style = hidden
+macos-titlebar-style = tabs
 
 window-colorspace = display-p3
 window-step-resize = true
+window-inherit-working-directory = true 
+
+theme = light:ayu_light,dark:SnowfallDark
+
+# Mapping 
+
+# keybind = clear
+keybind = super+shift+minus=new_split:down
+keybind = super+option+i=inspector:toggle
+# keybind = super+shift+
+
+# keybind = ctrl+j=goto_split:bottom
+# keybind = super+shift+l=next_tab
+# keybind = super+shift+t=new_tab
+# keybind = super+shift+m=toggle_split_zoom
+# keybind = super+shift+comma=move_tab:-1
+# keybind = super+shift+period=move_tab:1
+# keybind = ctrl+h=goto_split:left
+# keybind = super+shift+c=copy_to_clipboard
+# keybind = ctrl+k=goto_split:top
+# keybind = super+shift+enter=new_split:auto
+# keybind = super+shift+r=reload_config
+# keybind = ctrl+l=goto_split:right
+# keybind = super+shift+h=previous_tab
+# keybind = super+shift+v=paste_from_clipboard

@@ -19,7 +19,7 @@
   "assistant": {
     "default_model": {
       "provider": "copilot_chat",
-      "model": "gpt-4o"
+      "model": "gpt-4"
     },
     "version": "2",
     "default_open_ai_model": "gpt-4o",

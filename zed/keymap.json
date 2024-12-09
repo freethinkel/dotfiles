@@ -42,10 +42,10 @@
   {
     "context": "Editor && VimControl && !VimWaiting && !menu",
     "bindings": {
-      "space g g": [
-        "workspace::SendKeystrokes",
-        ": new center terminal enter lazygit&&exit enter"
-      ],
+      // "space g g": [
+      //   "workspace::SendKeystrokes",
+      //   ": new center terminal enter lazygit&&exit enter"
+      // ],
       "space z z": [
         "workspace::SendKeystrokes",
         ": togglecenter enter : toggleleft enter"
@@ -55,7 +55,7 @@
       "L": "pane::ActivateNextItem",
       "space d d": "task::Spawn",
       // "": "workspace::ToggleLeftDock",
-      // "space g g": ["task::Spawn", { "task_name": "Open lazygit" }],
+      "space g g": ["task::Spawn", { "task_name": "Open lazygit" }],
       "g r": "editor::FindAllReferences",
       // Doc hover
       "K": "editor::Hover",
