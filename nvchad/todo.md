@@ -1,0 +1,4 @@
+- [ ] Preview images in telescope
+- [x] Add tab select and close mappings
+- [x] Change rename mapping
+- [x] Change live grep mapping (to <leader>/)
