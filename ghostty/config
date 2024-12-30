@@ -1,17 +1,18 @@
-font-family = "FiraCode Nerd Font"
-font-family-bold = "FiraCode Nerd Font"
-font-family-italic = "FiraCode Nerd Font"
-font-family-bold-italic = "FireCode Nerd Font"
-font-size = 14
+font-family = "Writer"
+font-family-bold = "Writer"
+font-family-italic = "Writer"
+font-family-bold-italic = "Writer"
+font-size = 12.5
 
 adjust-cell-width = -5%
-adjust-cell-height = 80%
-adjust-underline-position = 50%
-adjust-underline-thickness = 50%
-adjust-cursor-thickness = 150%
+adjust-cell-height = 50%
+adjust-underline-position = 10%
+adjust-underline-thickness = 0
+adjust-cursor-thickness = 2
+adjust-cursor-height = 15
 
 adjust-underline-position = 30%
-shell-integration-features = cursor,sudo,no-title
+shell-integration-features = cursor, sudo, title
 window-vsync = true
 
 # Mouse
@@ -19,26 +20,44 @@ mouse-hide-while-typing = true
 mouse-scroll-multiplier = 2
 
 # Theme
-window-theme = ghostty
+window-theme = system 
 
 cursor-style = bar
-background-blur-radius = 20
-background-opacity = 0.9
+# background-blur-radius = 20
+background-opacity = 1
 
 # macos-titlebar-style = hidden
-macos-titlebar-style = tabs
+# macos-titlebar-style = tabs
 
 window-colorspace = display-p3
-window-step-resize = true
+window-step-resize = false 
 window-inherit-working-directory = true 
+window-padding-color = background
 
 theme = light:ayu_light,dark:SnowfallDark
 
 # Mapping 
+macos-option-as-alt = true
+
+keybind = cmd+right=text:\x05
+keybind = cmd+left=text:\x01
+keybind = alt+left=esc:b
+keybind = alt+right=esc:f
 
 # keybind = clear
-keybind = super+shift+minus=new_split:down
+# TMUX
+keybind = super+option+minus=text:\x02\x22
+keybind = super+j=text:\x02\x22
+keybind = super+option+backslash=text:\x02\x25
+keybind = super+shift+right_bracket=text:\x02\x6e
+keybind = super+shift+left_bracket=text:\x02\x70
+keybind = super+t=text:\x02\x63
+keybind = super+x=text:\x02\x78
+keybind = super+w=text:\x02\x78
+keybind = super+comma=text:\x02\x2c
+
 keybind = super+option+i=inspector:toggle
+
 # keybind = super+shift+
 
 # keybind = ctrl+j=goto_split:bottom

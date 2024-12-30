@@ -1,7 +1,7 @@
 return {
   {
     "nvim-tree/nvim-tree.lua",
-    enabled = true,
+    enabled = false,
     config = function()
       require("nvim-tree").setup {
         git = {
@@ -21,7 +21,7 @@ return {
           enable = true,
         },
         diagnostics = {
-          enable = false,
+          enable = true,
           show_on_dirs = true,
           show_on_open_dirs = true,
           debounce_delay = 50,

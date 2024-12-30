@@ -49,7 +49,8 @@ return {
           enabled = false,
         },
       })
-      require("telescope").load_extension("flutter")
+      -- require("fzf-lua").load_extension("flutter")
+      -- require("telescope").load_extension("flutter")
     end,
   },
 }

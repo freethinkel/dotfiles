@@ -1,0 +1,1272 @@
+[[keyboard.bindings]]
+chars = "\u001Bb"
+key = "Left"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bf"
+key = "Right"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u0002c"
+key = "T"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u0002x"
+key = "W"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u0002%"
+key = "Backslash"
+mods = "Command|Shift"
+
+[[keyboard.bindings]]
+chars = "\u0002\""
+key = "Minus"
+mods = "Command|Shift"
+
+[[keyboard.bindings]]
+chars = "\u0002p"
+key = "LBracket"
+mods = "Command|Shift"
+
+[[keyboard.bindings]]
+chars = "\u0002n"
+key = "RBracket"
+mods = "Command|Shift"
+
+[[keyboard.bindings]]
+chars = "\u0002x"
+key = "X"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u0002,"
+key = "Comma"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u00021"
+key = "Key1"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u00022"
+key = "Key2"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u00023"
+key = "Key3"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u00024"
+key = "Key4"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u00025"
+key = "Key5"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u00026"
+key = "Key6"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u00027"
+key = "Key7"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u00028"
+key = "Key8"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u00029"
+key = "Key9"
+mods = "Command"
+
+[[keyboard.bindings]]
+chars = "\u001Ba"
+key = "A"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bb"
+key = "B"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bc"
+key = "C"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bd"
+key = "D"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Be"
+key = "E"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bf"
+key = "F"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bg"
+key = "G"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bh"
+key = "H"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bi"
+key = "I"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bj"
+key = "J"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bk"
+key = "K"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bl"
+key = "L"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bm"
+key = "M"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bn"
+key = "N"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bo"
+key = "O"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bp"
+key = "P"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bq"
+key = "Q"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Br"
+key = "R"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bs"
+key = "S"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bt"
+key = "T"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bu"
+key = "U"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bv"
+key = "V"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bw"
+key = "W"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bx"
+key = "X"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001By"
+key = "Y"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001Bz"
+key = "Z"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001BA"
+key = "A"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BB"
+key = "B"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BC"
+key = "C"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BD"
+key = "D"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BE"
+key = "E"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BF"
+key = "F"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BG"
+key = "G"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BH"
+key = "H"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BI"
+key = "I"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BJ"
+key = "J"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BK"
+key = "K"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BL"
+key = "L"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BM"
+key = "M"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BN"
+key = "N"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BO"
+key = "O"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BP"
+key = "P"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BQ"
+key = "Q"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BR"
+key = "R"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BS"
+key = "S"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BT"
+key = "T"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BU"
+key = "U"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BV"
+key = "V"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BW"
+key = "W"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BX"
+key = "X"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BY"
+key = "Y"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001BZ"
+key = "Z"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B1"
+key = "Key1"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B2"
+key = "Key2"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B3"
+key = "Key3"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B4"
+key = "Key4"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B5"
+key = "Key5"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B6"
+key = "Key6"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B7"
+key = "Key7"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B8"
+key = "Key8"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B9"
+key = "Key9"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B0"
+key = "Key0"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u0000"
+key = "Space"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B`"
+key = "Grave"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B~"
+key = "Grave"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B."
+key = "Period"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B*"
+key = "Key8"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B#"
+key = "Key3"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B>"
+key = "Period"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B<"
+key = "Comma"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B_"
+key = "Minus"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B%"
+key = "Key5"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B^"
+key = "Key6"
+mods = "Alt|Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B\\"
+key = "Backslash"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B|"
+key = "Backslash"
+mods = "Alt|Shift"
+
+[colors.bright]
+black = "0x4c4c4c"
+blue = "0xa39ec4"
+cyan = "0x9ec3c4"
+green = "0x9ec49f"
+magenta = "0xc49ec4"
+orange = "0xceb188"
+red = "0xc49ea0"
+white = "0xf5f5f5"
+yellow = "0xc4c19e"
+
+[colors.normal]
+black = "0x262626"
+blue = "0x8f8aac"
+cyan = "0x8aabac"
+green = "0x8aac8b"
+magenta = "0xac8aac"
+orange = "0xc6a679"
+red = "0xac8a8c"
+white = "0xe7e7e7"
+yellow = "0xaca98a"
+
+[colors.primary]
+background = "0x0f0f0f"
+foreground = "0xf0f0f0"
+
+[env]
+TERM = "xterm-256color"
+
+[font]
+builtin_box_drawing = true
+size = 14
+
+[font.glyph_offset]
+y = 9
+
+[font.normal]
+family = "FiraCode Nerd Font"
+
+[font.offset]
+y = 20
+
+[oxocarbon.bright]
+black = "#393939"
+blue = "#33b1ff"
+cyan = "#3ddbd9"
+green = "#42be65"
+magenta = "#ff7eb6"
+red = "#ee5396"
+white = "#ffffff"
+yellow = "#ffe97b"
+
+[oxocarbon.normal]
+black = "#262626"
+blue = "#33b1ff"
+cyan = "#3ddbd9"
+green = "#42be65"
+magenta = "#ff7eb6"
+red = "#ee5396"
+white = "#dde1e6"
+yellow = "#ffe97b"
+
+[oxocarbon.primary]
+background = "#161616"
+foreground = "#ffffff"
+
+[oxocarbon.search.footer_bar]
+background = "#262626"
+foreground = "#ffffff"
+
+[oxocarbon.search.matches]
+background = "#ee5396"
+foreground = "CellBackground"
+
+[[schemes.catppuccin.indexed_colors]]
+color = "0xF8BD96"
+index = 16
+
+[[schemes.catppuccin.indexed_colors]]
+color = "0xF5E0DC"
+index = 17
+
+[schemes.catppuccin.bright]
+black = "0x988BA2"
+blue = "0x96CDFB"
+cyan = "0x89DCEB"
+green = "0xABE9B3"
+magenta = "0xF5C2E7"
+red = "0xF28FAD"
+white = "0xD9E0EE"
+yellow = "0xFAE3B0"
+
+[schemes.catppuccin.cursor]
+cursor = "0xF5E0DC"
+text = "0x1E1D2F"
+
+[schemes.catppuccin.normal]
+black = "0x6E6C7E"
+blue = "0x96CDFB"
+cyan = "0x89DCEB"
+green = "0xABE9B3"
+magenta = "0xF5C2E7"
+red = "0xF28FAD"
+white = "0xD9E0EE"
+yellow = "0xFAE3B0"
+
+[schemes.catppuccin.primary]
+background = "0x1E1D2F"
+foreground = "0xD9E0EE"
+
+[[schemes.catppuccin-frappe.indexed_colors]]
+color = "#EF9F76"
+index = 16
+
+[[schemes.catppuccin-frappe.indexed_colors]]
+color = "#F2D5CF"
+index = 17
+
+[schemes.catppuccin-frappe.bright]
+black = "#626880"
+blue = "#8CAAEE"
+cyan = "#81C8BE"
+green = "#A6D189"
+magenta = "#F4B8E4"
+red = "#E78284"
+white = "#A5ADCE"
+yellow = "#E5C890"
+
+[schemes.catppuccin-frappe.cursor]
+cursor = "#F2D5CF"
+text = "#303446"
+
+[schemes.catppuccin-frappe.dim]
+black = "#51576D"
+blue = "#8CAAEE"
+cyan = "#81C8BE"
+green = "#A6D189"
+magenta = "#F4B8E4"
+red = "#E78284"
+white = "#B5BFE2"
+yellow = "#E5C890"
+
+[schemes.catppuccin-frappe.hints.end]
+background = "#A5ADCE"
+foreground = "#303446"
+
+[schemes.catppuccin-frappe.hints.start]
+background = "#E5C890"
+foreground = "#303446"
+
+[schemes.catppuccin-frappe.normal]
+black = "#51576D"
+blue = "#8CAAEE"
+cyan = "#81C8BE"
+green = "#A6D189"
+magenta = "#F4B8E4"
+red = "#E78284"
+white = "#B5BFE2"
+yellow = "#E5C890"
+
+[schemes.catppuccin-frappe.primary]
+background = "#303446"
+bright_foreground = "#C6D0F5"
+dim_foreground = "#C6D0F5"
+foreground = "#C6D0F5"
+
+[schemes.catppuccin-frappe.search.focused_match]
+background = "#A6D189"
+foreground = "#303446"
+
+[schemes.catppuccin-frappe.search.footer_bar]
+background = "#A5ADCE"
+foreground = "#303446"
+
+[schemes.catppuccin-frappe.search.matches]
+background = "#A5ADCE"
+foreground = "#303446"
+
+[schemes.catppuccin-frappe.selection]
+background = "#F2D5CF"
+text = "#303446"
+
+[schemes.catppuccin-frappe.vi_mode_cursor]
+cursor = "#BABBF1"
+text = "#303446"
+
+[[schemes.catppuccin-macchiato.indexed_colors]]
+color = "#F5A97F"
+index = 16
+
+[[schemes.catppuccin-macchiato.indexed_colors]]
+color = "#F4DBD6"
+index = 17
+
+[schemes.catppuccin-macchiato.bright]
+black = "#5B6078"
+blue = "#8AADF4"
+cyan = "#8BD5CA"
+green = "#A6DA95"
+magenta = "#F5BDE6"
+red = "#ED8796"
+white = "#A5ADCB"
+yellow = "#EED49F"
+
+[schemes.catppuccin-macchiato.cursor]
+cursor = "#F4DBD6"
+text = "#24273A"
+
+[schemes.catppuccin-macchiato.dim]
+black = "#494D64"
+blue = "#8AADF4"
+cyan = "#8BD5CA"
+green = "#A6DA95"
+magenta = "#F5BDE6"
+red = "#ED8796"
+white = "#B8C0E0"
+yellow = "#EED49F"
+
+[schemes.catppuccin-macchiato.hints.end]
+background = "#A5ADCB"
+foreground = "#24273A"
+
+[schemes.catppuccin-macchiato.hints.start]
+background = "#EED49F"
+foreground = "#24273A"
+
+[schemes.catppuccin-macchiato.normal]
+black = "#494D64"
+blue = "#8AADF4"
+cyan = "#8BD5CA"
+green = "#A6DA95"
+magenta = "#F5BDE6"
+red = "#ED8796"
+white = "#B8C0E0"
+yellow = "#EED49F"
+
+[schemes.catppuccin-macchiato.primary]
+background = "#24273A"
+bright_foreground = "#CAD3F5"
+dim_foreground = "#CAD3F5"
+foreground = "#CAD3F5"
+
+[schemes.catppuccin-macchiato.search.focused_match]
+background = "#A6DA95"
+foreground = "#24273A"
+
+[schemes.catppuccin-macchiato.search.footer_bar]
+background = "#A5ADCB"
+foreground = "#24273A"
+
+[schemes.catppuccin-macchiato.search.matches]
+background = "#A5ADCB"
+foreground = "#24273A"
+
+[schemes.catppuccin-macchiato.selection]
+background = "#F4DBD6"
+text = "#24273A"
+
+[schemes.catppuccin-macchiato.vi_mode_cursor]
+cursor = "#B7BDF8"
+text = "#24273A"
+
+[schemes.everforest_dark_hard.bright]
+black = "#4b565c"
+blue = "#7fbbb3"
+cyan = "#83c092"
+green = "#a7c080"
+magenta = "#d699b6"
+red = "#e67e80"
+white = "#d3c6aa"
+yellow = "#dbbc7f"
+
+[schemes.everforest_dark_hard.normal]
+black = "#4b565c"
+blue = "#7fbbb3"
+cyan = "#83c092"
+green = "#a7c080"
+magenta = "#d699b6"
+red = "#e67e80"
+white = "#d3c6aa"
+yellow = "#dbbc7f"
+
+[schemes.everforest_dark_hard.primary]
+background = "#2b3339"
+foreground = "#d3c6aa"
+
+[schemes.everforest_dark_medium.bright]
+black = "#4b565c"
+blue = "#7fbbb3"
+cyan = "#83c092"
+green = "#a7c080"
+magenta = "#d699b6"
+red = "#e67e80"
+white = "#d3c6aa"
+yellow = "#dbbc7f"
+
+[schemes.everforest_dark_medium.normal]
+black = "#4b565c"
+blue = "#7fbbb3"
+cyan = "#83c092"
+green = "#a7c080"
+magenta = "#d699b6"
+red = "#e67e80"
+white = "#d3c6aa"
+yellow = "#dbbc7f"
+
+[schemes.everforest_dark_medium.primary]
+background = "#2f383e"
+foreground = "#d3c6aa"
+
+[schemes.everforest_dark_soft.bright]
+black = "#4b565c"
+blue = "#7fbbb3"
+cyan = "#83c092"
+green = "#a7c080"
+magenta = "#d699b6"
+red = "#e67e80"
+white = "#d3c6aa"
+yellow = "#dbbc7f"
+
+[schemes.everforest_dark_soft.normal]
+black = "#4b565c"
+blue = "#7fbbb3"
+cyan = "#83c092"
+green = "#a7c080"
+magenta = "#d699b6"
+red = "#e67e80"
+white = "#d3c6aa"
+yellow = "#dbbc7f"
+
+[schemes.everforest_dark_soft.primary]
+background = "#323d43"
+foreground = "#d3c6aa"
+
+[schemes.everforest_light_hard.bright]
+black = "#5c6a72"
+blue = "#3a94c5"
+cyan = "#35a77c"
+green = "#8da101"
+magenta = "#df69ba"
+red = "#f85552"
+white = "#dfddc8"
+yellow = "#dfa000"
+
+[schemes.everforest_light_hard.normal]
+black = "#5c6a72"
+blue = "#3a94c5"
+cyan = "#35a77c"
+green = "#8da101"
+magenta = "#df69ba"
+red = "#f85552"
+white = "#dfddc8"
+yellow = "#dfa000"
+
+[schemes.everforest_light_hard.primary]
+background = "#fff9e8"
+foreground = "#5c6a72"
+
+[schemes.everforest_light_medium.bright]
+black = "#5c6a72"
+blue = "#3a94c5"
+cyan = "#35a77c"
+green = "#8da101"
+magenta = "#df69ba"
+red = "#f85552"
+white = "#dfddc8"
+yellow = "#dfa000"
+
+[schemes.everforest_light_medium.normal]
+black = "#5c6a72"
+blue = "#3a94c5"
+cyan = "#35a77c"
+green = "#8da101"
+magenta = "#df69ba"
+red = "#f85552"
+white = "#dfddc8"
+yellow = "#dfa000"
+
+[schemes.everforest_light_medium.primary]
+background = "#fdf6e3"
+foreground = "#5c6a72"
+
+[schemes.everforest_light_soft.bright]
+black = "#5c6a72"
+blue = "#3a94c5"
+cyan = "#35a77c"
+green = "#8da101"
+magenta = "#df69ba"
+red = "#f85552"
+white = "#dfddc8"
+yellow = "#dfa000"
+
+[schemes.everforest_light_soft.normal]
+black = "#5c6a72"
+blue = "#3a94c5"
+cyan = "#35a77c"
+green = "#8da101"
+magenta = "#df69ba"
+red = "#f85552"
+white = "#dfddc8"
+yellow = "#dfa000"
+
+[schemes.everforest_light_soft.primary]
+background = "#f8f0dc"
+foreground = "#5c6a72"
+
+[[schemes.github-default.indexed_colors]]
+color = "0xd18616"
+index = 16
+
+[[schemes.github-default.indexed_colors]]
+color = "0xcb2431"
+index = 17
+
+[schemes.github-default.bright]
+black = "0x586069"
+blue = "0x2188ff"
+cyan = "0x1b7c83"
+green = "0x28a745"
+magenta = "0x8a63d2"
+red = "0xcb2431"
+white = "0x4d5566"
+yellow = "0xdbab09"
+
+[schemes.github-default.normal]
+black = "0x24292e"
+blue = "0x0366d6"
+cyan = "0x1b7c83"
+green = "0x22863a"
+magenta = "0x6f42c1"
+red = "0xd73a49"
+white = "0x4d5566"
+yellow = "0xb08800"
+
+[schemes.github-default.primary]
+background = "0xffffff"
+foreground = "0x4d5566"
+
+[schemes.github-dimmed.bright]
+black = "#768390"
+blue = "#6cb6ff"
+cyan = "#96d0ff"
+green = "#8ddb8c"
+magenta = "#dcbdfb"
+red = "#f47067"
+white = "#adbac7"
+yellow = "#f69d50"
+
+[schemes.github-dimmed.normal]
+black = "#2d333b"
+blue = "#6cb6ff"
+cyan = "#96d0ff"
+green = "#8ddb8c"
+magenta = "#dcbdfb"
+red = "#f47067"
+white = "#adbac7"
+yellow = "#f69d50"
+
+[schemes.github-dimmed.primary]
+background = "#2d333b"
+foreground = "#adbac7"
+
+[[schemes.github-light-default.indexed_colors]]
+color = "0xd18616"
+index = 16
+
+[[schemes.github-light-default.indexed_colors]]
+color = "0xcb2431"
+index = 17
+
+[schemes.github-light-default.bright]
+black = "0x586069"
+blue = "0x2188ff"
+cyan = "0x1b7c83"
+green = "0x28a745"
+magenta = "0x8a63d2"
+red = "0xcb2431"
+white = "0x4d5566"
+yellow = "0xdbab09"
+
+[schemes.github-light-default.normal]
+black = "0x24292e"
+blue = "0x0366d6"
+cyan = "0x1b7c83"
+green = "0x22863a"
+magenta = "0x6f42c1"
+red = "0xd73a49"
+white = "0x4d5566"
+yellow = "0xb08800"
+
+[schemes.github-light-default.primary]
+background = "0xffffff"
+foreground = "0x4d5566"
+
+[schemes.gruvbox.bright]
+black = "0x928374"
+blue = "0x7daea3"
+cyan = "0x89b482"
+green = "0xa9b665"
+magenta = "0xd3869b"
+red = "0xea6962"
+white = "0xdfbf8e"
+yellow = "0xe3a84e"
+
+[schemes.gruvbox.normal]
+black = "0x665c54"
+blue = "0x7daea3"
+cyan = "0x89b482"
+green = "0xa9b665"
+magenta = "0xd3869b"
+red = "0xea6962"
+white = "0xdfbf8e"
+yellow = "0xe78a4e"
+
+[schemes.gruvbox.primary]
+background = "0x282828"
+foreground = "0xdfbf8e"
+
+[schemes.mountain.bright]
+black = "0x4c4c4c"
+blue = "0xa39ec4"
+cyan = "0x9ec3c4"
+green = "0x9ec49f"
+magenta = "0xc49ec4"
+orange = "0xceb188"
+red = "0xc49ea0"
+white = "0xf5f5f5"
+yellow = "0xc4c19e"
+
+[schemes.mountain.normal]
+black = "0x262626"
+blue = "0x8f8aac"
+cyan = "0x8aabac"
+green = "0x8aac8b"
+magenta = "0xac8aac"
+orange = "0xc6a679"
+red = "0xac8a8c"
+white = "0xe7e7e7"
+yellow = "0xaca98a"
+
+[schemes.mountain.primary]
+background = "0x0f0f0f"
+foreground = "0xf0f0f0"
+
+[schemes.nord.bright]
+black = "#4c566a"
+blue = "#81a1c1"
+cyan = "#8fbcbb"
+green = "#a3be8c"
+magenta = "#b48ead"
+red = "#bf616a"
+white = "#eceff4"
+yellow = "#ebcb8b"
+
+[schemes.nord.cursor]
+cursor = "#d8dee9"
+text = "#2e3440"
+
+[schemes.nord.dim]
+black = "#373e4d"
+blue = "#68809a"
+cyan = "#6d96a5"
+green = "#809575"
+magenta = "#8c738c"
+red = "#94545d"
+white = "#aeb3bb"
+yellow = "#b29e75"
+
+[schemes.nord.normal]
+black = "#3b4252"
+blue = "#81a1c1"
+cyan = "#88c0d0"
+green = "#a3be8c"
+magenta = "#b48ead"
+red = "#bf616a"
+white = "#e5e9f0"
+yellow = "#ebcb8b"
+
+[schemes.nord.primary]
+background = "#2e3440"
+dim_foreground = "#a5abb6"
+foreground = "#d8dee9"
+
+[schemes.nord.search.footer_bar]
+background = "#434c5e"
+foreground = "#d8dee9"
+
+[schemes.nord.search.matches]
+background = "#88c0d0"
+foreground = "CellBackground"
+
+[schemes.nord.selection]
+background = "#4c566a"
+text = "CellForeground"
+
+[schemes.nord.vi_mode_cursor]
+cursor = "#d8dee9"
+text = "#2e3440"
+
+[schemes.rose-pine.bright]
+black = "0x6e6a86"
+blue = "0x9ccfd8"
+cyan = "0xebbcba"
+green = "0x31748f"
+magenta = "0xc4a7e7"
+red = "0xeb6f92"
+white = "0xe0def4"
+yellow = "0xf6c177"
+
+[schemes.rose-pine.cursor]
+cursor = "0x524f67"
+text = "0xe0def4"
+
+[schemes.rose-pine.hints.end]
+background = "#1f1d2e"
+foreground = "#6e6a86"
+
+[schemes.rose-pine.hints.start]
+background = "#1f1d2e"
+foreground = "#908caa"
+
+[schemes.rose-pine.line_indicator]
+background = "None"
+foreground = "None"
+
+[schemes.rose-pine.normal]
+black = "0x26233a"
+blue = "0x9ccfd8"
+cyan = "0xebbcba"
+green = "0x31748f"
+magenta = "0xc4a7e7"
+red = "0xeb6f92"
+white = "0xe0def4"
+yellow = "0xf6c177"
+
+[schemes.rose-pine.primary]
+background = "0x191724"
+foreground = "0xe0def4"
+
+[schemes.rose-pine.selection]
+background = "0x403d52"
+text = "0xe0def4"
+
+[schemes.rose-pine.vi_mode_cursor]
+cursor = "0x524f67"
+text = "0xe0def4"
+
+[schemes.rose-pine-dawn.bright]
+black = "0x9893a5"
+blue = "0x56949f"
+cyan = "0xd7827e"
+green = "0x286983"
+magenta = "0x907aa9"
+red = "0xb4637a"
+white = "0x575279"
+yellow = "0xea9d34"
+
+[schemes.rose-pine-dawn.cursor]
+cursor = "0xcecacd"
+text = "0x575279"
+
+[schemes.rose-pine-dawn.hints.end]
+background = "#fffaf3"
+foreground = "#9893a5"
+
+[schemes.rose-pine-dawn.hints.start]
+background = "#fffaf3"
+foreground = "#797593"
+
+[schemes.rose-pine-dawn.line_indicator]
+background = "None"
+foreground = "None"
+
+[schemes.rose-pine-dawn.normal]
+black = "0xf2e9e1"
+blue = "0x56949f"
+cyan = "0xd7827e"
+green = "0x286983"
+magenta = "0x907aa9"
+red = "0xb4637a"
+white = "0x575279"
+yellow = "0xea9d34"
+
+[schemes.rose-pine-dawn.primary]
+background = "0xfaf4ed"
+foreground = "0x575279"
+
+[schemes.rose-pine-dawn.selection]
+background = "0xdfdad9"
+text = "0x575279"
+
+[schemes.rose-pine-dawn.vi_mode_cursor]
+cursor = "0xcecacd"
+text = "0x575279"
+
+[schemes.solarized.bright]
+black = "0x002b36"
+blue = "0x839496"
+cyan = "0x93a1a1"
+green = "0x586e75"
+magenta = "0x6c71c4"
+red = "0xcb4b16"
+white = "0xfdf6e3"
+yellow = "0x657b83"
+
+[schemes.solarized.normal]
+black = "0x073642"
+blue = "0x268bd2"
+cyan = "0x2aa198"
+green = "0x859900"
+magenta = "0xd33682"
+red = "0xdc322f"
+white = "0xeee8d5"
+yellow = "0xb58900"
+
+[schemes.solarized.primary]
+background = "0x002b36"
+foreground = "0x839496"
+
+[schemes.tokyo-night.bright]
+black = "0x444b6a"
+blue = "0x7da6ff"
+cyan = "0x0db9d7"
+green = "0xb9f27c"
+magenta = "0xbb9af7"
+red = "0xff7a93"
+white = "0xacb0d0"
+yellow = "0xff9e64"
+
+[schemes.tokyo-night.normal]
+black = "0x32344a"
+blue = "0x7aa2f7"
+cyan = "0x449dab"
+green = "0x9ece6a"
+magenta = "0xad8ee6"
+red = "0xf7768e"
+white = "0x787c99"
+yellow = "0xe0af68"
+
+[schemes.tokyo-night.primary]
+background = "0x1a1b26"
+foreground = "0xa9b1d6"
+
+[schemes.tokyo-night-dark.bright]
+black = "0x414868"
+blue = "0x7aa2f7"
+cyan = "0x7dcfff"
+green = "0x73daca"
+magenta = "0xbb9af7"
+red = "0xf7768e"
+white = "0xc0caf5"
+yellow = "0xe0af68"
+
+[schemes.tokyo-night-dark.normal]
+black = "0x414868"
+blue = "0x7aa2f7"
+cyan = "0x7dcfff"
+green = "0x73daca"
+magenta = "0xbb9af7"
+red = "0xf7768e"
+white = "0xc0caf5"
+yellow = "0xe0af68"
+
+[schemes.tokyo-night-dark.primary]
+background = "0x1a1b26"
+foreground = "0xa9b1d6"
+
+[schemes.tokyo-night-storm.bright]
+black = "0x444b6a"
+blue = "0x7da6ff"
+cyan = "0x0db9d7"
+green = "0xb9f27c"
+magenta = "0xbb9af7"
+red = "0xff7a93"
+white = "0xacb0d0"
+yellow = "0xff9e64"
+
+[schemes.tokyo-night-storm.normal]
+black = "0x32344a"
+blue = "0x7aa2f7"
+cyan = "0x449dab"
+green = "0x9ece6a"
+magenta = "0xad8ee6"
+red = "0xf7768e"
+white = "0x9699a8"
+yellow = "0xe0af68"
+
+[schemes.tokyo-night-storm.primary]
+background = "0x24283b"
+foreground = "0xa9b1d6"
+
+[window]
+blur = true
+decorations = "full"
+opacity = 0.5
+resize_increments = true
+
+[window.padding]
+x = 0
+y = 0
+
+[keyboard]

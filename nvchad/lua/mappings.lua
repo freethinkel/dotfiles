@@ -6,6 +6,7 @@ local map = vim.keymap.set
 local del = vim.keymap.del
 
 del("n", "<leader>rn")
+map("n", "<leader>e", ":Neotree toggle<cr>", { desc = "Neotree toggle", silent = true })
 
 map("n", ";", ":", { desc = "CMD enter command mode" })
 map("i", "jk", "<ESC>")
@@ -30,7 +31,9 @@ map("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next [D]iagnostic messa
 -- Comment
 del("n", "<leader>/")
 del("v", "<leader>/")
-map("n", "<leader>/", ":Telescope live_grep<cr>", { desc = "Live grep", remap = true })
+map("n", "<leader>/", function()
+  require("modules.telescope").run()
+end, { desc = "Multi grep", remap = true })
 
 -- BUFFERS
 del("n", "<leader>x")
@@ -46,4 +49,7 @@ map("n", "<S-h>", function()
   require("nvchad.tabufline").prev()
 end, { desc = "buffer goto prev" })
 
--- map("n", "H", "")
+-- INTERNAL
+map("n", "<leader>fg", function()
+  require("modules.telescope").run()
+end, { desc = "[F]ind [G]rep" })

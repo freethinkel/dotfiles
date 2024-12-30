@@ -23,7 +23,7 @@ return {
       { "<leader>FC", ":FlutterLogClear<cr>", "FlutterLogClear" },
     },
     config = function()
-      local configs = require "nvchad.configs.lspconfig"
+      local configs = require "configs.lspconfig"
 
       require("flutter-tools").setup {
         lsp = {

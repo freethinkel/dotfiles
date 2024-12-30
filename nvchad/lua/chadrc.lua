@@ -26,6 +26,11 @@ M.base46 = {
     DapUIStepOverNC = { link = "DapUIStepOver" },
     DapUIPlayPauseNC = { link = "DapUIPlayPause" },
     DapUIUnavailableNC = { link = "DapUIUnavailable" },
+    NeotreeNormal = { link = "NvimTreeNormal" },
+    NeotreeNormalNC = { link = "NvimTreeNormal" },
+    NeotreeVertSplit = { link = "NvimTreeNormal" },
+    NeotreeGitUntracked = { link = "NvimTreeGitNew" },
+    NeotreeGitModified = { link = "NvimTreeGitDirty" },
   },
 }
 
@@ -58,7 +63,7 @@ M.nvdash = {
     {
       txt = "  Restore Session",
       keys = "s",
-      cmd = ":lua require('persistence').load()",
+      cmd = ":lua require('persistence').load()<cr>",
     },
     { txt = "─", hl = "NvDashFooter", no_gap = true, rep = true },
     {
