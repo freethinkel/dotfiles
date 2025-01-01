@@ -15,12 +15,18 @@ adjust-underline-position = 30%
 shell-integration-features = cursor, sudo, title
 window-vsync = true
 
+# custom-shader = shaders/bloom025.glsl
+custom-shader = shaders/just_snow.glsl
+
 # Mouse
 mouse-hide-while-typing = true
 mouse-scroll-multiplier = 2
 
 # Theme
 window-theme = system 
+# macos-icon = custom-style
+# macos-icon-ghost-color = #fcbfcb
+# macos-icon-screen-color = #fbbfbb
 
 cursor-style = bar
 # background-blur-radius = 20
