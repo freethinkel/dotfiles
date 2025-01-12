@@ -39,7 +39,7 @@ alias :qa="exit"
 alias :q="exit"
 alias tdev="tmux new -s DEV || tmux attach-session -t DEV"
 alias baresip="/opt/homebrew/Cellar/baresip/3.3.0/bin/baresip"
-alias notes="cd /Users/freethinkel/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/notes/"
+alias notes="cd /Users/freethinkel/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/Mind\ palace/"
 
 # bun completions
 [ -s "/Users/freethinkel/.bun/_bun" ] && source "/Users/freethinkel/.bun/_bun"

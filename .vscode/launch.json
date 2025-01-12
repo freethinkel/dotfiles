@@ -1,0 +1,88 @@
+{
+  // Используйте IntelliSense, чтобы узнать о возможных атрибутах.
+  // Наведите указатель мыши, чтобы просмотреть описания существующих атрибутов.
+  // Для получения дополнительной информации посетите: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flavor: Development",
+      "request": "launch",
+      "type": "dart",
+      "args": ["--flavor", "dev"],
+      "toolArgs": [
+        "--dart-define=FLUTTER_ENV=DEVELOPMENT",
+        "--dart-define=FLUTTER_FLAVOR=DEV"
+      ]
+    },
+    {
+      "name": "Attach",
+      "type": "dart",
+      "request": "attach"
+    },
+    {
+      "name": "Flavor: Development (release)",
+      "request": "launch",
+      "type": "dart",
+      "args": ["--flavor", "dev"],
+      "flutterMode": "release",
+      "toolArgs": [
+        "--dart-define=FLUTTER_ENV=PRODUCTION",
+        "--dart-define=FLUTTER_FLAVOR=DEV"
+      ]
+    },
+    {
+      "name": "Flavor: Staging",
+      "request": "launch",
+      "type": "dart",
+      "args": ["--flavor", "stg"],
+      "toolArgs": [
+        "--dart-define=FLUTTER_ENV=DEVELOPMENT",
+        "--dart-define=FLUTTER_FLAVOR=STG"
+      ]
+    },
+    {
+      "name": "Flavor: Staging (release)",
+      "request": "launch",
+      "type": "dart",
+      "args": ["--flavor", "stg"],
+      "flutterMode": "release",
+      "toolArgs": [
+        "--dart-define=FLUTTER_ENV=PRODUCTION",
+        "--dart-define=FLUTTER_FLAVOR=STG"
+      ]
+    },
+    {
+      "name": "Flavor: Development (profile mode)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "args": ["--flavor", "dev"],
+      "toolArgs": [
+        "--dart-define=FLUTTER_ENV=DEVELOPMENT",
+        "--dart-define=FLUTTER_FLAVOR=DEV"
+      ]
+    },
+    {
+      "name": "Flavor: Production (release mode)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "args": ["--flavor", "prod"],
+      "toolArgs": [
+        "--dart-define=FLUTTER_ENV=PRODUCTION",
+        "--dart-define=FLUTTER_FLAVOR=PROD"
+      ]
+    },
+    {
+      "name": "Flavor: Test",
+      "request": "launch",
+      "type": "dart",
+      "codeLens": {
+        "for": ["run-test", "run-test-file"]
+      },
+      "args": ["--update-goldens"],
+      "toolArgs": ["--dart-define=FLUTTER_ENV=TESTING"],
+      "flutterMode": "release"
+    }
+  ]
+}

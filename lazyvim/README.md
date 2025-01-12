@@ -1,4 +1,15 @@
-# 💤 LazyVim
+<!--toc:start-->
 
-A starter template for [LazyVim](https://github.com/LazyVim/LazyVim).
-Refer to the [documentation](https://lazyvim.github.io/installation) to get started.
+- [Daily driver](#daily-driver)
+  - [TODO](#todo)
+  <!--toc:end-->
+
+# Daily driver
+
+- just use `ln` to link it to `~/.config/nvim` folder
+
+## TODO
+
+- [ ] Improve snowfall theme (maybe also publish it)
+- [ ] Improve statusbar
+- [ ] Use nvchad like beautiful components (color picker)

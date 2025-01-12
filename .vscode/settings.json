@@ -1,4 +1,3 @@
 {
-  "Lua.diagnostics.globals": ["use"],
-  "deno.enable": true
+  "dart.flutterSdkPath": ".fvm/versions/stable"
 }

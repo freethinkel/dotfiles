@@ -15,8 +15,9 @@ adjust-underline-position = 30%
 shell-integration-features = cursor, sudo, title
 window-vsync = true
 
-# custom-shader = shaders/bloom025.glsl
-custom-shader = shaders/just_snow.glsl
+# custom-shader = shaders/bloom.glsl
+# custom-shader = shaders/glitchy.glsl
+# custom-shader = shaders/just_snow.glsl
 
 # Mouse
 mouse-hide-while-typing = true

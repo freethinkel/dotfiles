@@ -5,3 +5,12 @@
 
 vim.cmd("au BufNewFile,BufRead *.pcss set ft=scss")
 vim.cmd("au BufNewFile,BufRead *.mdx set ft=markdown")
+vim.cmd("au BufNewFile,BufRead *.arb set ft=json")
+vim.cmd("au BufNewFile,BufRead */.vscode/launch.json set ft=jsonc")
+vim.cmd("au BufNewFile,BufRead *.fvmrc set ft=json")
+
+-- vim.api.nvim_create_augroup("jsonc_filetype", { clear = true })
+-- vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+--   pattern = ".vscode/launch.json",
+--   command = "set filetype=jsonc",
+-- })
