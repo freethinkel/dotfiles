@@ -1,4 +1,7 @@
 {
+  "outline_panel": {
+    "dock": "left"
+  },
   "ssh_connections": [
     {
       "host": "kolesnikov.thv04.voiso.dev",
@@ -34,20 +37,23 @@
   "show_completions_on_input": true,
   // "buffer_font_family": "FiraCode Nerd Font",
   "buffer_font_fallbacks": ["FiraCode Nerd Font"],
-  "buffer_font_family": "FiraCode Nerd Font",
-  "ui_font_family": "FiraCode Nerd Font",
+  "buffer_font_family": "Writer",
+  "ui_font_family": "Writer",
+  // "ui_font_family": "Zed Sans",
   "default_dock_anchor": "bottom",
   "buffer_font_size": 13,
-  // "ui_font_family": "Zed Sans",
   "buffer_line_height": {
-    "custom": 2
+    "custom": 1.7
+  },
+  "features": {
+    "inline_completion_provider": "zed"
   },
   "tab_size": 2,
   "vim": {
     "use_system_clipboard": "always"
   },
   "theme": {
-    "dark": "Snowfall dark",
+    "dark": "Ayu Dark",
     "light": "Ayu Light",
     "mode": "system"
   },
@@ -119,6 +125,8 @@
   "file_types": {
     "CSS": ["pcss"]
   },
+  "vertical_scroll_margin": 0,
+  "horizontal_scroll_margin": 0,
   "performance": {
     "show_in_status_bar": true
   }

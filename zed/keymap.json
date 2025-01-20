@@ -54,8 +54,15 @@
       "H": "pane::ActivatePrevItem",
       "L": "pane::ActivateNextItem",
       "space d d": "task::Spawn",
-      // "": "workspace::ToggleLeftDock",
-      "space g g": ["task::Spawn", { "task_name": "Open lazygit" }],
+      "space o r": "projects::OpenRecent",
+      "space g g": [
+        "task::Spawn",
+        { "task_name": "Open lazygit", "reveal_target": "center" }
+      ],
+      // "space g g ": [
+      //   "workspace::SendKeystrokes",
+      //   ": new terminal enter lazygit"
+      // ],
       "g r": "editor::FindAllReferences",
       // Doc hover
       "K": "editor::Hover",
