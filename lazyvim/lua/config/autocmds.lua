@@ -3,7 +3,7 @@
 -- Add any additional autocmds here
 --
 
-vim.cmd("au BufNewFile,BufRead *.pcss set ft=scss")
+vim.cmd("au BufNewFile,BufRead *.pcss set ft=css")
 vim.cmd("au BufNewFile,BufRead *.mdx set ft=markdown")
 vim.cmd("au BufNewFile,BufRead *.arb set ft=json")
 vim.cmd("au BufNewFile,BufRead */.vscode/launch.json set ft=jsonc")

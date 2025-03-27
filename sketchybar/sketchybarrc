@@ -5,39 +5,38 @@ source "$HOME/.config/sketchybar/vars.sh"
 ITEM_DIR="$HOME/.config/sketchybar/items"
 PLUGIN_DIR="$HOME/.config/sketchybar/plugins"
 
-FONT="Iosevka Nerd Font"
+FONT="FiraCode Nerd Font"
 ICON_FONT="SF Pro"
 
+sketchybar --bar y_offset=-100 \
+  color=0x00000000 \
+  blur_radius=12 \
+  corner_radius=0 \
+  sticky=on \
+  notch_width=0 \
+  height=39 \
+  --default updates=when_shown \
+  icon.font="$ICON_FONT:Regular:18.0" \
+  icon.color=$TEXT_COLOR \
+  icon.padding_left=0 \
+  icon.padding_right=0 \
+  label.font="$FONT:Regular:14.0" \
+  label.color=$TEXT_COLOR \
+  alias.color=0xffffffff \
+  label.padding_left=0 \
+  label.padding_right=0 \
+  background.padding_right=0 \
+  background.padding_left=0 \
+  background.height=30 \
+  popup.background.border_width=2 \
+  popup.background.corner_radius=9 \
+  popup.background.color=$BACKGROUND_COLOR \
+  popup.background.shadow.drawing=on
 
-sketchybar --bar y_offset=0                                             \
-                 color=0x00000000                                       \
-                 blur_radius=12                                         \
-                 corner_radius=0                                        \
-                 sticky=on                                              \
-                 notch_width=0                                          \
-                 height=39                                              \
-           --default updates=when_shown                                 \
-                     icon.font="$ICON_FONT:Regular:18.0"                \
-                     icon.color=$TEXT_COLOR                             \
-                     icon.padding_left=0                                \
-                     icon.padding_right=0                               \
-                     label.font="$FONT:Regular:14.0"                    \
-                     label.color=$TEXT_COLOR                            \
-                     alias.color=0xffffffff                             \
-                     label.padding_left=0                               \
-                     label.padding_right=0                              \
-                     background.padding_right=0                         \
-                     background.padding_left=0                          \
-                     background.height=30                               \
-                     popup.background.border_width=2                    \
-                     popup.background.corner_radius=9                   \
-                     popup.background.color=$BACKGROUND_COLOR           \
-                     popup.background.shadow.drawing=on
-
-sketchybar --animate sin 30 --bar y_offset=-100 y_offset=0
+sketchybar --animate sin 20 --bar y_offset=-100 y_offset=0
 
 # Left
-source "$ITEM_DIR/yabai_mode.sh"
+# source "$ITEM_DIR/yabai_mode.sh"
 source "$ITEM_DIR/spaces.sh"
 
 # Right
@@ -48,9 +47,9 @@ source "$ITEM_DIR/battery.sh"
 source "$ITEM_DIR/keyboard.sh"
 
 sketchybar --add bracket controls keyboard_layout battery volume_icon volume caffeinate \
-          --set controls background.color="$BACKGROUND_COLOR"                           \
-          background.corner_radius=$BORDER_RADIUS                                       \
-          background.border_width=1                                                     \
-          background.border_color="$BORDER_COLOR"
+  --set controls background.color="$BACKGROUND_COLOR" \
+  background.corner_radius=$BORDER_RADIUS \
+  background.border_width=1 \
+  background.border_color="$BORDER_COLOR"
 
 sketchybar --update

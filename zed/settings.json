@@ -1,6 +1,11 @@
 {
-  "outline_panel": {
-    "dock": "left"
+  "icon_theme": "Zed (Default)",
+  "assistant": {
+    "default_model": {
+      "provider": "zed.dev",
+      "model": "claude-3-7-sonnet-latest"
+    },
+    "version": "2"
   },
   "ssh_connections": [
     {
@@ -14,50 +19,42 @@
       ]
     }
   ],
-  "language_models": {
-    "openai": {
-      "version": "1"
-    }
-  },
-  "assistant": {
-    "default_model": {
-      "provider": "copilot_chat",
-      "model": "claude-3-5-sonnet"
-    },
-    "version": "2",
-    "default_open_ai_model": "gpt-4o",
-    "provider": null
-  },
   "preview_tabs": {
     "enable_preview_from_code_navigation": true
   },
-  "completion_documentation_secondary_query_debounce": 500,
+  "git_panel": {
+    "enable": true
+  },
+  "diagnostics": {
+    "include_warnings": true,
+    "inline": {
+      "enabled": true,
+      "update_debounce_ms": 150,
+      "padding": 5
+    }
+  },
   "enable_language_server": true,
   "vim_mode": true,
-  "show_completions_on_input": true,
-  // "buffer_font_family": "FiraCode Nerd Font",
   "buffer_font_fallbacks": ["FiraCode Nerd Font"],
-  "buffer_font_family": "Writer",
-  "ui_font_family": "Writer",
-  // "ui_font_family": "Zed Sans",
-  "default_dock_anchor": "bottom",
+  "buffer_font_family": "JetBrainsMono Nerd Font",
+  "ui_font_family": "JetBrainsMono Nerd Font",
+  "ui_font_size": 16,
   "buffer_font_size": 13,
   "buffer_line_height": {
-    "custom": 1.7
+    "custom": 1.6
   },
   "features": {
-    "inline_completion_provider": "zed"
+    "edit_prediction_provider": "zed"
   },
   "tab_size": 2,
   "vim": {
     "use_system_clipboard": "always"
   },
   "theme": {
-    "dark": "Ayu Dark",
+    "dark": "Snowfall dark",
     "light": "Ayu Light",
     "mode": "system"
   },
-
   "format_on_save": "on",
   "auto_update": true,
   "inlay_hints": {
@@ -65,10 +62,14 @@
   },
   "terminal": {
     "env": {
-      "GIT_EDITOR": "zed --wait"
+      "GIT_EDITOR": "zed --preview --wait"
     }
   },
   "lsp": {
+    "deno": {
+      "root": "deno.json",
+      "filetypes": ["typescript"]
+    },
     "biome": {
       "root": "package.json",
       "enabled": false,
@@ -88,6 +89,7 @@
     },
     "Dart": {
       "formatter": "language_server",
+      "language_servers": ["dart", "cspell"],
       "format_on_save": "on",
       "code_actions_on_format": {
         "source.organizeImports": true
@@ -96,7 +98,6 @@
     "Svelte": {
       "format_on_save": "on",
       "formatter": "language_server"
-      // "formatter": "prettier"
     },
     "JavaScript": {
       "formatter": "prettier",
@@ -106,14 +107,12 @@
     },
     "TypeScript": {
       "formatter": "prettier",
-      // "language_servers": ["!typescript-language-server", "vtsls", "eslint"],
       "code_actions_on_format": {
         "source.fixAll.eslint": true
       }
     },
     "TSX": {
       "formatter": "prettier",
-      // "language_servers": ["!typescript-language-server", "vtsls", "eslint"],
       "code_actions_on_format": {
         "source.fixAll.eslint": true
       }
@@ -121,13 +120,11 @@
   },
   "relative_line_numbers": true,
   "show_whitespaces": "selection",
-  "formatter": "prettier",
+  "formatter": "auto",
   "file_types": {
     "CSS": ["pcss"]
   },
-  "vertical_scroll_margin": 0,
-  "horizontal_scroll_margin": 0,
-  "performance": {
-    "show_in_status_bar": true
+  "prettier": {
+    "allowed": true
   }
 }

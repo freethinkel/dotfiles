@@ -3,6 +3,9 @@ font-family-bold = "Writer"
 font-family-italic = "Writer"
 font-family-bold-italic = "Writer"
 font-size = 12.5
+# Common axes are: `wght` (weight), `slnt` (slant), `ital` (italic), `opsz`
+# (optical size), `wdth` (width), `GRAD` (gradient), etc.
+# font-variation = wght=900
 
 adjust-cell-width = 0%
 adjust-cell-height = 30%
@@ -24,13 +27,13 @@ mouse-scroll-multiplier = 2
 
 # Theme
 window-theme = system 
-# macos-icon = custom-style
+macos-icon = xray
 # macos-icon-ghost-color = #fcbfcb
 # macos-icon-screen-color = #fbbfbb
 
 cursor-style = bar
-# background-blur-radius = 40
-# background-opacity = 1
+background-blur-radius = 40
+background-opacity = 0.8
 
 # macos-titlebar-style = hidden
 # macos-titlebar-style = tabs
@@ -40,7 +43,11 @@ window-step-resize = false
 window-inherit-working-directory = true 
 window-padding-color = background
 
-theme = light:ayu_light,dark:SnowfallDark
+theme = light:rose-pine-dawn,dark:SnowfallDark
+unfocused-split-fill = #373c44
+split-divider-color = #84c4df
+
+desktop-notifications = true
 
 # Mapping 
 macos-option-as-alt = true

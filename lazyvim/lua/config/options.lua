@@ -6,3 +6,10 @@ vim.g.root_spec = { { ".git", "lua" }, "lsp", "cwd" }
 
 vim.opt.swapfile = false
 vim.g.snacks_animate = false
+
+vim.g.lazyvim_prettier_needs_config = false
+
+-- vim.schedule(function()
+--   vim.o.background = "light"
+--   vim.cmd("colorscheme rose-pine-dawn")
+-- end)

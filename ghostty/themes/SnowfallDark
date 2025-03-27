@@ -23,3 +23,6 @@ cursor-color = #84c4df
 selection-background = #373c44
 # selection-foreground = #d2d8d9
 
+
+unfocused-split-fill = #373c44
+split-divider-color = #84c4df

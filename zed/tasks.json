@@ -7,7 +7,7 @@
     "reveal": "always"
   },
   {
-    "label": "Open lazygit",
+    "label": "open_lazygit",
     "command": "lazygit -p $ZED_WORKTREE_ROOT",
     "tags": ["git"],
     "use_new_terminal": true,

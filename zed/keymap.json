@@ -5,7 +5,7 @@
       "j k": ["workspace::SendKeystrokes", "escape"],
       "k j": ["workspace::SendKeystrokes", "escape"],
       "tab": "menu::SelectNext",
-      "shift-tab": "menu::SelectPrev"
+      "shift-tab": "menu::SelectPrevious"
     }
   },
   {
@@ -17,13 +17,19 @@
     }
   },
   {
+    "context": "Editor && vim_mode == visual || vim_mode == insert && !menu && VimControl",
+    "bindings": {
+      "ctrl-n": ["editor::SelectNext", { "replace_newest": false }] // Add selection to Next Find Match
+    }
+  },
+  {
     "context": "ProjectPanel && not_editing",
     "bindings": {
       "h": "project_panel::CollapseSelectedEntry",
       // "l": "project_panel::ExpandSelectedEntry",
       "l": "project_panel::OpenPermanent",
       "j": "menu::SelectNext",
-      "k": "menu::SelectPrev",
+      "k": "menu::SelectPrevious",
       "o": "menu::Confirm",
       "r": "project_panel::Rename",
       "z c": "project_panel::CollapseSelectedEntry",
@@ -35,44 +41,42 @@
       "d": "project_panel::Delete",
       "a": "project_panel::NewFile",
       "shift-a": "project_panel::NewDirectory",
-      "shift-y": "project_panel::CopyRelativePath",
-      "g y": "project_panel::CopyPath"
+      "shift-y": "workspace::CopyRelativePath",
+      "g y": "workspace::CopyPath"
     }
   },
   {
     "context": "Editor && VimControl && !VimWaiting && !menu",
     "bindings": {
-      // "space g g": [
-      //   "workspace::SendKeystrokes",
-      //   ": new center terminal enter lazygit&&exit enter"
-      // ],
       "space z z": [
         "workspace::SendKeystrokes",
         ": togglecenter enter : toggleleft enter"
       ],
+      "tab": "editor::AcceptEditPrediction",
       "space b d": "pane::CloseActiveItem",
-      "H": "pane::ActivatePrevItem",
+      "H": "pane::ActivatePreviousItem",
       "L": "pane::ActivateNextItem",
       "space d d": "task::Spawn",
       "space o r": "projects::OpenRecent",
-      "space g g": [
-        "task::Spawn",
-        { "task_name": "Open lazygit", "reveal_target": "center" }
-      ],
-      // "space g g ": [
-      //   "workspace::SendKeystrokes",
-      //   ": new terminal enter lazygit"
+      "space g g": "git_panel::ToggleFocus",
+
+      // "space g g": [
+      //   "task::Spawn",
+      //   { "task_name": "open_lazygit", "reveal_target": "center" }
       // ],
+      "space f f": "file_finder::Toggle",
+      "space b b": "tab_switcher::Toggle",
+      "space b p": "pane::GoBack",
       "g r": "editor::FindAllReferences",
       // Doc hover
       "K": "editor::Hover",
       // buffer :bn :bp
       "] b": "pane::ActivateNextItem",
-      "[ b": "pane::ActivatePrevItem",
+      "[ b": "pane::ActivatePreviousItem",
       // quick fix
       "space c a": "editor::ToggleCodeActions",
       "] d": "editor::GoToDiagnostic",
-      "[ d": "editor::GoToPrevDiagnostic",
+      "[ d": "editor::GoToPreviousDiagnostic",
       "g m": "editor::ExpandMacroRecursively",
       // LSP rename    "ga" multi cursor
       "space r n": "editor::Rename",
@@ -88,18 +92,18 @@
   {
     "context": "Editor && VimControl && !VimWaiting && !menu",
     "bindings": {
-      "ctrl-h": ["workspace::ActivatePaneInDirection", "Left"],
-      "ctrl-l": ["workspace::ActivatePaneInDirection", "Right"],
-      "ctrl-k": ["workspace::ActivatePaneInDirection", "Up"],
-      "ctrl-j": ["workspace::ActivatePaneInDirection", "Down"]
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "ctrl-k": "workspace::ActivatePaneUp",
+      "ctrl-j": "workspace::ActivatePaneDown"
     }
   },
   {
     "bindings": {
-      "ctrl-h": ["workspace::ActivatePaneInDirection", "Left"],
-      "ctrl-l": ["workspace::ActivatePaneInDirection", "Right"],
-      "ctrl-k": ["workspace::ActivatePaneInDirection", "Up"],
-      "ctrl-j": ["workspace::ActivatePaneInDirection", "Down"]
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "ctrl-k": "workspace::ActivatePaneUp",
+      "ctrl-j": "workspace::ActivatePaneDown"
     }
   }
 ]

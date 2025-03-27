@@ -1,26 +1,13 @@
 #!/usr/bin/env sh
 
-update() {
-  WIDTH="dynamic"
-  if [ "$SELECTED" = "true" ]; then
-    WIDTH="0"
-  fi
+# echo "FW: $FOCUSED_WORKSPACE"
+FOCUSED_WORKSPACE=$(aerospace list-workspaces --focused)
 
-  sketchybar --animate tanh 20 --set $NAME icon.highlight=$SELECTED label.highlight=$SELECTED
-}
+SELECTED="off"
+if [ "$1" = "$FOCUSED_WORKSPACE" ]; then
+  SELECTED="on"
+else
+  SELECTED="off"
+fi
 
-mouse_clicked() {
-  if [ "$BUTTON" = "right" ]; then
-    yabai -m space --destroy $SID
-    sketchybar --trigger space_change
-  else
-    yabai -m space --focus $SID 2>/dev/null
-  fi
-}
-
-case "$SENDER" in
-  "mouse.clicked") mouse_clicked
-  ;;
-  *) update
-  ;;
-esac
+sketchybar --animate tanh 5 --set $NAME icon.highlight=$SELECTED label.highlight=$SELECTED
