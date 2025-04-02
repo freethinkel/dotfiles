@@ -1,13 +1,3 @@
 
-keybinds {
-    tmux {
-        bind "\"" { NewPane "Down"; SwitchToMode "Normal"; Resize "Decrease"; }
-    }
-    locked {
-        bind "Insert" { GoToTab 2; SwitchToMode "Normal"; }
-    }
-
-    shared_except "locked" {
-        bind "Insert" { GoToTab 1; SwitchToMode "Locked"; }
-    }
+layout {
 }

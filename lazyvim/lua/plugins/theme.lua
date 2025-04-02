@@ -43,6 +43,7 @@ function set_background_based_on_os()
       background = "dark"
     end
   else
+    background = "dark"
   end
 
   -- Set the background
@@ -53,7 +54,8 @@ set_background_based_on_os()
 
 return {
   {
-    dir = "~/Developer/dev/pet/nules.nvim",
+    -- dir = "~/Developer/dev/pet/snowfall.nvim",
+    "freethinkel/snowfall.nvim",
   },
   {
     "shaunsingh/nord.nvim",

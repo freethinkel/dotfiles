@@ -8,12 +8,27 @@
       "shift-tab": "menu::SelectPrevious"
     }
   },
+  // Easy motion
+  {
+    "context": "vim_mode == normal || vim_mode == visual",
+    "bindings": {
+      "s": ["vim::PushSneak", {}],
+      "S": ["vim::PushSneakBackward", {}]
+    }
+  },
   {
     "context": "Editor && vim_mode == visual || vim_mode == normal",
     "bindings": {
       "space /": "editor::ToggleComments",
       "alt-k": "editor::MoveLineUp",
       "alt-j": "editor::MoveLineDown"
+    }
+  },
+  {
+    "context": "GitPanel",
+    "bindings": {
+      "a": "git::StageAll",
+      "d": "git::RestoreFile"
     }
   },
   {
@@ -34,6 +49,7 @@
       "r": "project_panel::Rename",
       "z c": "project_panel::CollapseSelectedEntry",
       "z o": "project_panel::ExpandSelectedEntry",
+      // "s": "zed::OpenZedUrl",
       "s": "project_panel::RevealInFileManager",
       "x": "project_panel::Cut",
       "c": "project_panel::Copy",
@@ -73,6 +89,7 @@
       // buffer :bn :bp
       "] b": "pane::ActivateNextItem",
       "[ b": "pane::ActivatePreviousItem",
+      // "cmd-j": "h,
       // quick fix
       "space c a": "editor::ToggleCodeActions",
       "] d": "editor::GoToDiagnostic",
@@ -84,9 +101,16 @@
       "space o": "project_symbols::Toggle",
       "space e": "project_panel::ToggleFocus",
       "space x": "workspace::CloseAllDocks",
-      "space s h": "terminal_panel::ToggleFocus",
+      "space s h": "workspace::NewCenterTerminal",
       // trouble toggle
       "space t": "diagnostics::Deploy"
+    }
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "cmd-t": "workspace::NewTerminal",
+      "ctrl-b z": "workspace::ToggleZoom"
     }
   },
   {

@@ -1,7 +1,7 @@
-font-family = "Writer"
-font-family-bold = "Writer"
-font-family-italic = "Writer"
-font-family-bold-italic = "Writer"
+font-family = "Writer" 
+font-family-bold = "Writer" 
+font-family-italic = "Writer" 
+font-family-bold-italic = "Writer" 
 font-size = 12.5
 # Common axes are: `wght` (weight), `slnt` (slant), `ital` (italic), `opsz`
 # (optical size), `wdth` (width), `GRAD` (gradient), etc.
@@ -20,6 +20,7 @@ window-vsync = true
 # custom-shader = shaders/bloom.glsl
 # custom-shader = shaders/glitchy.glsl
 # custom-shader = shaders/just_snow.glsl
+custom-shader = shaders/cursor_blaze.glsl
 
 # Mouse
 mouse-hide-while-typing = true
@@ -70,6 +71,8 @@ keybind = super+w=text:\x02\x78
 keybind = super+comma=text:\x02\x2c
 
 keybind = super+option+i=inspector:toggle
+
+keybind = global:ctrl+cmd+,=toggle_quick_terminal
 
 # keybind = super+shift+
 

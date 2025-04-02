@@ -20,7 +20,7 @@ exec-on-workspace-change = [
 ]
 
 # Start AeroSpace at login
-start-at-login = false
+start-at-login = true
 
 # Normalizations. See: https://nikitabobko.github.io/AeroSpace/guide#normalization
 enable-normalization-flatten-containers = true
@@ -69,8 +69,12 @@ inner.horizontal = 10
 inner.vertical = 10
 outer.left = 10
 outer.bottom = 10
-outer.top = 42
 outer.right = 10
+outer.top = [
+  { monitor.main = 50 },
+  { monitor."^built-in retina display$" = 12 },
+  42,
+]
 
 # 1 WORKSPACE (BROWSER)
 [[on-window-detected]]
@@ -194,8 +198,11 @@ alt-shift-3 = 'move-node-to-workspace 3'
 alt-shift-4 = 'move-node-to-workspace 4'
 alt-shift-5 = 'move-node-to-workspace 5'
 
+ctrl-left = 'workspace prev'
+ctrl-right = 'workspace next'
+
 # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
-alt-tab = 'workspace-back-and-forth'
+# alt-tab = 'workspace-back-and-forth'
 # See: https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
 alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
@@ -203,6 +210,7 @@ alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 alt-shift-semicolon = 'mode service'
 
 alt-r = 'mode resize'
+alt-f = 'fullscreen'
 
 [mode.resize.binding]
 h = 'resize width -100'

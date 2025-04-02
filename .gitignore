@@ -3,6 +3,8 @@
 lvim/plugin
 fvim/plugin
 lazygit/state.yml
+node_modules/
+build
 
 vimchik/plugin
 

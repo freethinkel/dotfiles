@@ -8,6 +8,7 @@ vim.opt.swapfile = false
 vim.g.snacks_animate = false
 
 vim.g.lazyvim_prettier_needs_config = false
+vim.opt.clipboard = "unnamedplus"
 
 -- vim.schedule(function()
 --   vim.o.background = "light"
