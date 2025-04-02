@@ -8,6 +8,11 @@ map("i", "jk", "<Esc>")
 map("i", "kj", "<Esc>")
 map("i", "jj", "<Esc>")
 
+map("n", "<leader>rn", function()
+  vim.lsp.but.rename()
+end, { desc = "Rename" })
+-- { "<leader>cr", vim.lsp.buf.rename, desc = "Rename", has = "rename" },
+
 map("n", "<leader>/", function()
   require("modules.telescope").run()
 end, { desc = "Multi grep", remap = true })

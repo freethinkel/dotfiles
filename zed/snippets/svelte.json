@@ -1,0 +1,20 @@
+{
+  "svc": {
+    "body": [
+      "<script lang=\"ts\">",
+      "import { type Snippet } from 'svelte';",
+      "interface Props {",
+      "\tchildren: Snippet;",
+      "}",
+      "",
+      "const { children }: Props = \\$props();",
+      "</script>",
+      "$1"
+    ],
+    "prefix": "svc"
+  },
+  "swe": {
+    "prefix": "swe",
+    "body": ["<div class=\"wrapper\">", "\t$1", "</div>"]
+  }
+}

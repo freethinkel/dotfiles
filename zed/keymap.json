@@ -17,6 +17,13 @@
     }
   },
   {
+    "context": "GitPanel",
+    "bindings": {
+      "a": "git::StageAll",
+      "d": "git::RestoreFile"
+    }
+  },
+  {
     "context": "Editor && vim_mode == visual || vim_mode == insert && !menu && VimControl",
     "bindings": {
       "ctrl-n": ["editor::SelectNext", { "replace_newest": false }] // Add selection to Next Find Match

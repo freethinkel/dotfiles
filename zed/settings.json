@@ -12,11 +12,7 @@
       "host": "kolesnikov.thv04.voiso.dev",
       "username": "app",
       "port": 1355,
-      "projects": [
-        {
-          "paths": ["~/web"]
-        }
-      ]
+      "projects": [{ "paths": ["~/web"] }]
     }
   ],
   "preview_tabs": {
@@ -51,7 +47,7 @@
     "use_system_clipboard": "always"
   },
   "theme": {
-    "dark": "Snowfall dark",
+    "dark": "Gruvbox Dark Hard",
     "light": "Ayu Light",
     "mode": "system"
   },
@@ -122,7 +118,8 @@
   "show_whitespaces": "selection",
   "formatter": "auto",
   "file_types": {
-    "CSS": ["pcss"]
+    "CSS": ["pcss"],
+    "JSON": ["arb"]
   },
   "prettier": {
     "allowed": true

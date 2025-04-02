@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# terminal-notifier -title "$1" -message "$2"
+afplay ~/.config/sounds/BitcoinAlert.mp3 -v 200
