@@ -71,9 +71,10 @@ outer.left = 10
 outer.bottom = 10
 outer.right = 10
 outer.top = [
-  { monitor.main = 50 },
-  { monitor."^built-in retina display$" = 12 },
-  42,
+  { monitor."^Built-in Retina Display$" = 12 },
+  # { monitor."^Built-in Retina Display$" = 12 },
+  # { monitor.main = 50 },
+  12,
 ]
 
 # 1 WORKSPACE (BROWSER)
