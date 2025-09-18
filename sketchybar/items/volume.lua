@@ -55,7 +55,6 @@ end
 
 volume_slider:subscribe("volume_change", function(env)
 	local volume = tonumber(env.INFO)
-	print(volume)
 	local icon = icons.volume._0
 	if volume > 60 then
 		icon = icons.volume._100

@@ -27,12 +27,10 @@ caffeinate:subscribe("mouse.clicked", function(env)
 		end
 
 		if is_active then
-			caffeinate:set({ icon = { string = "􀸙 ", color = colors.yellow } })
-		else
 			caffeinate:set({ icon = { string = "􀸘", color = colors.foreground } })
+		else
+			caffeinate:set({ icon = { string = "􀸙 ", color = colors.yellow } })
 		end
-
-		print("is_caffeinate_active: " .. tostring(is_active))
 	end)
 end)
 

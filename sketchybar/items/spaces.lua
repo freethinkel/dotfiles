@@ -46,11 +46,13 @@ sbar.exec("aerospace list-workspaces --all", function(result, _)
 		for key in ipairs(spaces_group) do
 			local is_current_workspace = tostring(key) == trim(tostring(out))
 
-			sbar.set(spaces_group[key], {
-				icon = {
-					highlight = is_current_workspace, -- Reset highlight for all spaces
-				},
-			})
+			if aerospace_spaces[key] ~= nil then
+				sbar.set(spaces_group[key], {
+					icon = {
+						highlight = is_current_workspace, -- Reset highlight for all spaces
+					},
+				})
+			end
 		end
 	end)
 end)

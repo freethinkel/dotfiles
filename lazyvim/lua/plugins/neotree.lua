@@ -38,17 +38,15 @@ local function copy_path(state)
   end)
 end
 
-return {}
---
--- return {
---   {
---     "nvim-neo-tree/neo-tree.nvim",
---     opts = {
---       window = {
---         mappings = {
---           ["Y"] = copy_path,
---         },
---       },
---     },
---   },
--- }
+return {
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    opts = {
+      window = {
+        mappings = {
+          ["Y"] = copy_path,
+        },
+      },
+    },
+  },
+}

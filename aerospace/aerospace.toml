@@ -4,7 +4,7 @@
 # You can use it to add commands that run after login to macOS user session.
 # 'start-at-login' needs to be 'true' for 'after-login-command' to work
 # Available commands: https://nikitabobko.github.io/AeroSpace/commands
-after-login-command = []
+after-login-command = ["exec-and-forget sketchybar"]
 
 # You can use it to add commands that run after AeroSpace startup.
 # 'after-startup-command' is run after 'after-login-command'
@@ -15,12 +15,12 @@ after-startup-command = ["exec-and-forget sketchybar"]
 exec-on-workspace-change = [
   '/bin/bash',
   '-c',
-  'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE',
+  '~/.config/aerospace/scripts/on-workspace-change.sh',
   # 'exec-and-forget borders active_color=0xffe1e3e4 inactive_color=0xff494d64 width=5.0',
 ]
 
 # Start AeroSpace at login
-start-at-login = true
+start-at-login = false
 
 # Normalizations. See: https://nikitabobko.github.io/AeroSpace/guide#normalization
 enable-normalization-flatten-containers = true
@@ -73,19 +73,42 @@ outer.right = 10
 outer.top = [
   { monitor."^Built-in Retina Display$" = 12 },
   # { monitor."^Built-in Retina Display$" = 12 },
-  # { monitor.main = 50 },
+  { monitor.main = 50 },
   12,
 ]
 
 # 1 WORKSPACE (BROWSER)
 [[on-window-detected]]
-if.app-id = "com.google.Chrome"
+if.app-id = 'app.zen-browser.zen'
 if.window-title-regex-substring = 'Картинка в картинке'
 check-further-callbacks = true
-run = 'layout floating'
+run = ['layout floating']
+
+[[on-window-detected]]
+if.app-id = 'app.zen-browser.zen'
+if.window-title-regex-substring = 'Picture-in-Picture'
+check-further-callbacks = true
+run = ['layout floating']
+
+[[on-window-detected]]
+if.app-id = 'org.mozilla.firefox'
+if.window-title-regex-substring = 'Картинка в картинке'
+check-further-callbacks = true
+run = ['layout floating']
+
+[[on-window-detected]]
+if.app-id = 'org.mozilla.firefox'
+if.window-title-regex-substring = 'Picture-in-Picture'
+check-further-callbacks = true
+run = ['layout floating']
 
 [[on-window-detected]]
 if.app-id = 'com.google.Chrome'
+run = 'move-node-to-workspace 1'
+if.during-aerospace-startup = true
+
+[[on-window-detected]]
+if.app-id = 'org.mozilla.firefox'
 run = 'move-node-to-workspace 1'
 if.during-aerospace-startup = true
 
@@ -104,6 +127,7 @@ run = 'move-node-to-workspace 2'
 
 [[on-window-detected]]
 if.app-name-regex-substring = "zed"
+check-further-callbacks = true
 run = 'move-node-to-workspace 2'
 
 # 3 WORKSPACE (CHAT)
@@ -131,6 +155,10 @@ run = 'move-node-to-workspace 4'
 [[on-window-detected]]
 if.app-name-regex-substring = "finder"
 run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = "xcode"
+run = 'move-node-to-workspace 5'
 
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes

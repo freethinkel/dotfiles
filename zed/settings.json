@@ -1,4 +1,5 @@
 {
+  "use_system_window_tabs": true,
   "context_servers": {
     "mcp-server-gitlab": {
       "source": "extension",
@@ -108,15 +109,16 @@
       "username": "root",
       "port": 1355,
       "projects": []
+    },
+    {
+      "host": "kolesnikov.voiso.dev",
+      "projects": []
     }
   ],
   "preview_tabs": {
     "enable_preview_from_code_navigation": true
   },
   "show_completions_on_input": true,
-  "git_panel": {
-    "enable": true
-  },
   "edit_predictions": {
     "enabled_in_text_threads": true,
     "mode": "eager"
@@ -131,8 +133,8 @@
   },
   "enable_language_server": true,
   "vim_mode": true,
-  "buffer_font_fallbacks": ["FiraCode Nerd Font"],
-  "ui_font_fallbacks": ["FiraCode Nerd Font"],
+  "buffer_font_fallbacks": ["FiraCode Nerd Font", "SF Pro Display"],
+  "ui_font_fallbacks": ["FiraCode Nerd Font", "SF Pro Display"],
   "buffer_font_family": "JetBrainsMono Nerd Font",
   "ui_font_family": "JetBrainsMono Nerd Font",
   "buffer_font_size": 12.5,
@@ -149,7 +151,7 @@
   },
   "theme": {
     "dark": "Snowfall dark",
-    "light": "Gruvbox Light Hard",
+    "light": "Snowfall light",
     "mode": "system"
   },
   "format_on_save": "on",
@@ -159,26 +161,55 @@
   },
   "terminal": {
     "env": {
-      "GIT_EDITOR": "zed --preview --wait"
+      "GIT_EDITOR": "zed --wait"
     }
   },
   "lsp": {
-    "deno": {
-      "root": "deno.json",
-      "filetypes": ["typescript"]
+    "deno": {},
+    "tailwindcss-language-server": {
+      "settings": {
+        "filetypes": [
+          "html",
+          "css",
+          "scss",
+          "less",
+          "postcss",
+          "javascript",
+          "javascriptreact",
+          "typescript",
+          "typescriptreact",
+          "ejs"
+        ]
+      }
     },
+    "stylelint-lsp": {},
     "biome": {
-      "root": "package.json",
-      "enabled": false,
-      "filetypes": ["typescript"]
+      // "root": "package.json",
+      // "enabled": false,
+      // "filetypes": ["typescript"]
+    },
+    "sourcekit-lsp": {
+      "binary": {
+        "path": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp"
+      }
     }
   },
   "languages": {
     "Rust": {
       "formatter": "language_server"
     },
+    "Swift": {
+      "enable_language_server": true,
+      "language_servers": ["sourcekit-lsp"],
+      "formatter": "language_server",
+      "format_on_save": "on"
+    },
     "CSS": {
-      "formatter": "prettier"
+      "formatter": "prettier",
+      "code_actions_on_format": {
+        "source.fixAll.stylelint": true,
+        "source.fixAll.eslint": true
+      }
     },
     "Lua": {
       "formatter": "language_server"
@@ -222,8 +253,11 @@
   "show_whitespaces": "selection",
   "file_types": {
     "CSS": ["pcss"],
-    "JSON": ["arb"],
-    "XML": ["entitlements"]
+    "JSON": ["arb", "prettierrc"],
+    "XML": ["entitlements"],
+    "C": ["keymap"],
+    "HTML": ["ejs"],
+    "NGINX": ["conf.template"]
   },
   "prettier": {
     "allowed": true

@@ -4,6 +4,8 @@ local current_theme = function()
   if vim.o.background == "light" then
     return "rose-pine-dawn"
   else
+    -- return "gruvbox"
+    -- return "tokyonight-night"
     return "snowfall-dark"
   end
 end
@@ -56,7 +58,9 @@ return {
   {
     -- dir = "~/Developer/dev/pet/snowfall.nvim",
     "freethinkel/snowfall.nvim",
+    --
   },
+  { "ellisonleao/gruvbox.nvim" },
   {
     "shaunsingh/nord.nvim",
   },

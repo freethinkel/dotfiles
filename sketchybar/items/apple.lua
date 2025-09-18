@@ -34,6 +34,12 @@ local lock_device = sbar.add("item", {
 	label = " Lock screen",
 })
 
+local reboot_device = sbar.add("item", {
+	position = "popup." .. apple_logo.name,
+	icon = icons.lock,
+	label = " Reboot",
+})
+
 apple_prefs:subscribe("mouse.clicked", function(_)
 	sbar.exec("open -a 'System Preferences'")
 	apple_logo:set({ popup = { drawing = false } })
@@ -41,5 +47,10 @@ end)
 
 lock_device:subscribe("mouse.clicked", function(_)
 	sbar.exec("pmset displaysleepnow")
+	apple_logo:set({ popup = { drawing = false } })
+end)
+
+reboot_device:subscribe("mouse.clicked", function(_)
+	sbar.exec("osascript -e 'tell application \"System Events\" to restart'")
 	apple_logo:set({ popup = { drawing = false } })
 end)

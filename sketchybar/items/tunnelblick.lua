@@ -46,7 +46,6 @@ tunnelblick:subscribe("mouse.clicked", function(env)
 end)
 
 tunnelblick:subscribe("routine", function()
-	print("update_freq")
 	check_connection()
 end)
 
