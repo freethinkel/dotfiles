@@ -1,14 +1,14 @@
-font-family = "JetBrains Mono Nerd Font" 
-font-family-bold = "JetBrains Mono Nerd Font" 
-font-family-italic = "JetBrains Mono Nerd Font" 
-font-family-bold-italic = "JetBrains Mono Nerd Font" 
+font-family = "FiraCode Nerd Font" 
+font-family-bold = "FiraCode Nerd Font" 
+font-family-italic = "FiraCode Nerd Font" 
+font-family-bold-italic = "FiraCode Nerd Font" 
 font-size = 12.5
 # Common axes are: `wght` (weight), `slnt` (slant), `ital` (italic), `opsz`
 # (optical size), `wdth` (width), `GRAD` (gradient), etc.
 # font-variation = wght=900
 
 adjust-cell-width = 0%
-adjust-cell-height = 30%
+adjust-cell-height = 50%
 adjust-underline-position = 20%
 adjust-underline-thickness = 0
 adjust-cursor-thickness = 2
@@ -42,11 +42,11 @@ background-opacity = 1
 macos-titlebar-style = tabs
 
 window-colorspace = display-p3
-window-step-resize = false 
+window-step-resize = true 
 window-inherit-working-directory = true 
 window-padding-color = background
 
-theme = light:rose-pine-dawn,dark:SnowfallDark
+theme = light:Ayu Light,dark:SnowfallDark
 unfocused-split-fill = #373c44
 split-divider-color = #84c4df
 
@@ -62,7 +62,7 @@ keybind = alt+left=esc:b
 keybind = alt+right=esc:f
 
 # keybind = clear
-# TMUX
+## TMUX
 keybind = super+option+minus=text:\x02\x22
 keybind = super+j=text:\x02\x22
 keybind = super+option+backslash=text:\x02\x25
@@ -80,15 +80,14 @@ keybind = global:cmd+grave_accent=toggle_quick_terminal
 
 # keybind = super+shift+
 
-# keybind = ctrl+j:goto_split:bottom
-
+## JUST NATIVE
 # keybind = performable:ctrl+j=goto_split:bottom
 # keybind = performable:ctrl+k=goto_split:up
 # keybind = performable:ctrl+h=goto_split:left
 # keybind = performable:ctrl+l=goto_split:right
 # keybind = super+option+minus=new_split:down
 # keybind = super+option+backslash=new_split:right
-
+#
 # keybind = super+shift+l=next_tab
 # keybind = super+shift+t=new_tab
 # keybind = super+shift+m=toggle_split_zoom

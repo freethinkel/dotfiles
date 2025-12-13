@@ -10,3 +10,8 @@ vimchik/plugin
 
 *.log
 .env
+
+
+# Claude
+./claude/*
+!./claude/plugins/

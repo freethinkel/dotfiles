@@ -1,8 +1,48 @@
 {
+  "git_hosting_providers": [
+    {
+      "name": "Unitedline",
+      "provider": "gitlab",
+      "base_url": "https://ci.unitedline.net"
+    }
+  ],
+  "completions": {
+    "words_min_length": 0,
+    "lsp_fetch_timeout_ms": 3000
+  },
+  "show_signature_help_after_edits": true,
+  "git": {
+    "blame": {
+      "show_avatar": true
+    },
+    "inline_blame": {
+      "show_commit_summary": false
+    },
+    "git_gutter": "tracked_files"
+  },
+  "git_panel": {
+    "collapse_untracked_diff": false,
+    "sort_by_path": false,
+    "status_style": "icon",
+    "default_width": 240.0
+  },
+  "active_pane_modifiers": {
+    "inactive_opacity": 0.800000011920929
+  },
+  "tabs": {
+    "git_status": false,
+    "file_icons": true
+  },
+  "title_bar": {
+    "show_menus": true,
+    "show_branch_icon": true
+  },
+  "toolbar": {
+    "code_actions": true
+  },
   "use_system_window_tabs": true,
   "context_servers": {
     "mcp-server-gitlab": {
-      "source": "extension",
       "settings": {
         "gitlab_personal_access_token": "",
         "gitlab_api_url": "https://ci.unitedline.net/api/v4"
@@ -14,6 +54,9 @@
   },
   "icon_theme": "Zed (Default)",
   "private_files": ["*.g.dart"],
+  "agent_servers": {
+    "claude": {}
+  },
   "agent": {
     "profiles": {
       "ask": {
@@ -80,7 +123,7 @@
     "default_profile": "ask",
     "default_model": {
       "provider": "copilot_chat",
-      "model": "claude-sonnet-4"
+      "model": "claude-sonnet-4.5"
     }
   },
   "snippet_sort_order": "top",
@@ -109,13 +152,10 @@
       "username": "root",
       "port": 1355,
       "projects": []
-    },
-    {
-      "host": "kolesnikov.voiso.dev",
-      "projects": []
     }
   ],
   "preview_tabs": {
+    "enable_preview_from_file_finder": false,
     "enable_preview_from_code_navigation": true
   },
   "show_completions_on_input": true,
@@ -133,11 +173,11 @@
   },
   "enable_language_server": true,
   "vim_mode": true,
+  "buffer_font_family": "FiraCode Nerd Font",
+  "ui_font_family": "FiraCode Nerd Font",
   "buffer_font_fallbacks": ["FiraCode Nerd Font", "SF Pro Display"],
   "ui_font_fallbacks": ["FiraCode Nerd Font", "SF Pro Display"],
-  "buffer_font_family": "JetBrainsMono Nerd Font",
-  "ui_font_family": "JetBrainsMono Nerd Font",
-  "buffer_font_size": 12.5,
+  "buffer_font_size": 13,
   "ui_font_size": 15,
   "buffer_line_height": {
     "custom": 1.6
@@ -160,6 +200,13 @@
     "enabled": false
   },
   "terminal": {
+    "toolbar": {
+      "breadcrumbs": false
+    },
+    "option_as_meta": true,
+    "line_height": {
+      "custom": 1.6
+    },
     "env": {
       "GIT_EDITOR": "zed --wait"
     }
@@ -249,7 +296,7 @@
       }
     }
   },
-  "relative_line_numbers": true,
+  "relative_line_numbers": "enabled",
   "show_whitespaces": "selection",
   "file_types": {
     "CSS": ["pcss"],
