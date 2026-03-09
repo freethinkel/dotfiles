@@ -8,7 +8,7 @@ layout {
                 format_left   "{mode} {tabs}"
                 // format_right  "{command_git_branch} {datetime}"
                 format_space  ""
-                format_right  "{pipe_zjstatus_hints}" 
+                format_right  "{pipe_zjstatus_hints}{datetime} " 
 
                 border_enabled  "false"
                 border_char     "─"

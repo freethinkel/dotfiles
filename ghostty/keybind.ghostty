@@ -1,0 +1,75 @@
+# Prefer sequences of commands rather than chords.
+# Prefix Key: `ctrl+s` avoids conflicts with tmux (`ctrl+b`, `ctrl+a`)
+#
+# Use VIm movements as paradigm - `h/j/k/l`, `gg`/`G`, `u`/`d`, `[`/`]`
+#
+# ghostty +list-actions                 # List all available actions
+# ghostty +show-config                  # Show current config
+# ghostty +show-config --default        # Show defaults
+# ghostty +show-config --default --docs # with docs
+
+macos-option-as-alt = true
+
+## Shift+Enter for Claude Code
+keybind = shift+enter=text:\x1b\r
+
+# Navigation cursor between words
+keybind = cmd+right=text:\x05
+keybind = cmd+left=text:\x01
+keybind = alt+left=esc:b
+keybind = alt+right=esc:f
+
+## TMUX
+# keybind = super+option+minus=text:\x02\x22
+# keybind = super+j=text:\x02\x22
+# keybind = super+option+backslash=text:\x02\x25
+# keybind = super+shift+right_bracket=text:\x02\x6e
+# keybind = super+shift+left_bracket=text:\x02\x70
+# keybind = super+t=text:\x02\x63
+# keybind = super+x=text:\x02\x78
+# keybind = super+w=text:\x02\x78
+# keybind = super+comma=text:\x02\x2c
+
+keybind = super+option+i=inspector:toggle
+
+# Quick Terminal (macOS)
+keybind = global:option+grave_accent=toggle_quick_terminal
+
+# keybind = super+shift+
+
+## Pane splitting and navigation
+keybind = performable:ctrl+j=goto_split:bottom
+keybind = performable:ctrl+k=goto_split:up
+keybind = performable:ctrl+h=goto_split:left
+keybind = performable:ctrl+l=goto_split:right
+keybind = super+option+minus=new_split:down
+keybind = super+option+backslash=new_split:right
+
+## Resize mode
+keybind = ctrl+m=activate_key_table:resize
+keybind = resize/
+keybind = resize/h=resize_split:left,50
+keybind = resize/j=resize_split:down,50
+keybind = resize/k=resize_split:up,50
+keybind = resize/l=resize_split:right,50
+keybind = resize/catch_all=ignore
+keybind = resize/escape=deactivate_key_table
+keybind = resize/enter=deactivate_key_table
+keybind = resize/q=deactivate_key_table
+
+# keybind = super+shift+l=next_tab
+# keybind = super+shift+t=new_tab
+# keybind = super+shift+m=toggle_split_zoom
+# keybind = super+shift+comma=move_tab:-1
+# keybind = super+shift+period=move_tab:1
+# keybind = super+shift+c=copy_to_clipboard
+# keybind = super+shift+enter=new_split:auto
+# keybind = super+shift+r=reload_config
+# keybind = super+shift+h=previous_tab
+# keybind = super+shift+v=paste_from_clipboard
+
+# Tabs
+keybind = ctrl+t>r=prompt_tab_title
+
+# Utility
+keybind = ctrl+o>r=reload_config

@@ -1,6 +1,10 @@
 {
   "log": {
     "prefix": "log",
-    "body": ["console.log($0);"]
-  }
+    "body": ["console.log($0);"],
+  },
+  "rns": {
+    "prefix": "rns",
+    "body": ["const styles = StyleSheet.create({$0})"],
+  },
 }

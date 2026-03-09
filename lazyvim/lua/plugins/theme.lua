@@ -2,11 +2,12 @@ local state = false
 
 local current_theme = function()
   if vim.o.background == "light" then
-    return "rose-pine-dawn"
+    -- return "gruvbox"
+    return "nord"
   else
     -- return "gruvbox"
-    -- return "tokyonight-night"
     return "snowfall-dark"
+    -- return "catppuccin-mocha"
   end
 end
 
@@ -65,9 +66,15 @@ return {
     "shaunsingh/nord.nvim",
   },
   {
+    "AlexvZyl/nordic.nvim",
+    lazy = false,
+    priority = 1000,
+  },
+  {
     "catppuccin/nvim",
     name = "catppuccin",
   },
+  { "Shatur/neovim-ayu" },
   {
     "cdmill/neomodern.nvim",
     lazy = true,

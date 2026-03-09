@@ -1,63 +1,88 @@
 {
+  "snippet_sort_order": "top",
+  "which_key": {
+    "delay_ms": 0,
+    "enabled": true,
+  },
   "git_hosting_providers": [
     {
       "name": "Unitedline",
       "provider": "gitlab",
-      "base_url": "https://ci.unitedline.net"
-    }
+      "base_url": "https://ci.unitedline.net",
+    },
   ],
+  "hidden_files": ["node_modules"],
   "completions": {
+    "lsp": true,
     "words_min_length": 0,
-    "lsp_fetch_timeout_ms": 3000
+    "lsp_fetch_timeout_ms": 3000,
   },
+  "audio": {},
+  "code_actions_on_format": {},
   "show_signature_help_after_edits": true,
   "git": {
     "blame": {
-      "show_avatar": true
+      "show_avatar": true,
     },
     "inline_blame": {
-      "show_commit_summary": false
+      "show_commit_summary": true,
     },
-    "git_gutter": "tracked_files"
+    "git_gutter": "tracked_files",
   },
   "git_panel": {
+    "tree_view": true,
     "collapse_untracked_diff": false,
     "sort_by_path": false,
     "status_style": "icon",
-    "default_width": 240.0
+    "default_width": 240.0,
   },
   "active_pane_modifiers": {
-    "inactive_opacity": 0.800000011920929
+    "inactive_opacity": 0.800000011920929,
   },
   "tabs": {
     "git_status": false,
-    "file_icons": true
+    "file_icons": true,
   },
   "title_bar": {
     "show_menus": true,
-    "show_branch_icon": true
+    "show_branch_icon": true,
   },
   "toolbar": {
-    "code_actions": true
+    "code_actions": true,
   },
   "use_system_window_tabs": true,
   "context_servers": {
+    "confluence-context-server": {
+      "enabled": true,
+      "settings": {},
+    },
     "mcp-server-gitlab": {
       "settings": {
         "gitlab_personal_access_token": "",
-        "gitlab_api_url": "https://ci.unitedline.net/api/v4"
-      }
-    }
+        "gitlab_api_url": "https://ci.unitedline.net/api/v4",
+      },
+    },
   },
   "debugger": {
-    "dock": "left"
+    "dock": "left",
   },
   "icon_theme": "Zed (Default)",
   "private_files": ["*.g.dart"],
   "agent_servers": {
-    "claude": {}
+    "opencode": {
+      "type": "registry",
+    },
+    "claude": {},
+    "OpenCode": {
+      "type": "custom",
+      "command": "opencode",
+      "args": ["acp"],
+    },
   },
   "agent": {
+    "tool_permissions": {
+      "default": "allow",
+    },
     "profiles": {
       "ask": {
         "name": "Ask",
@@ -72,7 +97,7 @@
           "open": true,
           "grep": true,
           "thinking": true,
-          "web_search": true
+          "web_search": true,
         },
         "enable_all_context_servers": false,
         "context_servers": {
@@ -86,10 +111,10 @@
               "create_or_update_file": true,
               "create_merge_request": true,
               "create_issue": true,
-              "create_branch": true
-            }
-          }
-        }
+              "create_branch": true,
+            },
+          },
+        },
       },
       "gitlab": {
         "name": "Gitlab",
@@ -98,7 +123,7 @@
           "terminal": true,
           "read_file": true,
           "open": true,
-          "grep": true
+          "grep": true,
         },
         "enable_all_context_servers": false,
         "context_servers": {
@@ -112,108 +137,125 @@
               "get_file_contents": true,
               "create_or_update_file": true,
               "push_files": true,
-              "search_repositories": true
-            }
-          }
-        }
-      }
+              "search_repositories": true,
+            },
+          },
+        },
+      },
     },
     "single_file_review": true,
-    "always_allow_tool_actions": true,
     "default_profile": "ask",
     "default_model": {
-      "provider": "copilot_chat",
-      "model": "claude-sonnet-4.5"
-    }
+      "provider": "openai",
+      "model": "gpt-5-mini",
+    },
   },
-  "snippet_sort_order": "top",
   "ssh_connections": [
     {
       "host": "kolesnikov.thv04.voiso.dev",
       "username": "app",
       "port": 1355,
+      "args": [],
       "projects": [
         {
-          "paths": ["~/web"]
-        }
-      ]
+          "paths": ["/home/app/cdr"],
+        },
+        {
+          "paths": ["~/web"],
+        },
+      ],
     },
     {
       "host": "146.190.151.114",
       "username": "root",
+      "args": [],
       "projects": [
         {
-          "paths": ["~/pocketbackend"]
-        }
-      ]
+          "paths": ["~/pocketbackend"],
+        },
+      ],
     },
     {
       "host": "65.109.123.174",
       "username": "root",
       "port": 1355,
-      "projects": []
-    }
+      "args": [],
+      "projects": [],
+    },
   ],
   "preview_tabs": {
     "enable_preview_from_file_finder": false,
-    "enable_preview_from_code_navigation": true
+    "enable_keep_preview_on_code_navigation": true,
   },
   "show_completions_on_input": true,
   "edit_predictions": {
+    "provider": "zed",
     "enabled_in_text_threads": true,
-    "mode": "eager"
+    "mode": "eager",
   },
   "diagnostics": {
     "include_warnings": true,
     "inline": {
       "enabled": true,
       "update_debounce_ms": 150,
-      "padding": 5
-    }
+      "padding": 5,
+    },
   },
   "enable_language_server": true,
   "vim_mode": true,
-  "buffer_font_family": "FiraCode Nerd Font",
-  "ui_font_family": "FiraCode Nerd Font",
+  "buffer_font_family": "TX-02-Variable",
+  "ui_font_family": "TX-02-Variable",
   "buffer_font_fallbacks": ["FiraCode Nerd Font", "SF Pro Display"],
   "ui_font_fallbacks": ["FiraCode Nerd Font", "SF Pro Display"],
-  "buffer_font_size": 13,
-  "ui_font_size": 15,
+  "buffer_font_size": 12.5,
+  "ui_font_size": 14,
   "buffer_line_height": {
-    "custom": 1.6
-  },
-  "features": {
-    "edit_prediction_provider": "zed"
+    "custom": 1.6,
   },
   "tab_size": 2,
   "vim": {
-    "use_system_clipboard": "always"
+    "use_system_clipboard": "always",
   },
   "theme": {
     "dark": "Snowfall dark",
     "light": "Snowfall light",
-    "mode": "system"
+    "mode": "system",
   },
   "format_on_save": "on",
   "auto_update": true,
   "inlay_hints": {
-    "enabled": false
+    "enabled": false,
   },
   "terminal": {
     "toolbar": {
-      "breadcrumbs": false
+      "breadcrumbs": false,
     },
     "option_as_meta": true,
     "line_height": {
-      "custom": 1.6
+      "custom": 1.6,
     },
     "env": {
-      "GIT_EDITOR": "zed --wait"
-    }
+      "GIT_EDITOR": "zed --wait",
+    },
   },
   "lsp": {
-    "deno": {},
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always",
+          },
+        },
+        "javascript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always",
+          },
+        },
+      },
+      "enable_lsp_tasks": true,
+    },
     "tailwindcss-language-server": {
+      "enable_lsp_tasks": false,
       "settings": {
         "filetypes": [
           "html",
@@ -225,9 +267,9 @@
           "javascriptreact",
           "typescript",
           "typescriptreact",
-          "ejs"
-        ]
-      }
+          "ejs",
+        ],
+      },
     },
     "stylelint-lsp": {},
     "biome": {
@@ -237,64 +279,64 @@
     },
     "sourcekit-lsp": {
       "binary": {
-        "path": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp"
-      }
-    }
+        "path": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
+      },
+    },
   },
   "languages": {
     "Rust": {
-      "formatter": "language_server"
+      "formatter": "language_server",
     },
     "Swift": {
       "enable_language_server": true,
       "language_servers": ["sourcekit-lsp"],
       "formatter": "language_server",
-      "format_on_save": "on"
+      "format_on_save": "on",
     },
     "CSS": {
       "formatter": "prettier",
       "code_actions_on_format": {
         "source.fixAll.stylelint": true,
-        "source.fixAll.eslint": true
-      }
+        "source.fixAll.eslint": true,
+      },
     },
     "Lua": {
-      "formatter": "language_server"
+      "formatter": "language_server",
     },
     "Prisma": {
       "format_on_save": "on",
-      "formatter": "language_server"
+      "formatter": "language_server",
     },
     "Dart": {
       "formatter": "language_server",
       "language_servers": ["dart", "cspell"],
       "format_on_save": "on",
       "code_actions_on_format": {
-        "source.organizeImports": true
-      }
+        "source.organizeImports": true,
+      },
     },
     "Svelte": {
       "format_on_save": "on",
-      "formatter": "language_server"
+      "formatter": "language_server",
     },
     "JavaScript": {
       "formatter": "prettier",
       "code_actions_on_format": {
-        "source.fixAll.eslint": true
-      }
+        "source.fixAll.eslint": true,
+      },
     },
     "TypeScript": {
       "formatter": "prettier",
       "code_actions_on_format": {
-        "source.fixAll.eslint": true
-      }
+        "source.fixAll.eslint": true,
+      },
     },
     "TSX": {
       "formatter": "prettier",
       "code_actions_on_format": {
-        "source.fixAll.eslint": true
-      }
-    }
+        "source.fixAll.eslint": true,
+      },
+    },
   },
   "relative_line_numbers": "enabled",
   "show_whitespaces": "selection",
@@ -304,9 +346,9 @@
     "XML": ["entitlements"],
     "C": ["keymap"],
     "HTML": ["ejs"],
-    "NGINX": ["conf.template"]
+    "NGINX": ["conf.template"],
   },
   "prettier": {
-    "allowed": true
-  }
+    "allowed": true,
+  },
 }

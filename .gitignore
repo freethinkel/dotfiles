@@ -11,7 +11,10 @@ vimchik/plugin
 *.log
 .env
 
+opencode/antigravity-accounts.json
 
 # Claude
 ./claude/*
 !./claude/plugins/
+
+tmux/plugins
