@@ -1,10 +1,10 @@
 app-notifications = no-clipboard-copy
 
-font-family = "TX-02-Variable" 
-font-family-bold = "TX-02-Variable" 
-font-family-italic = "TX-02-Variable" 
-font-family-bold-italic = "TX-02-Variable" 
-font-size = 12.5
+font-family = "Iosevka Nerd Font" 
+font-family-bold = "Iosevka Nerd Font" 
+font-family-italic = "Iosevka Nerd Font" 
+font-family-bold-italic = "Iosevka Nerd Font" 
+font-size = 14
 # Common axes are: `wght` (weight), `slnt` (slant), `ital` (italic), `opsz`
 # (optical size), `wdth` (width), `GRAD` (gradient), etc.
 # font-variation = wght=900
@@ -29,8 +29,9 @@ shell-integration-features = cursor,sudo,title
 # custom-shader = shaders/just_snow.glsl
 # custom-shader = shaders/cursor_blaze.glsl
 # custom-shader = shaders/cursor_smear_fade.glsl
-custom-shader = shaders/cursor_smear.glsl
+# custom-shader = shaders/cursor_smear.glsl
 # custom-shader = shaders/blur_crt.glsl
+custom-shader = shaders/cursor_warp.glsl
 
 
 # Mouse
@@ -47,16 +48,16 @@ cursor-style = bar
 background-blur-radius = 40
 background-opacity = 1
 
-# macos-titlebar-style = hidden
-macos-titlebar-style = tabs
+macos-titlebar-style = hidden
+# macos-titlebar-style = tabs
 
 window-colorspace = display-p3
-window-step-resize = true 
+# window-step-resize = true 
 window-inherit-working-directory = true 
 window-padding-color = background
 window-save-state = always
 
-theme = light:Nord Light,dark:SnowfallDark
+theme = light:Adwaita,dark:Adwaita Dark
 # unfocused-split-fill = #373c44
 # split-divider-color = #84c4df
 
@@ -65,6 +66,6 @@ clipboard-paste-protection = false
 
 # config-file = style.ghostty
 config-file = keybind.ghostty
-config-file = vim.ghostty
-
+# config-file = vim.ghostty
 # vim: ft=ghostty
+

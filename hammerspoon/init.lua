@@ -1,5 +1,5 @@
 function change_workspace(direction)
-	hs.task.new("/opt/homebrew/bin/aerospace", function() end, { "workspace", direction }):start()
+	hs.task.new("/opt/homebrew/bin/aerospace", function() end, { "workspace", "--no-stdin", direction }):start()
 end
 
 local current_id, threshold

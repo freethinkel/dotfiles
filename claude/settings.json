@@ -1,49 +1,23 @@
 {
   "permissions": {
-    "allow": []
+    "allow": ["mcp__pencil"]
   },
-  "model": "opus",
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/jarvis-guard.sh",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/jarvis-stop.sh",
-            "timeout": 15
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/jarvis-notify.sh",
-            "timeout": 10
+            "command": "~/.claude/hooks/stop.sh"
           }
         ]
       }
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "feature-dev@claude-plugins-official": true,
@@ -128,5 +102,13 @@
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "mcpServers": {
+    "pencil": {
+      "transport": "stdio",
+      "command": "/Applications/Pencil.app/Contents/Resources/app.asar.unpacked/out/mcp-server-darwin-arm64",
+      "args": ["--app", "desktop"],
+      "env": {}
+    }
+  }
 }

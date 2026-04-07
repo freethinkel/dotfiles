@@ -1,4 +1,7 @@
 {
+  "tab_bar": {
+    "show_pinned_tabs_in_separate_row": false,
+  },
   "snippet_sort_order": "top",
   "which_key": {
     "delay_ms": 0,
@@ -40,7 +43,7 @@
     "inactive_opacity": 0.800000011920929,
   },
   "tabs": {
-    "git_status": false,
+    "git_status": true,
     "file_icons": true,
   },
   "title_bar": {
@@ -69,10 +72,12 @@
   "icon_theme": "Zed (Default)",
   "private_files": ["*.g.dart"],
   "agent_servers": {
+    "claude-acp": {
+      "type": "registry",
+    },
     "opencode": {
       "type": "registry",
     },
-    "claude": {},
     "OpenCode": {
       "type": "custom",
       "command": "opencode",
@@ -203,12 +208,12 @@
   },
   "enable_language_server": true,
   "vim_mode": true,
-  "buffer_font_family": "TX-02-Variable",
-  "ui_font_family": "TX-02-Variable",
-  "buffer_font_fallbacks": ["FiraCode Nerd Font", "SF Pro Display"],
-  "ui_font_fallbacks": ["FiraCode Nerd Font", "SF Pro Display"],
-  "buffer_font_size": 12.5,
-  "ui_font_size": 14,
+  "buffer_font_family": "Iosevka Nerd Font",
+  "ui_font_family": "Iosevka Nerd Font",
+  // "buffer_font_fallbacks": ["FiraCode Nerd Font", "SF Pro Display"],
+  // "ui_font_fallbacks": ["FiraCode Nerd Font", "SF Pro Display"],
+  "buffer_font_size": 14,
+  "ui_font_size": 16,
   "buffer_line_height": {
     "custom": 1.6,
   },
@@ -217,8 +222,8 @@
     "use_system_clipboard": "always",
   },
   "theme": {
-    "dark": "Snowfall dark",
-    "light": "Snowfall light",
+    "dark": "Adwaita Pastel Dark",
+    "light": "Adwaita Pastel Light",
     "mode": "system",
   },
   "format_on_save": "on",
@@ -227,9 +232,7 @@
     "enabled": false,
   },
   "terminal": {
-    "toolbar": {
-      "breadcrumbs": false,
-    },
+    "toolbar": {},
     "option_as_meta": true,
     "line_height": {
       "custom": 1.6,
@@ -345,7 +348,6 @@
     "JSON": ["arb", "prettierrc"],
     "XML": ["entitlements"],
     "C": ["keymap"],
-    "HTML": ["ejs"],
     "NGINX": ["conf.template"],
   },
   "prettier": {

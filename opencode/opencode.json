@@ -14,8 +14,14 @@
             "output": 64000
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         }
       }
@@ -29,8 +35,14 @@
             "output": 65535
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
         "gemini-3-pro-medium": {
@@ -40,8 +52,14 @@
             "output": 65535
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
         "gemini-3-pro-low": {
@@ -51,8 +69,14 @@
             "output": 65535
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
         "gemini-2.5-flash": {
@@ -62,8 +86,14 @@
             "output": 8192
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
         "claude-opus-4-5": {
@@ -73,8 +103,14 @@
             "output": 64000
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         }
       }
@@ -88,7 +124,18 @@
         "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
       },
       "enabled": true
+    },
+    "pencil": {
+      "command": [
+        "/Applications/Pencil.app/Contents/Resources/app.asar.unpacked/out/mcp-server-darwin-arm64",
+        "--app",
+        "desktop"
+      ],
+      "enabled": true,
+      "type": "local"
     }
   },
-  "plugin": ["oh-my-opencode@2.2.0", "opencode-antigravity-auth@1.1.2"]
+  "plugin": [
+    "opencode-antigravity-auth@1.1.2"
+  ]
 }

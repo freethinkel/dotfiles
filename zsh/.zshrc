@@ -45,6 +45,7 @@ alias baresip="/opt/homebrew/Cellar/baresip/3.3.0/bin/baresip"
 alias notes="cd /Users/freethinkel/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/Mind\ palace/"
 alias gp="git push origin HEAD"
 alias ff="fvm flutter"
+alias dcc="devcontainer exec --workspace-folder . /bin/bash"
 
 # bun completions
 [ -s "/Users/freethinkel/.bun/_bun" ] && source "/Users/freethinkel/.bun/_bun"
@@ -57,6 +58,8 @@ export EDITOR="nvim"
 export PNPM_HOME="/Users/freethinkel/Library/pnpm"
 export PATH="$PNPM_HOME:$PATH"
 # pnpm end
+#
+export ADDITIONAL_MOUNT_DIR="$HOME/Developer/dev/dotfiles"
 
 export WASMTIME_HOME="$HOME/.wasmtime"
 
@@ -157,3 +160,5 @@ else
 fi
 ###-end-opencode-completions-###
 
+
+export PATH=$PATH:/Users/freethinkel/.spicetify
