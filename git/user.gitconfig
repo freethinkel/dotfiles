@@ -2,8 +2,8 @@
 # This file is included at the end of slicker's .gitconfig
 
 [user]
-    name = Your Name
-    email = you@example.com
+    name = Egor Kolesnikov
+    email = freethinkel@gmail.com
 
 # [commit]
 #     gpgsign = true
