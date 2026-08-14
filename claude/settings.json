@@ -1,8 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "mcp__pencil"
-    ]
+    "allow": ["mcp__pencil"]
   },
   "hooks": {
     "UserPromptSubmit": [
@@ -140,14 +138,16 @@
     "mode": "hold"
   },
   "skipDangerousModePermissionPrompt": true,
+  "theme": "custom:slicker",
   "mcpServers": {
+    "browsermcp": {
+      "command": "npx",
+      "args": ["@browsermcp/mcp@latest"]
+    },
     "pencil": {
       "transport": "stdio",
       "command": "/Applications/Pencil.app/Contents/Resources/app.asar.unpacked/out/mcp-server-darwin-arm64",
-      "args": [
-        "--app",
-        "desktop"
-      ],
+      "args": ["--app", "desktop"],
       "env": {}
     }
   }

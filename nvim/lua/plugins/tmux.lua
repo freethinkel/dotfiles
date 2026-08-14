@@ -9,5 +9,11 @@ return {
       { "<C-k>", "<cmd>TmuxNavigateUp<cr>", desc = "Got to the up pane" },
       { "<C-l>", "<cmd>TmuxNavigateRight<cr>", desc = "Got to the right pane" },
     },
+    init = function()
+      vim.g.tmux_navigator_no_mappings = 1
+    end,
+    config = function()
+      dofile(vim.fn.expand("/Users/freethinkel/Developer/dev/terms/vim-herdr-navigation/editor/nvim.lua"))
+    end,
   },
 }

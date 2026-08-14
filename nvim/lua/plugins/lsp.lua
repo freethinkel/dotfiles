@@ -7,7 +7,14 @@ return {
   {
     "neovim/nvim-lspconfig",
     opts = {
+      inlay_hints = { enabled = false },
       servers = {
+        -- flutter-tools starts dartls itself (with the fvm SDK); disable the
+        -- lspconfig copy so it doesn't try `dart` from PATH and fail.
+        dartls = { enabled = false },
+        stylelint = {
+          filetypes = { "css", "scss", "less", "sass", "pcss", "vue", "svelte" },
+        },
         ["*"] = {
           keys = {
             { "gr", "<CMD>Glance references<CR>" },

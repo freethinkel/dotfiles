@@ -5,6 +5,13 @@ return {
     ---@type snacks.Config
     opts = {
       explorer = {},
+      image = {
+        enabled = true,
+        doc = {
+          inline = true,
+          float = true,
+        },
+      },
       picker = {
         sources = {
           explorer = {
