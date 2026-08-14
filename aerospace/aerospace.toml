@@ -1,5 +1,7 @@
-# Place a copy of this config to ~/.aerospace.toml
-# After that, you can edit ~/.aerospace.toml to your liking
+config-version = 2
+
+# Workspaces stay alive even when empty (v1 inferred this from bindings)
+persistent-workspaces = ['1', '2', '3', '4', '5']
 
 # You can use it to add commands that run after login to macOS user session.
 # 'start-at-login' needs to be 'true' for 'after-login-command' to work
