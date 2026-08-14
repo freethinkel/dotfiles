@@ -204,7 +204,8 @@ run = 'move-node-to-workspace 5'
 alt-slash = 'layout tiles horizontal vertical'
 alt-comma = 'layout accordion horizontal vertical'
 
-# Stack with the right neighbour (OmniWM's Option+T tabbed column)
+# Stack with the right neighbour (OmniWM's Option+T tabbed column).
+# The only way to group windows — join-with lives here, not in service mode.
 alt-t = ['join-with right', 'layout accordion']
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#focus
@@ -250,16 +251,7 @@ ctrl-cmd-tab = 'focus-monitor --wrap-around next'
 # See: https://nikitabobko.github.io/AeroSpace/commands#mode
 alt-shift-semicolon = 'mode service'
 
-alt-r = 'mode resize'
 alt-f = 'fullscreen'
-
-[mode.resize.binding]
-h = 'resize width -100'
-j = 'resize height +100'
-k = 'resize height -100'
-l = 'resize width +100'
-enter = 'mode main'
-esc = 'mode main'
 
 # 'service' binding mode declaration.
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
@@ -271,14 +263,6 @@ f = [
   'mode main',
 ] # Toggle between floating and tiling layout
 backspace = ['close-all-windows-but-current', 'mode main']
-
-# sticky is not yet supported https://github.com/nikitabobko/AeroSpace/issues/2
-#s = ['layout sticky tiling', 'mode main']
-
-alt-shift-h = ['join-with left', 'mode main']
-alt-shift-j = ['join-with down', 'mode main']
-alt-shift-k = ['join-with up', 'mode main']
-alt-shift-l = ['join-with right', 'mode main']
 
 down = 'volume down'
 up = 'volume up'
