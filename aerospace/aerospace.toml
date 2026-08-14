@@ -251,7 +251,16 @@ ctrl-cmd-tab = 'focus-monitor --wrap-around next'
 # See: https://nikitabobko.github.io/AeroSpace/commands#mode
 alt-shift-semicolon = 'mode service'
 
+alt-r = 'mode resize'
 alt-f = 'fullscreen'
+
+[mode.resize.binding]
+h = 'resize width -100'
+j = 'resize height +100'
+k = 'resize height -100'
+l = 'resize width +100'
+enter = 'mode main'
+esc = 'mode main'
 
 # 'service' binding mode declaration.
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
