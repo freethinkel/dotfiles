@@ -1,6 +1,0 @@
-# ─── User yabai overrides ─────────────────────────────────────────────
-# Add personal rules, padding, or layout overrides here.
-# This file is sourced after the base config.
-
-# yabai -m config mouse_follows_focus off
-yabai -m config focus_follows_mouse autofocus
