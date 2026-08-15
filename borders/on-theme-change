@@ -1,0 +1,3 @@
+#!/bin/bash
+# slicker theme hook: repaint running jankyborders with the new accent
+pgrep -qx borders && exec "$HOME/.config/borders/bordersrc"
