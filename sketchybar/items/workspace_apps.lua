@@ -24,13 +24,14 @@ local other_apps = sbar.add("item", {
 	padding_left = 0,
 })
 
+-- SbarLua parses JSON output of yabai query into a lua table
 local function update_apps(front_app_name)
-	sbar.exec("aerospace list-windows --workspace focused --format '%{app-name}'", function(result, _)
+	sbar.exec("yabai -m query --windows --space", function(windows, _)
 		local apps = {}
 		local seen = {}
-		for line in result:gmatch("[^\r\n]+") do
-			local app = trim(line)
-			if app ~= "" and app ~= front_app_name and not seen[app] then
+		for _, win in ipairs(windows or {}) do
+			local app = win.app
+			if app and win["is-visible"] and app ~= front_app_name and not seen[app] then
 				seen[app] = true
 				table.insert(apps, app)
 			end
@@ -43,19 +44,19 @@ local function update_apps(front_app_name)
 	end)
 end
 
+local function update_from_focused()
+	sbar.exec("yabai -m query --windows --window", function(win, _)
+		update_apps(win and win.app or "")
+	end)
+end
+
 active_app:subscribe("front_app_switched", function(env)
 	update_apps(env.INFO)
 end)
 
-other_apps:subscribe("aerospace_workspace_change", function(_)
-	sbar.exec("aerospace list-windows --focused --format '%{app-name}'", function(result, _)
-		local focused_app = trim(result)
-		update_apps(focused_app)
-	end)
+other_apps:subscribe("space_change", function(_)
+	update_from_focused()
 end)
 
 -- Initial population
-sbar.exec("aerospace list-windows --focused --format '%{app-name}'", function(result, _)
-	local focused_app = trim(result)
-	update_apps(focused_app)
-end)
+update_from_focused()

@@ -34,7 +34,7 @@ ios-install() {
     # Первое устройство в состоянии connected; UDID вытаскиваем регуляркой,
     # потому что колонки в выводе devicectl выровнены пробелами и разъезжаются
     local device=$(xcrun devicectl list devices 2>/dev/null \
-        | grep -w connected \
+        | grep -w 'available' \
         | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' \
         | head -1)
     if [[ -z $device ]]; then

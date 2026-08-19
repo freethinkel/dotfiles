@@ -24,18 +24,24 @@ local looks = {
 -- ponytail: состояние держим в переменной, sbar.exec давится && и пайпами
 local state = "off"
 
-local function apply(next_state)
-	if state == "clamshell" then
-		sbar.exec("sudo pmset -a disablesleep 0")
-	end
-	sbar.exec("killall caffeinate")
+-- ponytail: -fx матчит ровно нашу команду целиком, поэтому pkill не заденет
+-- ни свой шелл, ни чужие caffeinate от других тулов
+local OURS = 'pkill -fx "caffeinate -di"'
 
-	if next_state == "on" then
-		sbar.exec("caffeinate -di & disown")
-	elseif next_state == "clamshell" then
-		sbar.exec("sudo pmset -a disablesleep 1")
-		sbar.exec("caffeinate -di & disown")
+local function apply(next_state)
+	-- ponytail: одна строка на весь переход — sbar.exec асинхронный,
+	-- раздельными вызовами killall гонялся с запуском и убивал новый процесс
+	local cmd = OURS
+	if state == "clamshell" then
+		cmd = cmd .. "; sudo pmset -a disablesleep 0"
 	end
+	if next_state == "clamshell" then
+		cmd = cmd .. "; sudo pmset -a disablesleep 1"
+	end
+	if next_state ~= "off" then
+		cmd = cmd .. "; caffeinate -di &"
+	end
+	sbar.exec(cmd)
 
 	state = next_state
 	caffeinate:set(looks[state])
@@ -52,7 +58,7 @@ caffeinate:subscribe("mouse.clicked", function(env)
 end)
 
 -- состояние на старте: caffeinate уже мог остаться от прошлой сессии
-sbar.exec("pgrep -x caffeinate", function(result)
+sbar.exec('pgrep -fx "caffeinate -di"', function(result)
 	state = trim(result) ~= "" and "on" or "off"
 	caffeinate:set(looks[state])
 end)

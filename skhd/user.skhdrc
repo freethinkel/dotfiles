@@ -5,8 +5,12 @@
 
 # layout: rotate tiles orientation (aerospace alt-slash)
 alt - 0x2C : yabai -m space --rotate 90
-# toggle stack/bsp (aerospace alt-t accordion/tiles)
-alt - t : yabai -m query --spaces --space | grep -q '"type":"stack"' && yabai -m space --layout bsp || yabai -m space --layout stack
+# toggle float + always-on-top; second press returns window to tiling
+alt - t : if [ "$(yabai -m query --windows --window | jq -r '."sub-layer"')" = "above" ]; then \
+    yabai -m window --sub-layer normal --toggle float; \
+  else \
+    yabai -m window --sub-layer above --toggle float; \
+  fi
 
 # focus
 alt - h : yabai -m window --focus west
@@ -43,6 +47,14 @@ alt + shift - tab : yabai -m space --display next 2>/dev/null || yabai -m space 
 ctrl + cmd - tab : yabai -m display --focus next 2>/dev/null || yabai -m display --focus first
 
 alt - f : yabai -m window --toggle zoom-fullscreen
+
+# toggle: float centered at 2/3 of screen <-> back to tiling
+alt - c : win=$(yabai -m query --windows --window); \
+  if [ "$(echo "$win" | jq -r '."is-floating"')" = "true" ]; then \
+    yabai -m window --toggle float; \
+  else \
+    yabai -m window --toggle float --grid 1:6:1:0:4:1 --raise; \
+  fi
 
 # ─── resize mode (aerospace alt-r) ───────────────────────────────────
 :: resize @
