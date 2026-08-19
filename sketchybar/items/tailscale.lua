@@ -1,9 +1,7 @@
-local vpn = "e.kolesnikov"
-
 local colors = require("colors")
 local is_connected = false
 
-local tunnelblick = sbar.add("item", {
+local tailscale = sbar.add("item", {
 	icon = {
 		string = "􀆪",
 		color = colors.foreground,
@@ -15,37 +13,21 @@ local tunnelblick = sbar.add("item", {
 	update_freq = 10,
 })
 
+-- ponytail: grep вместо парсинга json — полный вывод status ~600KB, sbar.exec его не переваривает
 function check_connection()
-	local script =
-		'osascript -e \'tell application "Tunnelblick" to get state of first configuration where name = "vpn"\''
-	script = string.gsub(script, "vpn", vpn)
-
-	sbar.exec(script, function(result)
-		if result:match("CONNECTED") then
-			is_connected = true
-			tunnelblick:set({ icon = { string = "􀆪", color = colors.green } })
-		else
-			is_connected = false
-			tunnelblick:set({ icon = { string = "􀆪", color = colors.red } })
-		end
+	sbar.exec("/usr/local/bin/tailscale status --json --peers=false | grep BackendState", function(result)
+		is_connected = result:match("Running") ~= nil
+		tailscale:set({ icon = { color = is_connected and colors.green or colors.red } })
 	end)
 end
 
-tunnelblick:subscribe("mouse.clicked", function(env)
-	local action = is_connected and "disconnect" or "connect"
-	local script = 'osascript -e \'tell application "Tunnelblick" to __action__ "vpn"\''
-
-	script = string.gsub(script, "vpn", vpn)
-	script = string.gsub(script, "__action__", action)
-
-	sbar.exec(script, function(result)
-		is_connected = action == "connect" and true or false
-
-		tunnelblick:set({ icon = { string = "􀆪", color = is_connected and colors.red or colors.red } })
+tailscale:subscribe("mouse.clicked", function(env)
+	sbar.exec("/usr/local/bin/tailscale " .. (is_connected and "down" or "up"), function()
+		check_connection()
 	end)
 end)
 
-tunnelblick:subscribe("routine", function()
+tailscale:subscribe("routine", function()
 	check_connection()
 end)
 
