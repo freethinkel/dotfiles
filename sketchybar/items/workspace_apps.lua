@@ -27,6 +27,10 @@ local other_apps = sbar.add("item", {
 -- SbarLua parses JSON output of yabai query into a lua table
 local function update_apps(front_app_name)
 	sbar.exec("yabai -m query --windows --space", function(windows, _)
+		-- ponytail: yabai выключен -> exec отдаёт пустую строку, ipairs по ней роняет весь конфиг
+		if type(windows) ~= "table" then
+			windows = {}
+		end
 		local apps = {}
 		local seen = {}
 		for _, win in ipairs(windows or {}) do
@@ -46,7 +50,7 @@ end
 
 local function update_from_focused()
 	sbar.exec("yabai -m query --windows --window", function(win, _)
-		update_apps(win and win.app or "")
+		update_apps(type(win) == "table" and win.app or "")
 	end)
 end
 

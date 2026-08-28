@@ -4,6 +4,7 @@ local icons = {
 }
 local media = sbar.add("item", {
 	icon = { drawing = false },
+	label = { max_chars = 30 },
 	padding_right = 30,
 	position = "right",
 	updates = true,
@@ -11,48 +12,36 @@ local media = sbar.add("item", {
 	drawing = false,
 })
 
-local app_name = ""
+local pid = nil
 
+-- ponytail: media-control, а не встроенный media_change — MediaRemote закрыт для sketchybar с macOS 15.4
 local function update_media()
-	sbar.exec(
-		'osascript -e \'tell application "System Events" to (name of processes) contains "Spotify"\'',
-		function(running)
-			running = trim(running)
-			if running ~= "true" then
-				media:set({ drawing = false })
-				return
-			end
-			sbar.exec(
-				"osascript -e 'tell application \"Spotify\" to {player state as string, name of current track, artist of current track}'",
-				function(result)
-					result = trim(result)
-					local state, title, artist = result:match("^(.+), (.+), (.+)$")
-					if state == "playing" or state == "paused" then
-						app_name = "Spotify"
-						local icon = state == "playing" and icons.play or icons.pause
-						media:set({
-							drawing = true,
-							label = icon .. " " .. artist .. " – " .. title,
-						})
-					else
-						media:set({ drawing = false })
-					end
-				end
-			)
+	sbar.exec("media-control get", function(info)
+		if type(info) ~= "table" or not info.title then
+			pid = nil
+			media:set({ drawing = false })
+			return
 		end
-	)
+		pid = info.processIdentifier
+		local icon = info.playing and icons.play or icons.pause
+		local label = info.title
+		if info.artist and info.artist ~= "" then
+			label = info.artist .. " – " .. label
+		end
+		media:set({ drawing = true, label = icon .. " " .. label })
+	end)
 end
 
-media:subscribe("routine", function()
-	update_media()
-end)
-
-media:subscribe("forced", function()
-	update_media()
-end)
+media:subscribe("routine", update_media)
+media:subscribe("forced", update_media)
 
 media:subscribe("mouse.clicked", function()
-	if app_name ~= "" then
-		sbar.exec("open -a '" .. app_name .. "'")
+	if pid then
+		-- ponytail: активируем по pid — работает и для не-.app бинарников
+		sbar.exec(
+			"osascript -e 'tell application \"System Events\" to set frontmost of (first process whose unix id is "
+				.. pid
+				.. ") to true'"
+		)
 	end
 end)

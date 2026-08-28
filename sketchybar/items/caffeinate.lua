@@ -26,7 +26,7 @@ local state = "off"
 
 -- ponytail: -fx матчит ровно нашу команду целиком, поэтому pkill не заденет
 -- ни свой шелл, ни чужие caffeinate от других тулов
-local OURS = 'pkill -fx "caffeinate -di"'
+local OURS = 'pkill -fx "caffeinate -i"'
 
 local function apply(next_state)
 	-- ponytail: одна строка на весь переход — sbar.exec асинхронный,
@@ -39,7 +39,7 @@ local function apply(next_state)
 		cmd = cmd .. "; sudo pmset -a disablesleep 1"
 	end
 	if next_state ~= "off" then
-		cmd = cmd .. "; caffeinate -di &"
+		cmd = cmd .. "; caffeinate -i &"
 	end
 	sbar.exec(cmd)
 
@@ -58,7 +58,7 @@ caffeinate:subscribe("mouse.clicked", function(env)
 end)
 
 -- состояние на старте: caffeinate уже мог остаться от прошлой сессии
-sbar.exec('pgrep -fx "caffeinate -di"', function(result)
+sbar.exec('pgrep -fx "caffeinate -i"', function(result)
 	state = trim(result) ~= "" and "on" or "off"
 	caffeinate:set(looks[state])
 end)
