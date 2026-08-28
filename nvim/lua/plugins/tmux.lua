@@ -13,7 +13,18 @@ return {
       vim.g.tmux_navigator_no_mappings = 1
     end,
     config = function()
-      dofile(vim.fn.expand("/Users/freethinkel/Developer/dev/terms/vim-herdr-navigation/editor/nvim.lua"))
+      -- vim-herdr-navigation ставится самим herdr, одинаково на всех машинах.
+      -- Каталог с хешем в имени, поэтому glob; абсолютный путь к рабочей копии
+      -- сюда прописывать нельзя — переезд проектов ломает навигацию молча.
+      local candidates =
+        vim.fn.glob(vim.fn.expand("~/.config/herdr/plugins/github/vim-herdr-navigation-*/editor/nvim.lua"), false, true)
+      for _, path in ipairs(candidates) do
+        if vim.uv.fs_stat(path) then
+          dofile(path)
+          return
+        end
+      end
+      vim.notify("vim-herdr-navigation not found: Ctrl+hjkl won't cross into herdr panes", vim.log.levels.WARN)
     end,
   },
 }
