@@ -1,0 +1,7 @@
+{
+  "TODO comment": {
+    "prefix": "todo",
+    "body": ["TODO(freethinkel): $0"],
+    "description": "TODO с автором"
+  }
+}

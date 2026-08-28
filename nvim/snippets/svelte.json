@@ -1,0 +1,226 @@
+{
+  "Svelte children props": {
+    "prefix": "svc",
+    "body": [
+      "<script lang='ts'>",
+      "  import { type Snippet } from \"svelte\"",
+      "  type Props = {",
+      "    children?: Snippet",
+      "  }",
+      "",
+      "  const { children }: Props = \\$props();",
+      "</script>",
+      "",
+      "{@render children?.()}"
+    ],
+    "description": ""
+  },
+  "Svelte empty props script": {
+    "prefix": "sv-props",
+    "description": "A boilerplate for an empty props inside a script (ts) tag",
+    "body": [
+      "<script lang='ts'>",
+      "  type Props = {",
+      "    $1",
+      "  };",
+      "",
+      "  let { $2 }: Props = \\$props();",
+      "</script>"
+    ]
+  },
+  "Svelte Empty Script tag": {
+    "prefix": "sv-ts",
+    "body": ["<script lang='ts'>", "  $1", "</script>"],
+    "description": "A simple svelte typescript script tag"
+  },
+  "Svelte each loop": {
+    "prefix": "sv-each",
+    "body": [
+      "{#each ${1:array} as ${2:item}, i (${3:item})}",
+      "  $4",
+      "{/each}"
+    ],
+    "description": "A svelte each loop over an array"
+  },
+  "Svelte un-keyed loop": {
+    "prefix": "sv-loop",
+    "body": ["{#each { length: ${1:10} }}", "  $2", "{/each}"],
+    "description": "A svelte un-keyed loop"
+  },
+  "Svelte each else loop": {
+    "prefix": "sv-each-else",
+    "body": [
+      "{#each ${1:array} as ${2:item}, i (${3:item})}",
+      "  $4",
+      "{:else}",
+      "  $5",
+      "{/each}"
+    ],
+    "description": "A svelte each loop over an array"
+  },
+  "Svelte if block": {
+    "prefix": "sv-if",
+    "body": ["{#if ${1:condition}}", "  $2", "{/if}"],
+    "description": "A simple svelte if block"
+  },
+  "Svelte if else block": {
+    "prefix": "sv-if-else",
+    "body": ["{#if ${1:condition}}", "  $2", "{:else}", "  $3", "{/if}"],
+    "description": "A simple svelte if else block"
+  },
+  "Svelte page props": {
+    "prefix": "sv-page-props",
+    "body": [
+      "<script lang='ts'>",
+      "  import type { PageProps } from './\\$types';",
+      "",
+      "  let { data, form }: PageProps = \\$props();",
+      "</script>"
+    ],
+    "description": "The boilerplate for getting data in a `+page.svelte` file."
+  },
+  "Svelte layout props": {
+    "prefix": "sv-layout-props",
+    "body": [
+      "<script lang='ts'>",
+      "  import type { LayoutProps } from './\\$types';",
+      "",
+      "  let { children, data }: LayoutProps = \\$props();",
+      "</script>",
+      "",
+      "{@render children()}"
+    ],
+    "description": "The boilerplate for getting data and children in a `+layout.svelte` file."
+  },
+  "Svelte html block": {
+    "prefix": "sv-html",
+    "description": "A `{@html}` rendered content",
+    "body": ["{@html ${1:html}}"]
+  },
+  "Svelte style block": {
+    "prefix": "sv-style",
+    "description": "A `<style>` block",
+    "body": ["<style>", "  ${1:/* Styles here */}", "</style>"]
+  },
+  "Svelte global style block": {
+    "prefix": "sv-global-style",
+    "description": "A `<style :global>` block",
+    "body": ["<style :global>", "  ${1:/* Styles here */}", "</style>"]
+  },
+  "Svelte await block": {
+    "prefix": "sv-await",
+    "description": "A svelte await block",
+    "body": ["{#await ${1:promise}}", "  ${2:Loading...}", "{/await}"]
+  },
+  "Svelte then block": {
+    "prefix": "sv-then",
+    "description": "A svelte await then block",
+    "body": [
+      "{#await ${1:promise} then ${2:data}}",
+      "  ${3:<!-- Do something with the data -->}",
+      "{/await}"
+    ]
+  },
+  "Svelte await then block": {
+    "prefix": "sv-await-then",
+    "description": "A svelte await then block",
+    "body": [
+      "{#await ${1:promise}}",
+      "  ${2:Loading...}",
+      "{:then ${3:data}}",
+      "  ${4:<!-- Do something with the data -->}",
+      "{/await}"
+    ]
+  },
+  "Svelte await catch block": {
+    "prefix": "sv-await-catch",
+    "description": "A svelte await catch block",
+    "body": [
+      "{#await ${1:promise}}",
+      "  ${2:Loading...}",
+      "{:catch ${3:error}}",
+      "  ${4:<!-- Do something with the error -->}",
+      "{/await}"
+    ]
+  },
+  "Svelte await then catch block": {
+    "prefix": "sv-await-then-catch",
+    "description": "A svelte await then catch block",
+    "body": [
+      "{#await ${1:promise}}",
+      "  ${2:Loading...}",
+      "{:then ${3:data}}",
+      "  ${4:<!-- Do something with the data -->}",
+      "{:catch ${5:error}}",
+      "  ${6:<!-- Do something with the error -->}",
+      "{/await}"
+    ]
+  },
+  "Svelte window component": {
+    "prefix": "sv-window",
+    "description": "A `<svelte:window />` component",
+    "body": ["<svelte:window $1 />"]
+  },
+  "Svelte head component": {
+    "prefix": "sv-head",
+    "description": "A `<svelte:head>` component",
+    "body": ["<svelte:head>", "  ${1:<!-- Content here -->}", "</svelte:head>"]
+  },
+  "Svelte onMount": {
+    "prefix": "sv-on-mount",
+    "description": "A blank onMount function",
+    "body": [
+      "import { onMount } from \"svelte\";",
+      "",
+      "onMount(() => {",
+      "  ${1:// Code here}",
+      "})"
+    ]
+  },
+  "Svelte snippet": {
+    "prefix": "sv-snippet",
+    "description": "An empty svelte snippet",
+    "body": [
+      "{#snippet ${1:mySnippet}()}",
+      "  ${2:<!-- Snippet here -->}",
+      "{/snippet}"
+    ]
+  },
+  "Svelte @debug": {
+    "prefix": "sv-debug",
+    "description": "A `@debug` tag",
+    "body": ["{@debug ${1:variable}}"]
+  },
+  "Svelte key block": {
+    "prefix": "sv-key",
+    "description": "A svelte {#key} block",
+    "body": ["{#key ${1:expression}}", "  $2", "{/key}"]
+  },
+  "Svelte render tag": {
+    "prefix": "sv-render",
+    "description": "A `{@render}` tag for rendering a snippet",
+    "body": ["{@render ${1:mySnippet}($2)}"]
+  },
+  "Svelte boundary": {
+    "prefix": "sv-boundary",
+    "description": "A `<svelte:boundary>` with a failed snippet",
+    "body": [
+      "<svelte:boundary>",
+      "  ${1:<!-- Content here -->}",
+      "",
+      "  {#snippet failed(error, reset)}",
+      "    ${2:<button onclick={reset}>Try again</button>}",
+      "  {/snippet}",
+      "</svelte:boundary>"
+    ]
+  },
+  "Svelte element": {
+    "prefix": "sv-element",
+    "description": "A `<svelte:element>` dynamic element",
+    "body": [
+      "<svelte:element this={${1:tag}}>",
+      "  ${2:<!-- Content here -->}",
+      "</svelte:element>"
+    ]
+  }
+}
