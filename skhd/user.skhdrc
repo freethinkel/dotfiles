@@ -75,3 +75,13 @@ service < f : yabai -m window --toggle float; skhd -k "escape"
 service < down : osascript -e 'set volume output volume ((output volume of (get volume settings)) - 6)'
 service < up : osascript -e 'set volume output volume ((output volume of (get volume settings)) + 6)'
 service < shift - down : osascript -e 'set volume output volume 0'; skhd -k "escape"
+
+# workspaces: prev/next with hjkl (wraps at edges)
+ctrl + alt - h : yabai -m space --focus prev || yabai -m space --focus last
+ctrl + alt - k : yabai -m space --focus prev || yabai -m space --focus last
+ctrl + alt - l : yabai -m space --focus next || yabai -m space --focus first
+ctrl + alt - j : yabai -m space --focus next || yabai -m space --focus first
+
+# move window to prev/next workspace
+ctrl + alt + shift - h : yabai -m window --space prev || yabai -m window --space last
+ctrl + alt + shift - l : yabai -m window --space next || yabai -m window --space first
