@@ -20,8 +20,10 @@ onboarding = false
 # red = "#ff6188"
 # green = "#a6e3a1"
 
-name = "catppuccin-latte"
+name = "catppuccin"
 auto_switch = false
+dark_name = "catppuccin"
+light_name = "catppuccin-latte"
 [terminal]
 # Executable used for new interactive panes.
 # Empty means $SHELL, then /bin/sh.
@@ -66,8 +68,8 @@ auto_switch = false
 # remove_worktree = ""  # optional, unset by default; opens confirmation
 # rename_workspace = "prefix+shift+w"
 # close_workspace = "prefix+shift+d"
-# previous_workspace = "" # optional, unset by default
-# next_workspace = ""     # optional, unset by default
+previous_workspace = "prefix+shift+k"
+next_workspace = "prefix+shift+j"
 # previous_agent = ""     # optional, unset by default
 # next_agent = ""         # optional, unset by default
 # focus_agent = ""        # optional indexed binding, e.g. "prefix+alt+1..9"
@@ -96,11 +98,11 @@ toggle_sidebar = "cmd+b"
 
 # Navigate-mode movement. These local shortcuts win while navigate mode is open.
 # They are independent from focus_pane_*. Do not include prefix+, esc, enter, tab, or 1..9 here.
-# navigate_workspace_up = "up"
-# navigate_workspace_down = "down"
+navigate_workspace_up = "k"
+navigate_workspace_down = "j"
 # navigate_pane_left = "h"      # left arrow always focuses the pane to the left
-# navigate_pane_down = "j"
-# navigate_pane_up = "k"
+navigate_pane_down = ""   # j/k go to workspaces; arrows still move panes
+navigate_pane_up = ""
 # navigate_pane_right = "l"     # right arrow always focuses the pane to the right
 
 # Custom commands use the same binding syntax.
@@ -218,6 +220,7 @@ prompt_new_tab_name = false
 # agent_panel_scope = "current"
 show_agent_labels_on_pane_borders = true
 agent_panel_sort = "priority"
+status_indicators = "dots"
 [ui.toast]
 # off = disable pop-up notifications
 # herdr = show in-app toasts
