@@ -35,6 +35,6 @@ for key, icon in ipairs(space_icons) do
 	end)
 end
 
-sbar.add("bracket", spaces_group, {
+sbar.add("bracket", "spaces_bracket", spaces_group, {
 	background = { color = colors.popup_background, border_color = colors.popup_background },
 })

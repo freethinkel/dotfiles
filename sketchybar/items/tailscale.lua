@@ -1,7 +1,7 @@
 local colors = require("colors")
 local is_connected = false
 
-local tailscale = sbar.add("item", {
+local tailscale = sbar.add("item", "tailscale", {
 	icon = {
 		string = "􀆪",
 		color = colors.foreground,

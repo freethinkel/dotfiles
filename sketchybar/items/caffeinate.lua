@@ -1,6 +1,6 @@
 local colors = require("colors")
 
-local caffeinate = sbar.add("item", {
+local caffeinate = sbar.add("item", "caffeinate", {
 	icon = {
 		string = "􀸘",
 		color = colors.foreground,

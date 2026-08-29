@@ -2,7 +2,7 @@ local icons = {
 	play = "􀊆",
 	pause = "􀊄",
 }
-local media = sbar.add("item", {
+local media = sbar.add("item", "media", {
 	icon = { drawing = false },
 	label = { max_chars = 30 },
 	padding_right = 30,

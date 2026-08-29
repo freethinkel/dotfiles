@@ -1,6 +1,6 @@
 local colors = require("colors")
 
-local active_app = sbar.add("item", {
+local active_app = sbar.add("item", "active_app", {
 	icon = { drawing = false },
 	label = {
 		font = {
@@ -11,7 +11,7 @@ local active_app = sbar.add("item", {
 	},
 })
 
-local other_apps = sbar.add("item", {
+local other_apps = sbar.add("item", "other_apps", {
 	icon = { drawing = false },
 	label = {
 		font = {

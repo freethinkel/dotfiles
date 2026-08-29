@@ -1,7 +1,7 @@
 local icons = require("icons")
 local colors = require("colors")
 
-local battery = sbar.add("item", {
+local battery = sbar.add("item", "battery", {
 	position = "right",
 	icon = {
 		font = {

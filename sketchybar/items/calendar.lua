@@ -1,4 +1,4 @@
-local cal = sbar.add("item", {
+local cal = sbar.add("item", "cal", {
 	icon = {
 		padding_right = 0,
 		font = {

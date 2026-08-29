@@ -3,7 +3,7 @@ local colors = require("colors")
 -- macOS 27 рисует все status items одним окном процесса MenuBarAgent, отдельных
 -- окон "Control Center,<item>" в CGWindowList больше нет — sketchybar alias
 -- нечего захватывать. Читаем процент прямо из данных Claude Usage.
-local usage = sbar.add("item", {
+local usage = sbar.add("item", "usage", {
 	icon = {
 		string = "",
 		width = 24,

@@ -3,7 +3,7 @@ local colors = require("colors")
 
 local popup_toggle = "sketchybar --set $NAME popup.drawing=toggle"
 
-local apple_logo = sbar.add("item", {
+local apple_logo = sbar.add("item", "apple_logo", {
 	padding_right = 15,
 	click_script = popup_toggle,
 	icon = {
@@ -22,19 +22,19 @@ local apple_logo = sbar.add("item", {
 	},
 })
 
-local apple_prefs = sbar.add("item", {
+local apple_prefs = sbar.add("item", "apple_prefs", {
 	position = "popup." .. apple_logo.name,
 	icon = icons.preferences,
 	label = "Preferences",
 })
 
-local lock_device = sbar.add("item", {
+local lock_device = sbar.add("item", "lock_device", {
 	position = "popup." .. apple_logo.name,
 	icon = icons.lock,
 	label = " Lock screen",
 })
 
-local reboot_device = sbar.add("item", {
+local reboot_device = sbar.add("item", "reboot_device", {
 	position = "popup." .. apple_logo.name,
 	icon = icons.lock,
 	label = " Reboot",

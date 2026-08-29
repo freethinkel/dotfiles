@@ -2,7 +2,7 @@ local colors = require("colors")
 
 -- External (bluetooth) keyboard battery: the first HID battery entry that isn't built-in.
 -- Hidden entirely while no external keyboard is connected.
-local kb_battery = sbar.add("item", {
+local kb_battery = sbar.add("item", "kb_battery", {
 	position = "right",
 	drawing = false,
 	icon = {

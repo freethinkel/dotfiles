@@ -1,4 +1,4 @@
-local keyboard = sbar.add("item", {
+local keyboard = sbar.add("item", "keyboard", {
 	icon = {
 		string = "􀂕",
 		font = {
