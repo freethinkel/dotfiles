@@ -20,7 +20,7 @@ onboarding = false
 # red = "#ff6188"
 # green = "#a6e3a1"
 
-name = "catppuccin"
+name = "catppuccin-latte"
 auto_switch = false
 dark_name = "catppuccin"
 light_name = "catppuccin-latte"
