@@ -1,0 +1,25 @@
+[user]
+    name = Egor Kolesnikov
+    email = freethinkel@gmail.com
+
+[core]
+    autocrlf = input
+    editor = nvim
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = true
+
+[push]
+    autoSetupRemote = true
+
+[alias]
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
+    lg = log --oneline --graph --decorate -20
+    undo = reset --soft HEAD^
+    uncommit = reset --soft HEAD^

@@ -20,9 +20,9 @@ onboarding = false
 # red = "#ff6188"
 # green = "#a6e3a1"
 
-name = "catppuccin-latte"
+name = "nord"
 auto_switch = false
-dark_name = "catppuccin"
+dark_name = "nord"
 light_name = "catppuccin-latte"
 [terminal]
 # Executable used for new interactive panes.
@@ -101,7 +101,7 @@ toggle_sidebar = "cmd+b"
 navigate_workspace_up = "k"
 navigate_workspace_down = "j"
 # navigate_pane_left = "h"      # left arrow always focuses the pane to the left
-navigate_pane_down = ""   # j/k go to workspaces; arrows still move panes
+navigate_pane_down = "" # j/k go to workspaces; arrows still move panes
 navigate_pane_up = ""
 # navigate_pane_right = "l"     # right arrow always focuses the pane to the right
 
@@ -142,7 +142,7 @@ description = "navigate right (vim/herdr)"
 # command = "lazygit"
 
 [[keys.command]]
-key = "prefix+a"
+key = "prefix+t"
 type = "plugin_action"
 command = "edit"
 description = "edit worktree-hooks config"
@@ -268,7 +268,7 @@ enabled = false
 
 [experimental]
 # Allow launching herdr from inside a herdr-managed pane.
-# allow_nested = false
+allow_nested = false
 # Experimental local Kitty graphics rendering for attached clients.
 # Requires a Kitty graphics-compatible outer terminal.
 kitty_graphics = false
@@ -298,3 +298,11 @@ pane_history = false
 # Maximum scrollback buffer size in bytes retained per pane terminal.
 # Matches Ghostty's default scrollback-limit behavior.
 # scrollback_limit_bytes = 10000000
+
+# >>> herdr-profiles managed keybinding (edit with: herdr-profiles setup) >>>
+[[keys.command]]
+key = "prefix+u"
+type = "plugin_action"
+command = "herdr-profiles.choose"
+description = "choose profile"
+# <<< herdr-profiles managed keybinding <<<

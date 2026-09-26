@@ -1,1 +1,0 @@
-/Users/freethinkel/.nvm/versions/node/v22.14.0/lib/node_modules/dunkdiff/skills/dunk-review/SKILL.md

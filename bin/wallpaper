@@ -1,0 +1,184 @@
+#!/usr/bin/env bash
+# wallpaper next|set <path> — backgrounds live in ~/Pictures/wallpapers/<theme>/ (kept out of git)
+set -euo pipefail
+THEME="$(cat "$HOME/.config/theme/.current" 2>/dev/null || true)"
+BG_DIR="$HOME/Pictures/wallpapers/$THEME"
+IDX_FILE="$HOME/.cache/wallpaper_index"
+CURRENT_FILE="$HOME/.cache/wallpaper_current"
+err() { echo "[wallpaper] $*" >&2; }
+ok() { echo "[wallpaper] $*"; }
+WALLPAPER_INDEX="$HOME/Library/Application Support/com.apple.wallpaper/Store/Index.plist"
+
+resolve_path() {
+  local p="${1/#\~/$HOME}"
+  realpath -m "$p"
+}
+
+set_with_desktoppr() {
+  /usr/local/bin/desktoppr all "$1" >/dev/null 2>&1
+}
+
+set_with_finder() {
+  /usr/bin/osascript - "$1" >/dev/null 2>&1 <<'APPLESCRIPT'
+on run argv
+  set imagePath to POSIX file (item 1 of argv)
+  tell application "Finder"
+    set desktop picture to imagePath
+  end tell
+end run
+APPLESCRIPT
+}
+
+set_with_system_events() {
+  /usr/bin/osascript - "$1" >/dev/null 2>&1 <<'APPLESCRIPT'
+on run argv
+  set imagePath to POSIX file (item 1 of argv)
+  tell application "System Events"
+    repeat with d in desktops
+      set picture of d to imagePath
+    end repeat
+  end tell
+end run
+APPLESCRIPT
+}
+
+set_with_wallpaper_store() {
+  python3 - <<PY "$WALLPAPER_INDEX" "$1"
+import datetime as dt
+import plistlib
+import sys
+import time
+from pathlib import Path
+
+index_path = Path(sys.argv[1]).expanduser()
+image_path = Path(sys.argv[2]).expanduser().resolve()
+
+if not index_path.is_file():
+    raise SystemExit(1)
+
+raw = index_path.read_bytes()
+root = plistlib.loads(raw)
+now = dt.datetime.now()
+uri = image_path.as_uri()
+
+def desktop_choice():
+    return {
+        "Configuration": plistlib.dumps(
+            {"type": "imageFile", "url": {"relative": uri}},
+            fmt=plistlib.FMT_BINARY,
+            sort_keys=False,
+        ),
+        "Files": [],
+        "Provider": "com.apple.wallpaper.choice.image",
+    }
+
+def update_desktop(node):
+    if not isinstance(node, dict):
+        return
+    desktop = node.get("Desktop")
+    if not isinstance(desktop, dict):
+        return
+    content = desktop.setdefault("Content", {})
+    content["Choices"] = [desktop_choice()]
+    desktop["LastSet"] = now
+    desktop["LastUse"] = now
+
+updated = 0
+
+for top_key in ("SystemDefault", "AllSpacesAndDisplays"):
+    top = root.get(top_key)
+    if isinstance(top, dict):
+        before = updated
+        update_desktop(top)
+        if updated == before and isinstance(top.get("Desktop"), dict):
+            updated += 1
+
+for display in root.get("Displays", {}).values():
+    if isinstance(display, dict):
+        update_desktop(display)
+        if isinstance(display.get("Desktop"), dict):
+            updated += 1
+
+for space in root.get("Spaces", {}).values():
+    if not isinstance(space, dict):
+        continue
+    default = space.get("Default")
+    if isinstance(default, dict):
+        update_desktop(default)
+        if isinstance(default.get("Desktop"), dict):
+            updated += 1
+    for display in space.get("Displays", {}).values():
+        if isinstance(display, dict):
+            update_desktop(display)
+            if isinstance(display.get("Desktop"), dict):
+                updated += 1
+
+backup = index_path.with_name(f"{index_path.name}.bak.{int(time.time())}")
+backup.write_bytes(raw)
+index_path.write_bytes(plistlib.dumps(root, fmt=plistlib.FMT_BINARY, sort_keys=False))
+
+if updated == 0:
+    raise SystemExit(1)
+PY
+}
+
+refresh_wallpaper_agents() {
+  /bin/launchctl kickstart -k "gui/$(id -u)/com.apple.wallpaper.agent" >/dev/null 2>&1 || true
+  /usr/bin/killall WallpaperAgent >/dev/null 2>&1 || true
+}
+
+# Apply wallpaper image to all desktops
+apply_wallpaper() {
+  local img="$1"
+
+  if [[ ! -f "$img" ]]; then
+    err "Image not found: $img"
+    exit 1
+  fi
+
+  # Linux/niri: quickshell draws the wallpaper as a background layer, the way
+  # Omarchy does it. We only record the choice and poke it to re-read.
+  if [[ "$(uname)" == Linux ]]; then
+    mkdir -p "$(dirname "$CURRENT_FILE")"
+    printf "%s\n" "$img" > "$CURRENT_FILE"
+    command -v qs &>/dev/null && qs ipc call theme reload &>/dev/null || true
+    return 0
+  fi
+
+  local applied=0
+
+  # Write to wallpaper store for all spaces
+  if set_with_wallpaper_store "$img"; then
+    refresh_wallpaper_agents
+    applied=1
+  fi
+
+  # Apply visually via desktoppr/Finder/System Events (no Dock restart)
+  set_with_desktoppr "$img" 2>/dev/null ||
+    set_with_finder "$img" 2>/dev/null ||
+    set_with_system_events "$img" 2>/dev/null || true
+
+  if [[ "$applied" -ne 1 ]]; then
+    err "Failed to set wallpaper"
+    exit 1
+  fi
+}
+
+wallpaper_next() {
+  [[ -d "$BG_DIR" ]] || { err "No backgrounds in $BG_DIR"; exit 1; }
+  shopt -s nullglob; local images=("$BG_DIR"/*); shopt -u nullglob
+  [[ ${#images[@]} -gt 0 ]] || { err "No images in $BG_DIR"; exit 1; }
+  local idx=0
+  [[ -f "$IDX_FILE" ]] && idx=$(cat "$IDX_FILE")
+  [[ "$idx" -lt "${#images[@]}" ]] || idx=0
+  apply_wallpaper "${images[$idx]}"
+  mkdir -p "$(dirname "$IDX_FILE")"
+  echo $(( (idx + 1) % ${#images[@]} )) > "$IDX_FILE"
+  ok "Wallpaper set: $(basename "${images[$idx]}")"
+}
+
+case "${1:-}" in
+  next) wallpaper_next ;;
+  set) apply_wallpaper "$(resolve_path "${2:?Usage: wallpaper set <path>}")" ;;
+  *) echo "Usage: wallpaper next | set <path>" >&2; exit 1 ;;
+esac

@@ -1,2 +1,18 @@
+.DS_Store
 .env
 .claude/settings.local.json
+# tpm installs plugins here
+tmux/.config/tmux/plugins/
+# nvim runtime junk
+nvim/.config/nvim/.tests
+nvim/.config/nvim/.repro
+nvim/.config/nvim/*.log
+nvim/.config/nvim/data
+# antidote static bundle, generated per machine
+zsh/.config/zsh/plugins.zsh
+# synced from claude.ai, contains account ids
+claude/.claude/skills/synced/
+# downloaded palettes stay local, only ours are tracked
+themes/*
+!themes/snowfall*
+!themes/templates

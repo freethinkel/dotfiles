@@ -1,0 +1,38 @@
+macos-option-as-alt = true
+
+## Shift+Enter for Claude Code
+keybind = shift+enter=text:\x1b\r
+
+
+keybind = cmd+right=text:\x05
+keybind = cmd+left=text:\x01
+keybind = alt+left=esc:b
+keybind = alt+right=esc:f
+keybind = super+option+i=inspector:toggle
+
+# Utility
+keybind = ctrl+o>r=reload_config
+keybind = ctrl+o>r=unbind
+
+# Resize mode
+keybind = ctrl+m=activate_key_table:resize
+keybind = resize/
+keybind = resize/h=resize_split:left,50
+keybind = resize/j=resize_split:down,50
+keybind = resize/k=resize_split:up,50
+keybind = resize/l=resize_split:right,50
+keybind = resize/catch_all=ignore
+keybind = resize/escape=deactivate_key_table
+keybind = resize/enter=deactivate_key_table
+keybind = resize/q=deactivate_key_table
+
+# tmux (prefix C-b)
+keybind = super+option+minus=text:\x02\x22
+keybind = super+j=text:\x02\x22
+keybind = super+option+backslash=text:\x02\x25
+keybind = super+shift+right_bracket=text:\x02\x6e
+keybind = super+shift+left_bracket=text:\x02\x70
+keybind = super+t=text:\x02\x63
+keybind = super+x=text:\x02\x78
+keybind = super+w=text:\x02\x78
+keybind = super+comma=text:\x02\x2c

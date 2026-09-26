@@ -1,0 +1,33 @@
+app-notifications = no-clipboard-copy
+confirm-close-surface = false
+copy-on-select = clipboard
+
+font-family = IoskeleyMonoNL Nerd Font Mono
+font-size = 11
+adjust-cell-width = 0%
+adjust-cell-height = 30%
+adjust-cursor-height = 30%
+adjust-underline-position = 3%
+adjust-underline-thickness = -1
+adjust-cursor-thickness = 1
+
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title,ssh-env,ssh-terminfo
+
+mouse-hide-while-typing = true
+mouse-scroll-multiplier = 2
+
+window-theme = system
+cursor-style = bar
+macos-titlebar-style = native
+window-colorspace = display-p3
+window-inherit-working-directory = true
+window-padding-color = background
+desktop-notifications = true
+clipboard-paste-protection = false
+background-opacity = 1.00
+
+custom-shader = ./shaders/cursor_warp.glsl
+
+config-file = keybind.ghostty
+config-file = ?"~/.config/theme/ghostty.conf"
