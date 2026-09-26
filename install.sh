@@ -5,10 +5,10 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 # terminal stuff, every machine
-PACKAGES=(zsh git nvim tmux zellij btop lazygit herdr claude)
+PACKAGES=(zsh git nvim tmux btop lazygit herdr claude ghostty)
 
 if [[ $(uname) == Darwin ]]; then
-  PACKAGES+=(ghostty skhd omniwm sketchybar yabai aerospace borders)
+  PACKAGES+=(skhd omniwm)
   # a failed formula (e.g. an untrusted tap) should not stop the linking below
   brew bundle --no-upgrade --file Brewfile || echo "brew bundle had errors, continuing" >&2
 
