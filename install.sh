@@ -23,12 +23,11 @@ if [[ $(uname) == Darwin ]]; then
   defaults write com.apple.dock autohide -bool false
   defaults write NSGlobalDomain AppleShowAllExtensions -bool true
   defaults write com.apple.finder FXPreferredViewStyle -string clmv
+  defaults write NSGlobalDomain _HIHideMenuBar -bool true
   mkdir -p ~/Pictures/screenshots && defaults write com.apple.screencapture location ~/Pictures/screenshots
 fi
 
-# These dirs also hold runtime state: keep them real so stow links single files into them
-# instead of folding the whole dir into the repo.
-mkdir -p ~/.claude ~/.config/herdr ~/.config/zellij ~/.config/btop ~/.config/lazygit
+mkdir -p ~/.claude ~/.config/herdr ~/.config/btop ~/.config/lazygit
 
 stow --target "$HOME" --restow "${PACKAGES[@]}"
 

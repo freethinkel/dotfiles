@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# theme set [name] | list | current | link
+# theme set [name] | install <git-url> | list | current | link
 # Generates ~/.config/theme from themes/<name>/ + themes/templates/*.tpl
 # ({{ key }}, {{ key_strip }}, {{ key_rgb }} from colors.toml), then reloads apps.
 set -euo pipefail
@@ -11,7 +11,7 @@ list() { ls "$THEMES" | grep -vx templates; }
 current() { cat "$OUT/.current" 2>/dev/null || echo "none"; }
 
 hex_to_rgb() { local h="${1#\#}"; printf "%d,%d,%d" "0x${h:0:2}" "0x${h:2:2}" "0x${h:4:2}"; }
-color() { sed -n "s/^$1 = \"\(#[^\"]*\)\".*/\1/p" "$OUT/colors.toml" | head -1; }
+color() { sed -n "s/^$1[[:space:]]*=[[:space:]]*\"\(#[^\"]*\)\".*/\1/p" "$OUT/colors.toml" | head -1; }
 
 generate() {
   local src="$THEMES/$1"
@@ -20,6 +20,36 @@ generate() {
   find "$OUT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
   cp -RL "$src"/* "$OUT"/
   echo "$1" > "$OUT/.current"
+  # newer omarchy themes declare mode = "light" in colors.toml instead of shipping light.mode
+  grep -Eq '^[[:space:]]*mode[[:space:]]*=[[:space:]]*"light"' "$OUT/colors.toml" 2>/dev/null && touch "$OUT/light.mode"
+  # semantic-only themes (red/green/selection/muted...) lack the legacy keys templates use: derive them
+  local key alts a v
+  printf '\n# derived by theme\n' >> "$OUT/colors.toml"
+  while read -r key alts; do
+    [[ -n $(color "$key") ]] && continue
+    for a in $alts; do v="$(color "$a")"; [[ $v ]] && { echo "$key = \"$v\"" >> "$OUT/colors.toml"; break; }; done
+  done <<'MAP'
+cursor foreground
+selection_background selection
+selection_foreground foreground
+accent color4
+color0 black darker_background
+color1 red
+color2 green
+color3 yellow
+color4 blue
+color5 magenta
+color6 cyan
+color7 white dark_foreground
+color8 bright_black muted
+color9 bright_red red
+color10 bright_green green
+color11 bright_yellow yellow
+color12 bright_blue blue
+color13 bright_magenta magenta
+color14 bright_cyan cyan
+color15 bright_white foreground
+MAP
 
   local sed_script; sed_script="$(mktemp)"
   while IFS='=' read -r key value; do
@@ -29,10 +59,13 @@ generate() {
     printf 's|{{ %s }}|%s|g\n' "$key" "$value"
     printf 's|{{ %s_strip }}|%s|g\n' "$key" "${value#\#}"
     [[ $value == \#* ]] && printf 's|{{ %s_rgb }}|%s|g\n' "$key" "$(hex_to_rgb "$value")"
-  done < "$src/colors.toml" > "$sed_script"
+  done < "$OUT/colors.toml" > "$sed_script"
   for tpl in "$THEMES"/templates/*.tpl; do
     local f; f="$(basename "$tpl" .tpl)"
-    [[ -e "$OUT/$f" ]] || sed -f "$sed_script" "$tpl" > "$OUT/$f"   # theme's own file wins
+    [[ -e "$OUT/$f" ]] && continue   # theme's own file wins
+    sed -f "$sed_script" "$tpl" > "$OUT/$f"
+    local miss; miss="$(grep -o '{{ [a-z0-9_]* }}' "$OUT/$f" | sort -u | tr '\n' ' ' || true)"
+    [[ -z $miss ]] || echo "warning: $f has unfilled $miss" >&2
   done
   rm "$sed_script"
 
@@ -68,10 +101,27 @@ set_theme() {
   echo "Theme set to $name"
 }
 
+# omarchy theme repo -> themes/<name>, its backgrounds/ -> wallpaper dir
+install_theme() {
+  local url="${1:?Usage: theme install <git-url>}" name
+  name="$(basename "${url%.git}")"
+  [[ -e "$THEMES/$name" ]] && { echo "Already installed: $name" >&2; exit 1; }
+  git clone --depth 1 "$url" "$THEMES/$name"
+  rm -rf "$THEMES/$name/.git"
+  [[ -f "$THEMES/$name/colors.toml" ]] || { rm -rf "${THEMES:?}/$name"; echo "No colors.toml in $name (old omarchy format), not installed" >&2; exit 1; }
+  if [[ -d "$THEMES/$name/backgrounds" ]]; then
+    mkdir -p "$HOME/Pictures/wallpapers/$name"
+    mv "$THEMES/$name/backgrounds/"* "$HOME/Pictures/wallpapers/$name/" 2>/dev/null || true
+    rm -rf "$THEMES/$name/backgrounds"
+  fi
+  set_theme "$name"
+}
+
 case "${1:-}" in
   set) set_theme "${2:-}" ;;
+  install) install_theme "${2:-}" ;;
   link) link_apps ;;
   list) list ;;
   current) current ;;
-  *) echo "Usage: theme set [name] | list | current | link" >&2; exit 1 ;;
+  *) echo "Usage: theme set [name] | install <git-url> | list | current | link" >&2; exit 1 ;;
 esac

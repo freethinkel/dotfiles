@@ -5,6 +5,9 @@ bindkey -e
 export PATH="$HOME/Developer/infra/dotfiles/bin:$PATH"
 # lazygit ignores ~/.config on macOS otherwise
 export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
+# colors from `theme set`
+[[ -f ~/.config/theme/lazygit.yml ]] && LG_CONFIG_FILE+=",$HOME/.config/theme/lazygit.yml"
+[[ -f ~/.config/theme/fzf.zsh ]] && source ~/.config/theme/fzf.zsh
 
 HISTSIZE=50000
 SAVEHIST=50000

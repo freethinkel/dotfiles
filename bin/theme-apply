@@ -36,6 +36,12 @@ if [[ -f $cfg ]]; then
   # -i.bak works on both BSD and GNU sed (-i '' is BSD-only); edit the real file, GNU sed would replace the home-manager symlink
   real="$(readlink -f "$cfg")"
   [[ -n $want ]] && sed -i.bak "s/^name = \".*\"/name = \"$want\"/" "$real" && rm -f "$real.bak"
+  # base theme above fills whatever tokens herdr.toml doesn't set; swap our block in place
+  if [[ -f $T/herdr.toml ]]; then
+    tmp="$(mktemp)"
+    awk '/^# >>> theme colors/{skip=1} !skip{print} /^# <<< theme colors/{skip=0}' "$real" > "$tmp"
+    cat "$T/herdr.toml" >> "$tmp" && cat "$tmp" > "$real"; rm -f "$tmp"
+  fi
   command -v herdr &>/dev/null && herdr server reload-config &>/dev/null || true
 fi
 

@@ -1,28 +1,45 @@
 # dotfiles
 
-Plain [GNU stow](https://www.gnu.org/software/stow/) packages + a Brewfile. No nix, no slicker.
+Plain [GNU stow](https://www.gnu.org/software/stow/) packages and a Brewfile.
+
+## Install
 
 ```sh
 git clone https://github.com/freethinkel/dotfiles ~/Developer/infra/dotfiles
 ~/Developer/infra/dotfiles/install.sh
 ```
 
-`install.sh` (re-runnable):
+`install.sh` is safe to run again after every pull. It does this:
 
-- macOS: `brew bundle`, the IoskeleyMono font, a few `defaults write`
-- `stow` the packages into `$HOME`: terminal ones everywhere, desktop ones on macOS
-- applies `snowfall-dark` on the first run
+- on macOS, runs `brew bundle`, installs the IoskeleyMono font and sets a few `defaults`
+- stows terminal packages everywhere and desktop packages on macOS
+- applies `snowfall-dark` on the first run, and only relinks the current theme after that
 
-Edit files here, they are live (symlinks). New package: a dir that mirrors `$HOME`,
-e.g. `foo/.config/foo/config`, then add `foo` to `PACKAGES` in `install.sh`.
+If an app replaced one of the symlinks with a real file, stow stops with a conflict.
+Move that file away and run it again.
+
+## Editing
+
+Everything in `$HOME` links back here, so editing a file in the repo changes the live config.
+To add a package, make a dir that mirrors `$HOME`, like `foo/.config/foo/config`,
+and add `foo` to `PACKAGES` in `install.sh`.
+
+## Layout
 
 | path | what |
 |---|---|
 | `<package>/` | stow package, mirrors `$HOME` |
-| `bin/` | scripts, on `PATH` via `.zshrc` (`theme`, `wallpaper`, …) |
-| `themes/` | palettes + templates for `theme set <name>` (downloaded ones are gitignored) |
-| `niri/`, `waybar/`, `quickshell/` | linux desktop, not stowed by default |
+| `bin/` | scripts like `theme` and `wallpaper`, added to `PATH` in `.zshrc` |
+| `themes/` | palettes and templates for `theme set <name>`, downloaded ones are gitignored |
 | `.env` | secrets, gitignored |
 
-Themes: `theme set <name>` renders `themes/templates` into `~/.config/theme` and links apps to it;
-`theme link` only redoes the links.
+## Themes
+
+`theme set <name>` renders `themes/templates` into `~/.config/theme` and points the apps at it.
+`theme link` redoes the links without rendering.
+`theme install <git-url>` clones an Omarchy theme into `themes/`, moves its backgrounds to the wallpaper folder and applies it.
+
+## Wallpaper
+
+Wallpapers live in `~/Pictures/wallpapers/<theme>/`, outside git.
+`wallpaper next` cycles through the folder for the current theme, `wallpaper set <path>` sets one image.

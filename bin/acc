@@ -89,6 +89,17 @@ api() {
         "$@"
 }
 
+# Pick an appliance with fzf when no haId is given, like `theme set`.
+pick_ha() {
+    command -v fzf >/dev/null || { echo "Usage: acc $1 <haId>" >&2; exit 1; }
+    api GET "" | python3 -c "
+import sys, json
+for a in json.load(sys.stdin).get('data', {}).get('homeappliances', []):
+    status = 'connected' if a.get('connected') else 'offline'
+    print(f\"{a['haId']}\t{a.get('name', a.get('type','?'))}  [{status}]\")" |
+        fzf --prompt='AC: ' --height=~20 --delimiter='\t' --with-nth=2 | cut -f1
+}
+
 # --- commands ---
 
 cmd_authorize() {
@@ -131,7 +142,8 @@ for a in data.get('data', {}).get('homeappliances', []):
 }
 
 cmd_status() {
-    local ha_id="${1:?Usage: $0 status <haId>}"
+    local ha_id="${1:-}"
+    [[ -n "$ha_id" ]] || ha_id=$(pick_ha status) || exit 0
     api GET "/${ha_id}/status" | python3 -c "
 import sys, json
 for s in json.load(sys.stdin).get('data', {}).get('status', []):
@@ -139,14 +151,16 @@ for s in json.load(sys.stdin).get('data', {}).get('status', []):
 }
 
 cmd_on() {
-    local ha_id="${1:?Usage: $0 on <haId>}"
+    local ha_id="${1:-}"
+    [[ -n "$ha_id" ]] || ha_id=$(pick_ha on) || exit 0
     api PUT "/${ha_id}/settings/BSH.Common.Setting.PowerState" \
         -d '{"data":{"key":"BSH.Common.Setting.PowerState","value":"BSH.Common.EnumType.PowerState.On","type":"BSH.Common.EnumType.PowerState"}}'
     echo "ON: ${ha_id}"
 }
 
 cmd_off() {
-    local ha_id="${1:?Usage: $0 off <haId>}"
+    local ha_id="${1:-}"
+    [[ -n "$ha_id" ]] || ha_id=$(pick_ha off) || exit 0
     # ACs use Standby, not Off
     api PUT "/${ha_id}/settings/BSH.Common.Setting.PowerState" \
         -d '{"data":{"key":"BSH.Common.Setting.PowerState","value":"BSH.Common.EnumType.PowerState.Standby","type":"BSH.Common.EnumType.PowerState"}}'
@@ -179,7 +193,8 @@ print(json.load(sys.stdin)['data']['value'].split('.')[-1])"
 }
 
 cmd_toggle() {
-    local ha_id="${1:?Usage: $0 toggle <haId>}"
+    local ha_id="${1:-}"
+    [[ -n "$ha_id" ]] || ha_id=$(pick_ha toggle) || exit 0
     local state
     state=$(get_power_state "$ha_id")
     if [[ "$state" == "On" ]]; then
@@ -216,10 +231,11 @@ Usage: acc <command> [haId]
 
   authorize    OAuth2 setup (one-time)
   list         Show connected appliances
-  status ID    Show appliance status
-  on ID        Turn ON
-  off ID       Turn OFF (standby)
-  toggle ID    Toggle ON/OFF
+  status [ID]  Show appliance status
+  on [ID]      Turn ON
+  off [ID]     Turn OFF (standby)
+  toggle [ID]  Toggle ON/OFF
+               (no ID: pick with fzf)
   on-all       Turn ON all connected
   off-all      Turn OFF all connected
   toggle-all   Toggle all connected

@@ -56,7 +56,7 @@ animationsEnabled = true
 defaultLayoutType = "niri"
 hotkeysEnabled = true
 hyperKeyModifiers = "Control+Option+Shift+Command"
-ipcEnabled = false
+ipcEnabled = true
 preventSleepEnabled = true
 systemHyperTrigger = "None"
 updateChecksEnabled = true
@@ -507,11 +507,11 @@ binding = "Option+H"
 id = "focus.left"
 
 [[hotkeys]]
-binding = "Option+J"
+binding = "Unassigned"
 id = "focus.down"
 
 [[hotkeys]]
-binding = "Option+K"
+binding = "Unassigned"
 id = "focus.up"
 
 [[hotkeys]]
@@ -547,11 +547,11 @@ binding = "Unassigned"
 id = "focusWindowUpOrBottom"
 
 [[hotkeys]]
-binding = "Unassigned"
+binding = "Option+J"
 id = "focusWindowOrWorkspaceDown"
 
 [[hotkeys]]
-binding = "Unassigned"
+binding = "Option+K"
 id = "focusWindowOrWorkspaceUp"
 
 [[hotkeys]]
