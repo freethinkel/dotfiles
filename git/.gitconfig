@@ -22,4 +22,3 @@
     st = status
     lg = log --oneline --graph --decorate -20
     undo = reset --soft HEAD^
-    uncommit = reset --soft HEAD^

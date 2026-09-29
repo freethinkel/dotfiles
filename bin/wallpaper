@@ -4,18 +4,19 @@ set -euo pipefail
 THEME="$(cat "$HOME/.config/theme/.current" 2>/dev/null || true)"
 BG_DIR="$HOME/Pictures/wallpapers/$THEME"
 IDX_FILE="$HOME/.cache/wallpaper_index"
-CURRENT_FILE="$HOME/.cache/wallpaper_current"
 err() { echo "[wallpaper] $*" >&2; }
 ok() { echo "[wallpaper] $*"; }
 WALLPAPER_INDEX="$HOME/Library/Application Support/com.apple.wallpaper/Store/Index.plist"
 
+# macOS realpath has no -m; absolute is enough, python resolves the rest
 resolve_path() {
   local p="${1/#\~/$HOME}"
-  realpath -m "$p"
+  [[ $p == /* ]] || p="$PWD/$p"
+  echo "$p"
 }
 
 set_with_desktoppr() {
-  /usr/local/bin/desktoppr all "$1" >/dev/null 2>&1
+  command -v desktoppr >/dev/null && desktoppr all "$1" >/dev/null 2>&1
 }
 
 set_with_finder() {
@@ -43,11 +44,10 @@ APPLESCRIPT
 }
 
 set_with_wallpaper_store() {
-  python3 - <<PY "$WALLPAPER_INDEX" "$1"
+  python3 - <<'PY' "$WALLPAPER_INDEX" "$1"
 import datetime as dt
 import plistlib
 import sys
-import time
 from pathlib import Path
 
 index_path = Path(sys.argv[1]).expanduser()
@@ -88,9 +88,8 @@ updated = 0
 for top_key in ("SystemDefault", "AllSpacesAndDisplays"):
     top = root.get(top_key)
     if isinstance(top, dict):
-        before = updated
         update_desktop(top)
-        if updated == before and isinstance(top.get("Desktop"), dict):
+        if isinstance(top.get("Desktop"), dict):
             updated += 1
 
 for display in root.get("Displays", {}).values():
@@ -113,8 +112,8 @@ for space in root.get("Spaces", {}).values():
             if isinstance(display.get("Desktop"), dict):
                 updated += 1
 
-backup = index_path.with_name(f"{index_path.name}.bak.{int(time.time())}")
-backup.write_bytes(raw)
+# one rolling backup; a timestamped one per call piled up by the hundreds
+index_path.with_name(f"{index_path.name}.bak").write_bytes(raw)
 index_path.write_bytes(plistlib.dumps(root, fmt=plistlib.FMT_BINARY, sort_keys=False))
 
 if updated == 0:
@@ -134,15 +133,6 @@ apply_wallpaper() {
   if [[ ! -f "$img" ]]; then
     err "Image not found: $img"
     exit 1
-  fi
-
-  # Linux/niri: quickshell draws the wallpaper as a background layer, the way
-  # Omarchy does it. We only record the choice and poke it to re-read.
-  if [[ "$(uname)" == Linux ]]; then
-    mkdir -p "$(dirname "$CURRENT_FILE")"
-    printf "%s\n" "$img" > "$CURRENT_FILE"
-    command -v qs &>/dev/null && qs ipc call theme reload &>/dev/null || true
-    return 0
   fi
 
   local applied=0
@@ -170,7 +160,7 @@ wallpaper_next() {
   [[ ${#images[@]} -gt 0 ]] || { err "No images in $BG_DIR"; exit 1; }
   local idx=0
   [[ -f "$IDX_FILE" ]] && idx=$(cat "$IDX_FILE")
-  [[ "$idx" -lt "${#images[@]}" ]] || idx=0
+  [[ $idx =~ ^[0-9]+$ && $idx -lt ${#images[@]} ]] || idx=0
   apply_wallpaper "${images[$idx]}"
   mkdir -p "$(dirname "$IDX_FILE")"
   echo $(( (idx + 1) % ${#images[@]} )) > "$IDX_FILE"
@@ -179,6 +169,6 @@ wallpaper_next() {
 
 case "${1:-}" in
   next) wallpaper_next ;;
-  set) apply_wallpaper "$(resolve_path "${2:?Usage: wallpaper set <path>}")" ;;
+  set) apply_wallpaper "$(resolve_path "${2:?Usage: wallpaper set <path>}")"; ok "Wallpaper set: $(basename "$2")" ;;
   *) echo "Usage: wallpaper next | set <path>" >&2; exit 1 ;;
 esac

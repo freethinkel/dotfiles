@@ -9,11 +9,15 @@ git clone https://github.com/freethinkel/dotfiles ~/Developer/infra/dotfiles
 ~/Developer/infra/dotfiles/install.sh
 ```
 
+macOS only; Homebrew must be installed. The clone can live anywhere.
 `install.sh` is safe to run again after every pull. It does this:
 
-- on macOS, runs `brew bundle`, installs the IoskeleyMono font and sets a few `defaults`
-- stows terminal packages everywhere and desktop packages on macOS
+- runs `brew bundle`, installs the IoskeleyMono font and sets a few `defaults`
+- links `~/.dotfiles` to the clone (for configs that can't find it themselves, like `.skhdrc`)
+- stows every package, clones tpm, starts skhd and OmniWM
 - applies `snowfall-dark` on the first run, and only relinks the current theme after that
+
+A tap brew doesn't trust yet (like `leoafarias/fvm`) fails `brew bundle` until you run `brew trust <tap>`; the rest of the install goes on.
 
 If an app replaced one of the symlinks with a real file, stow stops with a conflict.
 Move that file away and run it again.

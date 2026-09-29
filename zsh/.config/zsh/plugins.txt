@@ -1,5 +1,6 @@
 # Format: one plugin per line, <user>/<repo> (see antidote docs)
 
 zsh-users/zsh-completions
-zsh-users/zsh-syntax-highlighting
 zsh-users/zsh-autosuggestions
+# must stay last: it wraps the widgets defined before it
+zsh-users/zsh-syntax-highlighting

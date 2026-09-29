@@ -1,8 +1,19 @@
--- Load all theme plugins so switching is instant
+-- Load all theme plugins so switching is instant, and follow `theme set` live
 local config_dir = vim.fn.expand("~/.config")
 local theme_file = config_dir .. "/theme/neovim.lua"
 local specs = {}
 local seen = {}
+
+local function current_colorscheme()
+  local ok, theme = pcall(dofile, theme_file)
+  if ok and type(theme) == "table" then
+    for _, entry in ipairs(theme) do
+      if type(entry) == "table" and entry.opts and entry.opts.colorscheme then
+        return entry.opts.colorscheme
+      end
+    end
+  end
+end
 
 -- Collect plugins from all themes
 local themes_dir = config_dir .. "/themes"
@@ -32,17 +43,30 @@ if handle then
 end
 
 -- Set colorscheme from current theme
-local ok, theme = pcall(dofile, theme_file)
-if ok and type(theme) == "table" then
-  for _, entry in ipairs(theme) do
-    if type(entry) == "table" and entry.opts and entry.opts.colorscheme then
-      specs[#specs + 1] = {
-        "LazyVim/LazyVim",
-        opts = { colorscheme = entry.opts.colorscheme },
-      }
-      break
+local colorscheme = current_colorscheme()
+if colorscheme then
+  specs[#specs + 1] = { "LazyVim/LazyVim", opts = { colorscheme = colorscheme } }
+end
+
+-- `theme set` rewrites theme_file; lazy.nvim loads the (lazy) plugin on :colorscheme
+local poll = vim.uv.new_fs_poll()
+if poll then
+  poll:start(theme_file, 1000, function(err)
+    if err then
+      return
     end
-  end
+    vim.schedule(function()
+      local name = current_colorscheme()
+      if name and name ~= vim.g.colors_name then
+        pcall(vim.cmd.colorscheme, name)
+      end
+    end)
+  end)
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    callback = function()
+      poll:stop()
+    end,
+  })
 end
 
 return specs

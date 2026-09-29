@@ -20,6 +20,7 @@ red = 0.08458520228437894
 
 [clipboard]
 historyEnabled = false
+ignoredTypes = []
 maxItemBytes = 8388608
 maxItems = 200
 maxTotalBytes = 67108864
@@ -49,7 +50,7 @@ size = 16.0
 bottom = 0.0
 left = 0.0
 right = 0.0
-top = 0.0
+top = 19.0
 
 [general]
 animationsEnabled = true
@@ -159,7 +160,7 @@ useWorkspaceId = false
 [workspaceBar]
 backgroundOpacity = 0.1
 deduplicateAppIcons = false
-enabled = true
+enabled = false
 excludedBundleIDs = []
 height = 30.0
 hideEmptyWorkspaces = false
@@ -167,7 +168,7 @@ hideInNativeFullscreen = false
 notchActiveZoneWidth = 180.0
 notchMode = "moveBelowMenuBar"
 position = "overlappingMenuBar"
-reserveLayoutSpace = false
+reserveLayoutSpace = true
 revealHoldMilliseconds = 200.0
 revealModifier = "off"
 showAccentHighlights = true
@@ -244,6 +245,7 @@ minHeight = 500.0
 minWidth = 800.0
 
 [[appRules]]
+assignToWorkspace = "2"
 bundleId = "com.mitchellh.ghostty"
 id = "7876C9EF-437E-4D4F-9C27-B1B02F4AABCE"
 minHeight = 48.0
@@ -260,11 +262,6 @@ bundleId = "com.apple.MobileSMS"
 id = "552FB77D-BF0E-4737-90A6-B5BC6986C579"
 minHeight = 320.0
 minWidth = 660.0
-
-[[appRules]]
-assignToWorkspace = "2"
-bundleId = "com.mitchellh.ghostty"
-id = "CFE631B2-2DDE-49EE-9E93-FF43CAD547D2"
 
 [[hotkeys]]
 binding = "Unassigned"

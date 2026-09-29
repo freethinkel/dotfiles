@@ -12,3 +12,7 @@ gui:
     markedBaseCommitBgColor: ['{{ color3 }}']
     unstagedChangesColor: ['{{ color1 }}']
     defaultFgColor: ['{{ foreground }}']
+git:
+  pagers:
+    - colorArg: always
+      pager: delta --{{ mode }} --paging=never

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # theme set [name] | install <git-url> | list | current | link
 # Generates ~/.config/theme from themes/<name>/ + themes/templates/*.tpl
-# ({{ key }}, {{ key_strip }}, {{ key_rgb }} from colors.toml), then reloads apps.
+# ({{ key }}, {{ key_strip }}, {{ key_rgb }} from colors.toml, plus {{ mode }} = dark/light), then reloads apps.
 set -euo pipefail
-REPO="$HOME/Developer/infra/dotfiles"
+REPO="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 THEMES="$REPO/themes"
 OUT="$HOME/.config/theme"
 
@@ -15,16 +15,17 @@ color() { sed -n "s/^$1[[:space:]]*=[[:space:]]*\"\(#[^\"]*\)\".*/\1/p" "$OUT/co
 
 generate() {
   local src="$THEMES/$1"
-  [[ -L $OUT ]] && rm "$OUT"          # leftover home-manager link
   mkdir -p "$OUT"
   find "$OUT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
   cp -RL "$src"/* "$OUT"/
   echo "$1" > "$OUT/.current"
   # newer omarchy themes declare mode = "light" in colors.toml instead of shipping light.mode
   grep -Eq '^[[:space:]]*mode[[:space:]]*=[[:space:]]*"light"' "$OUT/colors.toml" 2>/dev/null && touch "$OUT/light.mode"
+  local base=dark; [[ -f "$OUT/light.mode" ]] && base=light
   # semantic-only themes (red/green/selection/muted...) lack the legacy keys templates use: derive them
   local key alts a v
   printf '\n# derived by theme\n' >> "$OUT/colors.toml"
+  [[ -n $(sed -n 's/^mode[[:space:]]*=[[:space:]]*"\(.*\)".*/\1/p' "$OUT/colors.toml") ]] || echo "mode = \"$base\"" >> "$OUT/colors.toml"
   while read -r key alts; do
     [[ -n $(color "$key") ]] && continue
     for a in $alts; do v="$(color "$a")"; [[ $v ]] && { echo "$key = \"$v\"" >> "$OUT/colors.toml"; break; }; done
@@ -69,7 +70,6 @@ MAP
   done
   rm "$sed_script"
 
-  local base=dark; [[ -f "$OUT/light.mode" ]] && base=light
   cat > "$OUT/claude.json" <<JSON
 {"name":"Current","base":"$base","overrides":{"claude":"$(color accent)","text":"$(color foreground)","inactive":"$(color color8)","subtle":"$(color color8)","success":"$(color color2)","error":"$(color color1)","warning":"$(color color3)","promptBorder":"$(color accent)","selectionBg":"$(color selection_background)"}}
 JSON
@@ -78,14 +78,9 @@ JSON
 # apps read the theme through these links; ~/.config/themes is every palette (nvim preloads them)
 link_apps() {
   ln -sfn "$THEMES" "$HOME/.config/themes"
-  mkdir -p "$HOME/.claude/themes" "$HOME/.config/zellij/themes" "$HOME/.config/btop/themes"
+  mkdir -p "$HOME/.claude/themes" "$HOME/.config/btop/themes"
   ln -sfn "$OUT/claude.json" "$HOME/.claude/themes/current.json"
-  ln -sfn "$OUT/zellij.kdl" "$HOME/.config/zellij/themes/current.kdl"
   ln -sfn "$OUT/btop.theme" "$HOME/.config/btop/themes/current.theme"
-  # niri desktop (linux)
-  [[ -d $HOME/.config/waybar ]] && ln -sfn "$OUT/waybar.css" "$HOME/.config/waybar/theme.css"
-  [[ -d $HOME/.config/quickshell ]] && ln -sfn "$OUT/quickshell-colors.qml" "$HOME/.config/quickshell/Colors.qml"
-  return 0
 }
 
 set_theme() {

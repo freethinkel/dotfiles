@@ -1,15 +1,14 @@
 # brew bundle --file ~/Developer/infra/dotfiles/Brewfile
 # Only what these dotfiles need; `brew bundle cleanup` would uninstall everything else, don't run it blindly.
 
-tap "felixkratz/formulae"
-tap "koekeishiya/formulae"
+tap "asmvik/formulae"   # skhd (was koekeishiya/formulae)
+tap "leoafarias/fvm"    # new taps must be trusted first: brew trust leoafarias/fvm
 
 # shell and CLI
 brew "stow"
-brew "git"
 brew "neovim"
 brew "tmux"
-brew "zellij"
+brew "sesh"             # tmux prefix+T
 brew "herdr"
 brew "antidote"
 brew "starship"
@@ -19,19 +18,16 @@ brew "ripgrep"
 brew "fd"
 brew "bat"
 brew "eza"
-brew "jq"
-brew "curl"
-brew "wget"
+brew "jq"               # theme-apply (obsidian vaults)
 brew "lazygit"
+brew "git-delta"        # lazygit pager
 brew "btop"
+brew "leoafarias/fvm/fvm" # nvim flutter-tools
 
 # desktop
 brew "neovide"
-brew "felixkratz/formulae/sketchybar"
-brew "felixkratz/formulae/borders"
-brew "koekeishiya/formulae/yabai"
-brew "koekeishiya/formulae/skhd"
+brew "asmvik/formulae/skhd"
 cask "ghostty"
 cask "raycast"
 cask "omniwm"
-cask "aerospace"
+cask "desktoppr"        # bin/wallpaper

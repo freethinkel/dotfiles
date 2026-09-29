@@ -13,3 +13,10 @@ vim.cmd("au BufNewFile,BufRead *.arb set ft=json")
 vim.cmd("au BufNewFile,BufRead */.vscode/launch.json set ft=jsonc")
 vim.cmd("au BufNewFile,BufRead *.fvmrc set ft=json")
 vim.cmd("au BufNewFile,BufRead *.ejs set ft=ejs")
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "markdown" },
+  callback = function()
+    vim.opt_local.conceallevel = 0
+  end,
+})

@@ -5,9 +5,9 @@
 # Setup:
 #   1. Register app at https://developer.home-connect.com/
 #   2. Export HC_CLIENT_ID and HC_CLIENT_SECRET
-#   3. Run: ac authorize
-#   4. Run: ac list  (to find your haId's)
-#   5. Run: ac on <haId>  /  ac off <haId>
+#   3. Run: acc authorize
+#   4. Run: acc list  (to find your haId's)
+#   5. Run: acc on <haId>  /  acc off <haId>
 #
 
 set -euo pipefail
@@ -24,16 +24,33 @@ TOKEN_FILE="${HC_TOKEN_FILE:-$HOME/.homeconnect_tokens.json}"
 BASE_URL="${HC_BASE_URL:-https://api.home-connect.com}"
 CT="application/vnd.bsh.sdk.v1+json"
 
+# --- json helpers: values go in through argv/stdin, never spliced into code ---
+
+# json_get <key> [default] < json
+json_get() {
+    python3 -c 'import sys, json; print(json.load(sys.stdin).get(sys.argv[1], sys.argv[2]))' "$1" "${2:-}" 2>/dev/null
+}
+
+# connected haIds, one per line
+connected_ids() {
+    api GET "" | python3 -c "
+import sys, json
+for a in json.load(sys.stdin).get('data',{}).get('homeappliances',[]):
+    if a.get('connected'): print(a['haId'])"
+}
+
 # --- token helpers ---
 
 save_tokens() {
     # ponytail: an empty token here is what silently poisons the file and
     # makes every later call 401 with no explanation.
     [[ -n "$1" ]] || { echo "Refused to save an empty access token." >&2; exit 1; }
-    local expires_at=$(( $(date +%s) + ${3:-86400} ))
-    cat > "$TOKEN_FILE" <<EOF
-{"access_token":"$1","refresh_token":"$2","expires_at":$expires_at}
-EOF
+    [[ "${3:-}" =~ ^[0-9]+$ ]] || set -- "$1" "$2" 86400
+    (umask 077; python3 -c '
+import sys, json, time
+at, rt, exp, path = sys.argv[1:]
+json.dump({"access_token": at, "refresh_token": rt, "expires_at": int(time.time()) + int(exp)}, open(path, "w"))
+' "$1" "$2" "$3" "$TOKEN_FILE")
     chmod 600 "$TOKEN_FILE"
 }
 
@@ -41,13 +58,18 @@ get_token() {
     [[ -f "$TOKEN_FILE" ]] || { echo "Run: $0 authorize" >&2; exit 1; }
 
     local expires_at access_token refresh_token
-    eval "$(python3 -c "
-import json
-d = json.load(open('$TOKEN_FILE'))
-print(f'expires_at={d[\"expires_at\"]}')
-print(f'access_token={d[\"access_token\"]}')
-print(f'refresh_token={d[\"refresh_token\"]}')
-")"
+    {
+        read -r expires_at
+        read -r access_token
+        read -r refresh_token
+    } < <(python3 -c '
+import sys, json
+d = json.load(open(sys.argv[1]))
+print(int(d.get("expires_at", 0)))
+print(d.get("access_token", ""))
+print(d.get("refresh_token", ""))
+' "$TOKEN_FILE") || true
+    [[ "$expires_at" =~ ^[0-9]+$ ]] || expires_at=0
 
     if [[ -z "$access_token" ]] || (( $(date +%s) >= expires_at )); then
         [[ -n "$CLIENT_ID" && -n "$CLIENT_SECRET" ]] || {
@@ -55,23 +77,24 @@ print(f'refresh_token={d[\"refresh_token\"]}')
             exit 1
         }
         local resp
+        [[ -n "$refresh_token" ]] || { echo "No refresh token saved. Run: $0 authorize" >&2; exit 1; }
         resp=$(curl -sS --fail-with-body -X POST "${BASE_URL}/security/oauth/token" \
-            -d "grant_type=refresh_token" \
-            -d "refresh_token=${refresh_token}" \
-            -d "client_id=${CLIENT_ID}" \
-            -d "client_secret=${CLIENT_SECRET}")
+            --data-urlencode "grant_type=refresh_token" \
+            --data-urlencode "refresh_token=${refresh_token}" \
+            --data-urlencode "client_id=${CLIENT_ID}" \
+            --data-urlencode "client_secret=${CLIENT_SECRET}") || true
 
-        access_token=$(echo "$resp" | python3 -c "import sys,json; print(json.load(sys.stdin).get('access_token',''))" 2>/dev/null)
+        access_token=$(json_get access_token <<<"$resp")
         [[ -n "$access_token" ]] || {
             echo "Refresh failed: $resp" >&2
             echo "Run: $0 authorize" >&2
             exit 1
         }
         local new_rt
-        new_rt=$(echo "$resp" | python3 -c "import sys,json; print(json.load(sys.stdin).get('refresh_token',''))" 2>/dev/null)
-        [[ -n "$new_rt" && "$new_rt" != "null" ]] && refresh_token="$new_rt"
+        new_rt=$(json_get refresh_token <<<"$resp")
+        [[ -n "$new_rt" && "$new_rt" != "None" ]] && refresh_token="$new_rt"
         local exp
-        exp=$(echo "$resp" | python3 -c "import sys,json; print(json.load(sys.stdin).get('expires_in',86400))" 2>/dev/null)
+        exp=$(json_get expires_in 86400 <<<"$resp")
         save_tokens "$access_token" "$refresh_token" "$exp"
         echo >&2 "Token refreshed."
     fi
@@ -80,10 +103,12 @@ print(f'refresh_token={d[\"refresh_token\"]}')
 }
 
 api() {
-    local method="$1" path="$2"
+    local method="$1" path="$2" token
     shift 2
+    # a failing $(...) inside curl's args would not stop set -e: fetch it first
+    token=$(get_token) || exit 1
     curl -sS --fail-with-body -X "$method" "${BASE_URL}/api/homeappliances${path}" \
-        -H "Authorization: Bearer $(get_token)" \
+        -H "Authorization: Bearer ${token}" \
         -H "Accept: $CT" \
         -H "Content-Type: $CT" \
         "$@"
@@ -103,29 +128,33 @@ for a in json.load(sys.stdin).get('data', {}).get('homeappliances', []):
 # --- commands ---
 
 cmd_authorize() {
-    [[ -z "$CLIENT_ID" ]] && { echo "Set HC_CLIENT_ID"; exit 1; }
+    [[ -z "$CLIENT_ID" ]] && { echo "Set HC_CLIENT_ID" >&2; exit 1; }
 
-    local encoded_uri
-    encoded_uri=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${REDIRECT_URI}', safe=''))")
+    local query
+    query=$(python3 -c '
+import sys, urllib.parse
+print(urllib.parse.urlencode({"response_type": "code", "client_id": sys.argv[1], "redirect_uri": sys.argv[2],
+                              "scope": "IdentifyAppliance Monitor Control Settings"}, quote_via=urllib.parse.quote))
+' "$CLIENT_ID" "$REDIRECT_URI")
 
     echo "Open this URL in your browser:"
     echo ""
-    echo "${BASE_URL}/security/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encoded_uri}&scope=IdentifyAppliance%20Monitor%20Control%20Settings"
+    echo "${BASE_URL}/security/oauth/authorize?${query}"
     echo ""
     read -rp "Paste the authorization code: " code
 
     local resp
     resp=$(curl -sS --fail-with-body -X POST "${BASE_URL}/security/oauth/token" \
-        -d "grant_type=authorization_code" \
-        -d "code=${code}" \
-        -d "client_id=${CLIENT_ID}" \
-        -d "client_secret=${CLIENT_SECRET}" \
-        -d "redirect_uri=${REDIRECT_URI}")
+        --data-urlencode "grant_type=authorization_code" \
+        --data-urlencode "code=${code}" \
+        --data-urlencode "client_id=${CLIENT_ID}" \
+        --data-urlencode "client_secret=${CLIENT_SECRET}" \
+        --data-urlencode "redirect_uri=${REDIRECT_URI}") || { echo "Token request failed: $resp" >&2; exit 1; }
 
     local at rt exp
-    at=$(echo "$resp" | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
-    rt=$(echo "$resp" | python3 -c "import sys,json; print(json.load(sys.stdin)['refresh_token'])")
-    exp=$(echo "$resp" | python3 -c "import sys,json; print(json.load(sys.stdin).get('expires_in',86400))")
+    at=$(json_get access_token <<<"$resp")
+    rt=$(json_get refresh_token <<<"$resp")
+    exp=$(json_get expires_in 86400 <<<"$resp")
     save_tokens "$at" "$rt" "$exp"
     echo "Authorized. Tokens saved to $TOKEN_FILE"
 }
@@ -168,21 +197,15 @@ cmd_off() {
 }
 
 cmd_on_all() {
-    for ha_id in $(api GET "" | python3 -c "
-import sys, json
-for a in json.load(sys.stdin).get('data',{}).get('homeappliances',[]):
-    if a.get('connected'): print(a['haId'])"); do
-        cmd_on "$ha_id"
-    done
+    local ids ha_id
+    ids=$(connected_ids) || exit 1
+    for ha_id in $ids; do cmd_on "$ha_id"; done
 }
 
 cmd_off_all() {
-    for ha_id in $(api GET "" | python3 -c "
-import sys, json
-for a in json.load(sys.stdin).get('data',{}).get('homeappliances',[]):
-    if a.get('connected'): print(a['haId'])"); do
-        cmd_off "$ha_id"
-    done
+    local ids ha_id
+    ids=$(connected_ids) || exit 1
+    for ha_id in $ids; do cmd_off "$ha_id"; done
 }
 
 get_power_state() {
@@ -205,12 +228,9 @@ cmd_toggle() {
 }
 
 cmd_toggle_all() {
-    for ha_id in $(api GET "" | python3 -c "
-import sys, json
-for a in json.load(sys.stdin).get('data',{}).get('homeappliances',[]):
-    if a.get('connected'): print(a['haId'])"); do
-        cmd_toggle "$ha_id"
-    done
+    local ids ha_id
+    ids=$(connected_ids) || exit 1
+    for ha_id in $ids; do cmd_toggle "$ha_id"; done
 }
 
 # --- main ---
@@ -243,9 +263,9 @@ Usage: acc <command> [haId]
 Setup:
   export HC_CLIENT_ID="your_client_id"
   export HC_CLIENT_SECRET="your_client_secret"
-  ac authorize
-  ac list
-  ac on-all
+  acc authorize
+  acc list
+  acc on-all
 USAGE
     ;;
 esac

@@ -4,27 +4,25 @@ return {
     lazy = false,
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "stevearc/dressing.nvim", -- optional for vim.ui.select
       "nvim-lspconfig",
       "mfussenegger/nvim-dap",
     },
     keys = {
+      -- flutter-tools' own menu is telescope-only; snacks lists its :Flutter* commands instead
       {
         "<leader>FF",
         function()
-          require("telescope").extensions.flutter.commands()
+          Snacks.picker.commands({ pattern = "Flutter" })
         end,
-        "Flutter commands",
+        desc = "Flutter commands",
       },
-      { "<leader>Fe", ":FlutterEmulators<cr>", "FlutterEmulators" },
-      { "<leader>Fr", ":FlutterRun<cr>", "FlutterRun" },
-      { "<leader>Fq", ":FlutterQuit<cr>", "FlutterQuit" },
-      { "<leader>FR", ":FlutterRestart<cr>", "FlutterRestart" },
-      { "<leader>FC", ":FlutterLogClear<cr>", "FlutterLogClear" },
+      { "<leader>Fe", "<cmd>FlutterEmulators<cr>", desc = "FlutterEmulators" },
+      { "<leader>Fr", "<cmd>FlutterRun<cr>", desc = "FlutterRun" },
+      { "<leader>Fq", "<cmd>FlutterQuit<cr>", desc = "FlutterQuit" },
+      { "<leader>FR", "<cmd>FlutterRestart<cr>", desc = "FlutterRestart" },
+      { "<leader>FC", "<cmd>FlutterLogClear<cr>", desc = "FlutterLogClear" },
     },
     config = function()
-      -- local configs = require "nvchad.configs.lspconfig"
-
       -- ponytail: plugin-managed document colors are deprecated on nvim 0.12+; use the native API
       vim.lsp.document_color.enable()
 
@@ -47,8 +45,6 @@ return {
           enabled = false,
         },
       })
-      -- require("fzf-lua").load_extension("flutter")
-      -- require("telescope").load_extension("flutter")
     end,
   },
 }

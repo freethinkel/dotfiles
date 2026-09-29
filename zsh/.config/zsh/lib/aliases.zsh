@@ -6,7 +6,7 @@ if command -v eza &> /dev/null; then
   alias lt='eza --tree --level=2 --long --icons --git'
   alias lta='lt -a'
 fi
-alias cat="bat"
+command -v bat &> /dev/null && alias cat="bat"
 
 alias ll='ls -lAh'
 alias l="ll"
@@ -19,7 +19,7 @@ alias ....='cd ../../..'
 alias gs='git status'
 alias gd='git diff'
 alias gl='git log --oneline -20'
-alias gp='git pull --rebase'
+alias gp='git pull' # pull.rebase = true in .gitconfig
 alias g='git'
 alias gcm='git commit -m'
 alias gcam='git commit -a -m'
