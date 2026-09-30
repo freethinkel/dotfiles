@@ -23,6 +23,7 @@ for f in "$HOME/.config/zsh/lib/"*.zsh(N); do
 done
 
 _antidote="${HOMEBREW_PREFIX:-/opt/homebrew}/opt/antidote/share/antidote/antidote.zsh"
+[[ -f $_antidote ]] || _antidote="$HOME/.antidote/antidote.zsh"  # linux: cloned by install.sh
 [[ -f $_antidote ]] && source "$_antidote" && antidote load "$HOME/.config/zsh/plugins.txt"
 unset _antidote
 # after antidote so zsh-completions is on fpath

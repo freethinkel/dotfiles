@@ -9,8 +9,10 @@ git clone https://github.com/freethinkel/dotfiles ~/Developer/infra/dotfiles
 ~/Developer/infra/dotfiles/install.sh
 ```
 
-macOS only; Homebrew must be installed. The clone can live anywhere.
-`install.sh` is safe to run again after every pull. It does this:
+On macOS Homebrew must be installed. On Linux (x86_64 servers) only the CLI packages are linked,
+and the tools are fetched as release binaries into `~/.local/bin`, no sudo; git, stow, zsh, tmux and nvim come from the system.
+The clone can live anywhere.
+`install.sh` is safe to run again after every pull. On macOS it does this:
 
 - runs `brew bundle`, installs the IoskeleyMono font and sets a few `defaults`
 - links `~/.dotfiles` to the clone (for configs that can't find it themselves, like `.skhdrc`)

@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
-# Links the dotfiles into $HOME with stow, installs the Brewfile, the font and system defaults.
-# macOS only. Safe to re-run.
+# Links the dotfiles into $HOME with stow. macOS: also the Brewfile, the font and system defaults.
+# Linux (servers): CLI packages only, tools as release binaries in ~/.local/bin. Safe to re-run.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-[[ $(uname) == Darwin ]] || { echo "macOS only" >&2; exit 1; }
-command -v brew >/dev/null || { echo "Install Homebrew first: https://brew.sh" >&2; exit 1; }
-
-PACKAGES=(zsh git nvim tmux btop lazygit herdr claude ghostty skhd omniwm)
-
-# a failed formula (e.g. an untrusted tap) should not stop the linking below
-brew bundle --no-upgrade --file Brewfile || echo "brew bundle had errors, continuing" >&2
+PACKAGES=(zsh git nvim tmux btop lazygit herdr claude)
 
 # configs that can't compute the repo path (.skhdrc) reach it through this link
 ln -sfn "$PWD" ~/.dotfiles
+
+if [[ $(uname) == Darwin ]]; then
+PACKAGES+=(ghostty skhd omniwm)
+command -v brew >/dev/null || { echo "Install Homebrew first: https://brew.sh" >&2; exit 1; }
+
+# a failed formula (e.g. an untrusted tap) should not stop the linking below
+brew bundle --no-upgrade --file Brewfile || echo "brew bundle had errors, continuing" >&2
 
 # IoskeleyMono (ghostty, neovide); not in brew. A network hiccup only skips the font.
 if ! ls ~/Library/Fonts/IoskeleyMono* &>/dev/null; then
@@ -32,6 +33,38 @@ defaults write com.apple.finder FXPreferredViewStyle -string clmv
 defaults write NSGlobalDomain _HIHideMenuBar -bool true # takes a relogin
 mkdir -p ~/Pictures/screenshots && defaults write com.apple.screencapture location ~/Pictures/screenshots
 killall Dock Finder SystemUIServer 2>/dev/null || true
+else
+# No brew and no sudo on a server: latest release binaries into ~/.local/bin.
+# git, stow, zsh, tmux and nvim are expected from the system.
+# ponytail: x86_64 only, never upgrades what is already there (rm the binary to refetch);
+# sesh and fzf-tmux (tmux prefix+T) are skipped
+mkdir -p ~/.local/bin
+gh_bin() { # <owner/repo> <binary>
+  [[ -x ~/.local/bin/$2 ]] && return
+  local url tmp
+  url=$(curl -fsSL "https://api.github.com/repos/$1/releases/latest" | grep -o 'https://[^"]*' |
+    grep -E 'x86_64.*linux-musl\.(tar\.gz|tbz)$|linux_amd64\.tar\.gz$|[Ll]inux_x86_64\.tar\.gz$' | head -1) || true
+  [[ $url ]] || { echo "$2: no release asset found, skipping" >&2; return; }
+  tmp=$(mktemp -d)
+  if curl -fsSL -o "$tmp/a" "$url" && tar -xf "$tmp/a" -C "$tmp"; then
+    install -m 755 "$(find "$tmp" -type f -name "$2" | head -1)" ~/.local/bin/ || echo "$2: install failed" >&2
+  else
+    echo "$2: download failed, skipping" >&2
+  fi
+  rm -rf "$tmp"
+}
+gh_bin starship/starship starship
+gh_bin ajeetdsouza/zoxide zoxide
+gh_bin junegunn/fzf fzf
+gh_bin BurntSushi/ripgrep rg
+gh_bin sharkdp/fd fd
+gh_bin sharkdp/bat bat
+gh_bin eza-community/eza eza
+gh_bin jesseduffield/lazygit lazygit
+gh_bin dandavison/delta delta
+gh_bin aristocratos/btop btop
+[[ -d ~/.antidote ]] || git clone --depth 1 https://github.com/mattmc3/antidote ~/.antidote || echo "antidote clone failed" >&2
+fi
 
 mkdir -p ~/.claude ~/.config/herdr ~/.config/btop ~/.config/lazygit
 
@@ -40,8 +73,10 @@ stow --target "$HOME" --restow "${PACKAGES[@]}"
 # tmux.conf runs tpm; it isn't in brew
 [[ -d ~/.config/tmux/plugins/tpm ]] || git clone --depth 1 https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm || echo "tpm clone failed" >&2
 
-skhd --start-service 2>/dev/null || skhd --restart-service 2>/dev/null || true
-open -ga OmniWM 2>/dev/null || true
+if [[ $(uname) == Darwin ]]; then
+  skhd --start-service 2>/dev/null || skhd --restart-service 2>/dev/null || true
+  open -ga OmniWM 2>/dev/null || true
+fi
 
 # first run: no theme yet; otherwise just (re)link apps to the current one
 if [[ -e ~/.config/theme/.current ]]; then bin/theme link; else bin/theme set snowfall-dark; fi
