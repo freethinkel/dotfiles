@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Links the dotfiles into $HOME with stow. macOS: also the Brewfile, the font and system defaults.
-# Linux (servers): CLI packages only, tools as release binaries in ~/.local/bin. Safe to re-run.
+# Linux: CLI packages only. Arch/Omarchy: tools from pacman, its own configs moved to *.bak;
+# servers: tools as release binaries in ~/.local/bin. Safe to re-run.
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 PACKAGES=(zsh git nvim tmux btop lazygit herdr claude)
 
@@ -33,6 +34,11 @@ defaults write com.apple.finder FXPreferredViewStyle -string clmv
 defaults write NSGlobalDomain _HIHideMenuBar -bool true # takes a relogin
 mkdir -p ~/Pictures/screenshots && defaults write com.apple.screencapture location ~/Pictures/screenshots
 killall Dock Finder SystemUIServer 2>/dev/null || true
+elif command -v pacman >/dev/null; then
+# Arch / Omarchy (also Asahi, where the x86_64 release binaries below don't run)
+sudo pacman -S --needed --noconfirm stow zsh tmux neovim starship zoxide fzf ripgrep fd bat eza lazygit git-delta btop
+[[ $SHELL == */zsh ]] || chsh -s "$(command -v zsh)" || echo "chsh failed, switch to zsh by hand" >&2
+[[ -d ~/.antidote ]] || git clone --depth 1 https://github.com/mattmc3/antidote ~/.antidote || echo "antidote clone failed" >&2
 else
 # No brew and no sudo on a server: latest release binaries into ~/.local/bin.
 # git, stow, zsh, tmux and nvim are expected from the system.
@@ -67,6 +73,19 @@ gh_bin aristocratos/btop btop
 fi
 
 mkdir -p ~/.claude ~/.config/herdr ~/.config/btop ~/.config/lazygit
+
+# Linux distros (Omarchy) ship their own configs: move them aside instead of letting stow abort.
+# A whole nvim dir goes, leftover LazyVim plugin files would load alongside ours.
+if [[ $(uname) == Linux ]]; then
+  [[ -d ~/.config/nvim && ! -L ~/.config/nvim ]] && mv ~/.config/nvim ~/.config/nvim.bak.$(date +%s)
+  for p in "${PACKAGES[@]}"; do
+    (cd "$p" && find . -type f -o -type l) | while read -r f; do
+      t=~/${f#./}
+      # already ours, maybe through a folded dir symlink: leave it
+      [[ -e $t && $(readlink -f "$t") != "$PWD/$p/${f#./}" ]] && mv "$t" "$t.bak" || true
+    done
+  done
+fi
 
 stow --target "$HOME" --restow "${PACKAGES[@]}"
 

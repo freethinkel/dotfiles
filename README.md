@@ -6,13 +6,14 @@ Plain [GNU stow](https://www.gnu.org/software/stow/) packages and a Brewfile.
 
 ```sh
 git clone https://github.com/freethinkel/dotfiles ~/Developer/infra/dotfiles
-~/Developer/infra/dotfiles/install.sh
+make -C ~/Developer/infra/dotfiles
 ```
 
-On macOS Homebrew must be installed. On Linux (x86_64 servers) only the CLI packages are linked,
+On macOS Homebrew must be installed. On Arch/Omarchy (Asahi too) the tools come from pacman and the configs it already has are moved to `*.bak`.
+On other Linux (x86_64 servers) only the CLI packages are linked,
 and the tools are fetched as release binaries into `~/.local/bin`, no sudo; git, stow, zsh, tmux and nvim come from the system.
 The clone can live anywhere.
-`install.sh` is safe to run again after every pull. On macOS it does this:
+`make` (`scripts/install.sh`) is safe to run again after every pull. On macOS it does this:
 
 - runs `brew bundle`, installs the IoskeleyMono font and sets a few `defaults`
 - links `~/.dotfiles` to the clone (for configs that can't find it themselves, like `.skhdrc`)
@@ -28,7 +29,7 @@ Move that file away and run it again.
 
 Everything in `$HOME` links back here, so editing a file in the repo changes the live config.
 To add a package, make a dir that mirrors `$HOME`, like `foo/.config/foo/config`,
-and add `foo` to `PACKAGES` in `install.sh`.
+and add `foo` to `PACKAGES` in `scripts/install.sh`.
 
 ## Layout
 
@@ -36,6 +37,7 @@ and add `foo` to `PACKAGES` in `install.sh`.
 |---|---|
 | `<package>/` | stow package, mirrors `$HOME` |
 | `bin/` | scripts like `theme` and `wallpaper`, added to `PATH` in `.zshrc` |
+| `scripts/` | `install.sh`, `bt-trackpad.sh` (Magic Trackpad pairing shared with Asahi), run through `make`; not a stow package |
 | `themes/` | palettes and templates for `theme set <name>`, downloaded ones are gitignored |
 | `.env` | secrets, gitignored |
 
