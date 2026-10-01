@@ -46,6 +46,7 @@ let PILL_HEIGHT: CGFloat = 26     // hit/draw box of every item
 let PAD_LEFT: CGFloat = 10        // outer edge padding, both ends
 let GAP: CGFloat = 14             // between the left-cluster groups
 let ITEM_GAP: CGFloat = 2         // between right-cluster items
+let ITEM_PAD: CGFloat = 10        // inside a right-cluster item, each side
 let RADIUS: CGFloat = 4           // active-workspace / focus plates
 let CHIP_BOX: CGFloat = 20        // workspace label box
 let CHIP_PAD: CGFloat = 2
@@ -582,7 +583,7 @@ func shell(_ launch: String, _ args: [String]) -> String {
 // --- clock (no publisher: the one honest timer, aligned to the minute)
 func updateClock() {
     let f = DateFormatter()
-    f.dateFormat = "EEE dd MMM  HH:mm"
+    f.dateFormat = "dd.MM.yyyy HH:mm"
     set("clock") { $0.icon = "sf:calendar"; $0.label = f.string(from: Date()) }
 }
 
@@ -1213,7 +1214,7 @@ func updateWeather() {
 
         DispatchQueue.main.async {
             weather = w
-            set("weather") { $0.icon = w.symbol; $0.label = "\(w.temp)°C" }
+            set("weather") { $0.icon = w.symbol; $0.label = "\(w.temp)°" }
             if openPopup == "weather" { refreshPopup() }
         }
     }.resume()
@@ -1787,11 +1788,10 @@ func updateClaude() {
 func claudeRows() -> [PopupRow] {
     guard let u = claudeUsage else { return [] }
     let time = DateFormatter()
-    time.dateFormat = "EEE HH:mm"
     func left(_ d: Date?) -> String {
         guard let d else { return "" }
-        let m = max(0, Int(d.timeIntervalSinceNow / 60))
-        return m >= 1440 ? time.string(from: d).lowercased() : m >= 60 ? "in \(m / 60)h \(m % 60)m" : "in \(m)m"
+        time.dateFormat = Calendar.current.isDateInToday(d) ? "HH:mm" : "EEE HH:mm"
+        return time.string(from: d).lowercased()
     }
     return [
         PopupRow(text: "claude", hero: true),
@@ -1822,7 +1822,7 @@ func layoutShort(_ src: TISInputSource) -> String {
 
 func updateLayout() {
     let src = TISCopyCurrentKeyboardInputSource().takeRetainedValue()
-    set("layout") { $0.icon = "sf:keyboard"; $0.iconColor = nil; $0.label = layoutShort(src) }
+    set("layout") { $0.icon = "key:\(layoutShort(src))"; $0.iconColor = nil; $0.label = "" }
 }
 
 func layoutRows() -> [PopupRow] {
@@ -1882,9 +1882,9 @@ func updateTailscale() {
             tailscale = t
             set("tailscale") {
                 $0.drawing = true
-                $0.icon = t.running ? "sf:network" : "sf:network.slash"
-                $0.iconColor = t.running ? \.green : \.red
-                $0.label = t.exitNode
+                $0.icon = t.running ? "ts" : "ts:off"
+                $0.iconColor = nil
+                $0.label = "" // the exit node lives in the popup
             }
             if openPopup == "tailscale" { refreshPopup() }
         }
@@ -2529,6 +2529,8 @@ func toggleCheatsheet() {
 // content changes — "28°C" and "8:05 PM" sit on the same baseline.
 func inkBox(_ s: String, _ font: NSFont) -> CGRect {
     if s == "bt" { return CGRect(origin: .zero, size: bluetoothRune(font).size) }
+    if s.hasPrefix("ts") { return CGRect(x: 0, y: 0, width: font.pointSize, height: font.pointSize) }
+    if s.hasPrefix("key:") { return CGRect(origin: .zero, size: keyBadge(s, font).size) }
     if s.hasPrefix("donut:") { return CGRect(x: 0, y: 0, width: font.pointSize, height: font.pointSize) }
     if let img = sfSymbol(s, font) { return CGRect(origin: .zero, size: img.size) }
     let line = CTLineCreateWithAttributedString(
@@ -2580,6 +2582,12 @@ func bluetoothRune(_ font: NSFont) -> (path: NSBezierPath, size: NSSize) {
     return (p, NSSize(width: a * 2 + p.lineWidth, height: h + p.lineWidth))
 }
 
+// "key:<text>" is a keycap: a filled rounded plate, the text in the bar's background colour
+func keyBadge(_ s: String, _ font: NSFont) -> (text: String, font: NSFont, size: NSSize) {
+    let text = String(s.dropFirst(4)), f = nerdFont("Bold", (font.pointSize * 0.62).rounded())
+    return (text, f, NSSize(width: (advance(text, f) + 8).rounded(), height: font.pointSize))
+}
+
 // "donut:<0...1>" is a progress ring the size of a glyph
 func drawIcon(_ s: String, _ font: NSFont, _ color: NSColor, centeredIn box: CGRect) {
     if s.hasPrefix("donut:"), let f = Double(s.dropFirst(6)) {
@@ -2597,6 +2605,29 @@ func drawIcon(_ s: String, _ font: NSFont, _ color: NSColor, centeredIn box: CGR
         arc.lineCapStyle = .round
         color.setStroke()
         if f > 0 { arc.stroke() }
+        return
+    }
+    if s.hasPrefix("key:") {
+        let k = keyBadge(s, font)
+        let r = NSRect(x: (box.midX - k.size.width / 2).rounded(), y: (box.midY - k.size.height / 2).rounded(),
+                       width: k.size.width, height: k.size.height)
+        color.setFill()
+        NSBezierPath(roundedRect: r, xRadius: 3.5, yRadius: 3.5).fill()
+        drawText(k.text, k.font, palette.barBG, centeredIn: r)
+        return
+    }
+    // "ts" is the Tailscale mark: a 3x3 dot grid, the T lit; "ts:off" is all dim
+    if s.hasPrefix("ts") {
+        let step = font.pointSize * 0.34, r = font.pointSize * 0.12
+        for row in -1...1 {
+            for col in -1...1 {
+                let lit = s == "ts" && (row == 0 || (row == -1 && col == 0))
+                color.withAlphaComponent(lit ? 1 : 0.3).setFill()
+                NSBezierPath(ovalIn: NSRect(x: box.midX.rounded() + CGFloat(col) * step - r,
+                                            y: box.midY.rounded() + CGFloat(row) * step - r,
+                                            width: r * 2, height: r * 2)).fill()
+            }
+        }
         return
     }
     if s == "bt" {
@@ -2725,7 +2756,13 @@ final class BarView: NSView {
         drawText(s, font, color, centeredIn: box)
     }
 
+    // focus progress per window, 0...1, eased towards its target a frame
+    // at a time: the focused icon grows and brightens instead of snapping
+    private var winAnim: [String: CGFloat] = [:]
+
     override func draw(_ dirtyRect: NSRect) {
+        var nextAnim: [String: CGFloat] = [:]
+        var animating = false
         chipRects.removeAll()
         winRects.removeAll()
         itemRects.removeAll()
@@ -2771,35 +2808,52 @@ final class BarView: NSView {
             // each display marks the workspace IT is showing, not the
             // globally focused one
             let active = ws == surface.visible
+            // OmniWM-bar style: the active workspace is outlined, not
+            // filled, and everything outside it sits back at half strength
             if active {
-                palette.accent.setFill()
-                NSBezierPath(roundedRect: chip, xRadius: RADIUS, yRadius: RADIUS).fill()
+                let plate = NSBezierPath(roundedRect: chip.insetBy(dx: 0.5, dy: 0.5), xRadius: RADIUS, yRadius: RADIUS)
+                palette.accent.withAlphaComponent(0.12).setFill()
+                plate.fill()
+                palette.accent.setStroke()
+                plate.stroke()
             }
-            let tint: NSColor = active ? palette.barBG : palette.muted
+            let tint: NSColor = active ? palette.accent : palette.muted
+            let fade: CGFloat = active ? 1 : 0.5
             let labelBox = NSRect(x: chip.minX + CHIP_PAD, y: 0, width: CHIP_BOX, height: BAR_HEIGHT)
             switch workspaceIconConfig.icon(for: ws) {
             case .some(.glyph(let glyph)):
                 drawIcon(glyph, iconFont, tint, centeredIn: labelBox)
             case .some(.image(let icon)):
-                icon.draw(in: NSRect(x: labelBox.midX - 9, y: BAR_HEIGHT / 2 - 9, width: 18, height: 18))
+                icon.draw(in: NSRect(x: labelBox.midX - 9, y: BAR_HEIGHT / 2 - 9, width: 18, height: 18),
+                          from: .zero, operation: .sourceOver, fraction: fade)
             case .some(.unavailable), .none:
                 draw(String(ws.suffix(1)), chipFont, tint, centeredIn: labelBox)
             }
             var ix = labelBox.maxX + 2
             for win in apps {
                 let r = NSRect(x: ix, y: (BAR_HEIGHT - APP_ICON_SIZE) / 2, width: APP_ICON_SIZE, height: APP_ICON_SIZE)
-                // the focused window's icon gets a plate, OmniWM-bar style
-                if win.focused {
-                    (active ? palette.barBG : palette.accent).withAlphaComponent(0.35).setFill()
-                    NSBezierPath(roundedRect: r.insetBy(dx: -2, dy: -2), xRadius: RADIUS, yRadius: RADIUS).fill()
+                // only the focused window's icon is at full strength, and 1.1x
+                let target: CGFloat = win.focused ? 1 : 0
+                var t = winAnim[win.id] ?? target
+                if t != target {
+                    t = target > t ? min(target, t + 2.0 / 9) : max(target, t - 2.0 / 9) // ~75 ms at 60 fps
+                    animating = animating || t != target
                 }
-                appIcon(win.app)?.draw(in: r)
+                nextAnim[win.id] = t
+                let e = t * t * (3 - 2 * t) // smoothstep
+                let grow = APP_ICON_SIZE * 0.05 * e
+                appIcon(win.app)?.draw(in: r.insetBy(dx: -grow, dy: -grow), from: .zero,
+                                       operation: .sourceOver, fraction: 0.5 + 0.5 * e)
                 winRects.append((win.id, NSRect(x: r.minX - APP_ICON_GAP / 2, y: 0,
                                                 width: APP_ICON_SIZE + APP_ICON_GAP, height: BAR_HEIGHT)))
                 ix += APP_ICON_SIZE + APP_ICON_GAP
             }
             chipRects.append((ws, NSRect(x: chip.minX, y: 0, width: chip.width, height: BAR_HEIGHT)))
             x = chip.maxX + CHIP_GAP
+        }
+        winAnim = nextAnim
+        if animating {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 / 60) { [weak self] in self?.needsDisplay = true }
         }
         let bracket = NSRect(x: chipsStart, y: 0, width: max(0, x - CHIP_GAP - chipsStart), height: BAR_HEIGHT)
 
@@ -2826,8 +2880,9 @@ final class BarView: NSView {
             let iconColor = item.iconColor.map { palette[keyPath: $0] } ?? palette.label
             let hasIcon = !item.icon.isEmpty
             let hasLabel = !item.label.isEmpty
-            // An icon-only pill is a square, like the apple pill, with the
-            // glyph centred on its INK. A pill with a label flows
+            // An icon-only pill centres the glyph on its INK, with the same
+            // side padding as the rest — as a fixed square, two neighbouring
+            // icons sat 9 pt apart against 22 everywhere else. A pill with a label flows
             // icon-then-text, and the gap between them exists
             // only when both do — the weather pill has no icon (its glyph
             // lives in the label) and inherited the gap anyway, which is the
@@ -2836,18 +2891,18 @@ final class BarView: NSView {
             let labelAdv = hasLabel ? advance(item.label, labelFont) : 0
             let innerGap: CGFloat = hasIcon && hasLabel ? ICON_GAP : 0
             let square = hasIcon && !hasLabel
-            let width = square ? PILL_HEIGHT : 10 + iconInk + innerGap + labelAdv + 10
+            let width = ITEM_PAD + iconInk + innerGap + labelAdv + ITEM_PAD
             let pill = NSRect(x: cursor - width, y: (BAR_HEIGHT - PILL_HEIGHT) / 2,
                               width: width, height: PILL_HEIGHT)
             if hasIcon {
                 drawIcon(item.icon, iconFont, iconColor,
                          centeredIn: square ? pill
-                             : NSRect(x: pill.minX + 10, y: pill.minY,
+                             : NSRect(x: pill.minX + ITEM_PAD, y: pill.minY,
                                       width: iconInk, height: pill.height))
             }
             if hasLabel {
                 drawText(item.label, labelFont, palette.label,
-                         leftAt: pill.minX + 10 + iconInk + innerGap, midY: pill.midY)
+                         leftAt: pill.minX + ITEM_PAD + iconInk + innerGap, midY: pill.midY)
             }
             itemRects.append((name, NSRect(x: pill.minX, y: 0, width: width, height: BAR_HEIGHT)))
             cursor = pill.minX - ITEM_GAP
