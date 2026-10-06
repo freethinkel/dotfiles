@@ -30,4 +30,8 @@ background-opacity = 1.00
 custom-shader = ./shaders/cursor_warp.glsl
 
 config-file = keybind.ghostty
-config-file = ?"~/.config/theme/ghostty.conf"
+# The generated colours as a conditional theme, the same file for both:
+# Ghostty tracks light/dark (its answer to CSI ?996n and mode 2031, which
+# herdr's auto_switch reads) only for a conditional theme, and two equal
+# values collapse to a plain one, hence the "./" in the second path.
+theme = light:~/.config/theme/ghostty.conf,dark:~/.config/theme/./ghostty.conf

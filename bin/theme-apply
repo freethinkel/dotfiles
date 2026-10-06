@@ -18,38 +18,108 @@ osascript -e 'tell application "System Events"
 end tell' 2>/dev/null || true
 pkill -USR2 btop 2>/dev/null || true
 
-# herdr: pick light_name/dark_name from its config, then reload
+# herdr: auto_switch picks dark_name/light_name from what the terminal reports
+# (mochi over ssh too), so colours go to [theme.custom.<mode>] and only this
+# mode's block is replaced — the other keeps the last theme of its mode
 cfg="$HOME/.config/herdr/config.toml"
 if [[ -f $cfg ]]; then
-  key=dark_name; [[ $light = 1 ]] && key=light_name
-  want="$(sed -n "s/^$key = \"\(.*\)\"/\1/p" "$cfg" | head -1)"
+  mode=dark; [[ $light = 1 ]] && mode=light
   # the config is a stow symlink: write through it so the link survives
   real="$(readlink -f "$cfg")"
-  # set name only inside [theme], drop our old colour block; the base theme fills
-  # whatever tokens herdr.toml doesn't set
   tmp="$(mktemp)"
-  awk -v want="$want" '
-    /^# >>> theme colors/ { skip = 1 }
-    !skip {
-      if (/^\[/) sec = $0
-      if (sec == "[theme]" && want != "" && /^name = /) $0 = "name = \"" want "\""
-      print
-    }
-    /^# <<< theme colors/ { skip = 0 }' "$real" > "$tmp"
+  # "(" also drops the old single block from before the per-mode split
+  awk -v mode="$mode" '
+    index($0, "# >>> theme colors " mode) == 1 || index($0, "# >>> theme colors (") == 1 { skip = 1 }
+    !skip { print }
+    skip && index($0, "# <<< theme colors") == 1 { skip = 0 }' "$real" > "$tmp"
   [[ -f $T/herdr.toml ]] && cat "$T/herdr.toml" >> "$tmp"
   [[ -s $tmp ]] && cat "$tmp" > "$real"; rm -f "$tmp"
   command -v herdr &>/dev/null && herdr server reload-config &>/dev/null || true
+  # pane backgrounds are the host terminal's, which a client rereads only on a
+  # light/dark notification or SIGWINCH: a dark -> dark switch needs the signal.
+  # Clients (they have a tty, the server has none), after ghostty has its new config
+  ( sleep 0.5
+    ps -axo pid=,tty=,comm= | awk '$2 != "??" && $3 ~ /(^|\/)herdr$/ { print $1 }' | xargs kill -WINCH ) &>/dev/null &
 fi
 
-# Chromium browsers: managed theme color
+# Chromium browsers: theme colour policy. From user defaults it is only a
+# RECOMMENDED policy, so a theme picked in the browser itself wins over it.
 bg="$(sed -n 's/^background = "\(#[^"]*\)".*/\1/p' "$T/colors.toml" | head -1)"
 if [[ -n $bg ]]; then
   scheme=dark; [[ $light = 1 ]] && scheme=light
   for id in com.google.Chrome com.brave.Browser org.chromium.Chromium com.microsoft.Edge; do
-    mdfind "kMDItemCFBundleIdentifier == '$id'" 2>/dev/null | grep -q . || continue
+    app="$(mdfind "kMDItemCFBundleIdentifier == '$id'" 2>/dev/null | head -1)"
+    [[ -n $app ]] || continue
     defaults write "$id" BrowserThemeColor -string "$bg"
     defaults write "$id" BrowserColorScheme -string "$scheme"
+    # a running browser rereads policy on this, like omarchy does on Linux
+    exe="$app/Contents/MacOS/$(defaults read "$app/Contents/Info" CFBundleExecutable 2>/dev/null)"
+    pgrep -qf "^$exe" && "$exe" --refresh-platform-policy --no-startup-window &>/dev/null &
   done
+fi
+
+# Helium: its colour picker (Customize > custom colour) seeded with the hue of
+# the theme's highlight. Chromium only takes this colour from a root-written policy
+# or that picker, and the picker has no API: AppleScript JavaScript runs in an
+# isolated world, which sees the page's DOM but not its code, so it opens the
+# picker and presses the hue slider where the hue sits, as a click would.
+# Needs Helium's View > Developer > Allow JavaScript from Apple Events, once.
+# Only the Personal (Default) profile: the work one keeps Helium's own colours.
+# AppleScript can't tell profiles apart, so the tab is opened from the command
+# line, on a dead http URL: Chromium won't take chrome:// or about: from there
+hl="$(sed -n 's/^highlight = "#\([0-9a-fA-F]\{6\}\)".*/\1/p' "$T/colors.toml" | head -1)"
+if [[ -n $hl ]] && pgrep -xq Helium; then
+  hue="$(awk -v h="$hl" 'function x(s) { return index("0123456789abcdef", substr(tolower(h), s, 1)) - 1 }
+    BEGIN { r = (x(1)*16 + x(2)) / 255; g = (x(3)*16 + x(4)) / 255; b = (x(5)*16 + x(6)) / 255
+      mx = r; if (g > mx) mx = g; if (b > mx) mx = b; mn = r; if (g < mn) mn = g; if (b < mn) mn = b
+      d = mx - mn; if (d == 0) { print 0; exit }
+      if (mx == r) v = (g - b) / d; else if (mx == g) v = (b - r) / d + 2; else v = (r - g) / d + 4
+      v *= 60; if (v < 0) v += 360; printf "%d", v }')"
+  osascript - "$hue" &>/dev/null <<'OSA' &
+on run argv
+  set js to "const HUE = " & item 1 of argv & ";
+setTimeout(() => {
+  const picker = document.querySelector('customize-chrome-app').shadowRoot
+    .querySelector('customize-chrome-appearance').shadowRoot
+    .querySelector('cr-theme-color-picker').shadowRoot;
+  picker.querySelector('#customColor').click();
+  setTimeout(() => {
+    const s = picker.querySelector('#hueSlider').shadowRoot.querySelector('#slider');
+    const r = s.getBoundingClientRect();
+    const o = {bubbles: true, composed: true, pointerId: 1, isPrimary: true, button: 0, buttons: 1,
+      pointerType: 'mouse', clientX: r.left + r.width * HUE / 359, clientY: r.top + r.height / 2};
+    s.dispatchEvent(new PointerEvent('pointerdown', o));
+    s.dispatchEvent(new PointerEvent('pointerup', {...o, buttons: 0}));
+  }, 300);
+}, 800);"
+  tell application "Helium" to set prev to id of active tab of every window
+  do shell script "/Applications/Helium.app/Contents/MacOS/Helium --profile-directory=Default 'http://localhost:9/#dotfiles-theme' &>/dev/null"
+  delay 1
+  tell application "Helium"
+    repeat with i from 1 to count of windows
+      set w to window i
+      repeat with t in tabs of w
+        if URL of t contains "#dotfiles-theme" then
+          set URL of t to "chrome://customize-chrome-side-panel.top-chrome"
+          delay 1
+          try -- the tab goes away even when JavaScript from Apple Events is off
+            execute t javascript js
+            delay 1.5
+          end try
+          close t
+          -- closing hands focus to a neighbour: give it back to the tab that had it
+          set n to 0
+          repeat with t2 in tabs of w
+            set n to n + 1
+            if prev contains id of t2 then set active tab index of w to n
+          end repeat
+          return
+        end if
+      end repeat
+    end repeat
+  end tell
+end run
+OSA
 fi
 
 # Obsidian: drop generated css into every vault as the "Omarchy" theme (name kept so vaults stay selected)
@@ -62,6 +132,36 @@ if [[ -f "$T/obsidian.css" && -f $json ]] && command -v jq &>/dev/null; then
     cp "$T/obsidian.css" "$vault/.obsidian/themes/Omarchy/theme.css"
   done
 fi
+
+# Slack PWA: the slack/ extension (Load unpacked in Helium, once) serves this
+# file and refetches it on window focus. A copy, not a link: Chromium refuses
+# extension resources that resolve outside the extension folder
+[[ -f $T/slack.css ]] && cp "$T/slack.css" "$BIN/../slack/theme.css"
+
+# Zeron: this mode's variant goes into the "Dotfiles" family, both the editable
+# file and the library's compiled copy (what Zeron loads at start). Pick
+# "Dotfiles" in Settings > Appearance once. A running Zeron has no file watcher:
+# its Reload button (same settings page) or a restart picks up new colours.
+# ponytail: no auto-restart, that would kill the agents it hosts
+z="$HOME/.zeron"
+if [[ -d $z && -f $T/zeron.json ]] && command -v jq &>/dev/null; then
+  fam="$z/custom-themes/dotfiles.zeron-theme.json"; lib="$z/theme-library.json"
+  mkdir -p "$z/custom-themes"
+  [[ -s $fam ]] || echo '{"id":"dotfiles","name":"Dotfiles","variants":[]}' > "$fam"
+  jq --slurpfile v "$T/zeron.json" '.variants |= (map(select(.id != $v[0].id)) + $v)' "$fam" > "$fam.tmp" && mv "$fam.tmp" "$fam"
+  [[ -s $lib ]] || echo '{"entries":[]}' > "$lib"
+  jq --slurpfile f "$fam" --arg p "$fam" '.entries |= (map(select(.id != "dotfiles")) + [{
+    id: "dotfiles", name: "Dotfiles", source: {kind: "editableFile", path: $p}, family: $f[0],
+    reports: {}, selectedVariantIds: ($f[0].variants | map(.id)), status: {kind: "ready"}}])' "$lib" > "$lib.tmp" && mv "$lib.tmp" "$lib"
+fi
+
+# NuPhy keyboard backlight: the theme's highlight colour, only when it is on the cable
+kb="$(sed -n 's/^highlight = "\(#[^"]*\)".*/\1/p' "$T/colors.toml" | head -1)"
+[[ -n $kb ]] && "$BIN/nuphy" color "$kb" 2>/dev/null &
+
+# spotifast rereads its palette files without touching playback
+sf=/Applications/Spotifast.app/Contents/MacOS/Spotifast
+[[ -x $sf ]] && "$sf" reload-themes &>/dev/null &
 
 rm -f "$HOME/.cache/wallpaper_index"
 "$BIN/wallpaper" next 2>/dev/null || true

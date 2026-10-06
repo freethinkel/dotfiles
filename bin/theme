@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# theme set [name] | install <git-url> | list | current | link
+# theme set [name] | install <git-url> | adapt <git-url|name> [source...] | list | current | link
 # Generates ~/.config/theme from themes/<name>/ + themes/templates/*.tpl
 # ({{ key }}, {{ key_strip }}, {{ key_rgb }} from colors.toml, plus {{ mode }} = dark/light), then reloads apps.
 set -euo pipefail
@@ -11,7 +11,18 @@ list() { ls "$THEMES" | grep -vx templates; }
 current() { cat "$OUT/.current" 2>/dev/null || echo "none"; }
 
 hex_to_rgb() { local h="${1#\#}"; printf "%d,%d,%d" "0x${h:0:2}" "0x${h:2:2}" "0x${h:4:2}"; }
-color() { sed -n "s/^$1[[:space:]]*=[[:space:]]*\"\(#[^\"]*\)\".*/\1/p" "$OUT/colors.toml" | head -1; }
+color() { sed -n "s/^$1[[:space:]]*=[[:space:]]*\"\(#[^\"]*\)\".*/\1/p" "${2:-$OUT/colors.toml}" | head -1; }
+
+# picker row: "name<TAB>☀/☾ name 󱓻 ×4" (bg, fg, accent, red) in truecolor
+row() {
+  local t="$THEMES/$1" icon="☾" k c out=""
+  { [[ -f $t/light.mode ]] || grep -Eq '^[[:space:]]*mode[[:space:]]*=[[:space:]]*"light"' "$t/colors.toml"; } && icon="☀"
+  for k in "background" "foreground" "accent blue color4" "color1 red"; do
+    for c in $k; do c="$(color "$c" "$t/colors.toml")"; [[ $c ]] && break; done
+    [[ $c ]] && out+="$(printf '\e[38;2;%d;%d;%dm󱓻\e[0m ' "0x${c:1:2}" "0x${c:3:2}" "0x${c:5:2}")" || out+="  "
+  done
+  printf '%s\t%s %-34s %s\n' "$1" "$icon" "$1" "$out"
+}
 
 generate() {
   local src="$THEMES/$1"
@@ -26,6 +37,8 @@ generate() {
   local key alts a v
   printf '\n# derived by theme\n' >> "$OUT/colors.toml"
   [[ -n $(sed -n 's/^mode[[:space:]]*=[[:space:]]*"\(.*\)".*/\1/p' "$OUT/colors.toml") ]] || echo "mode = \"$base\"" >> "$OUT/colors.toml"
+  # tone: the colour borders/hover tints are made of (white on dark, black on light), templates append an alpha
+  echo "tone = \"$([[ $base = light ]] && echo '#000000' || echo '#ffffff')\"" >> "$OUT/colors.toml"
   while read -r key alts; do
     [[ -n $(color "$key") ]] && continue
     for a in $alts; do v="$(color "$a")"; [[ $v ]] && { echo "$key = \"$v\"" >> "$OUT/colors.toml"; break; }; done
@@ -34,6 +47,7 @@ cursor foreground
 selection_background selection
 selection_foreground foreground
 accent color4
+highlight accent
 color0 black darker_background
 color1 red
 color2 green
@@ -51,6 +65,21 @@ color13 bright_magenta magenta
 color14 bright_cyan cyan
 color15 bright_white foreground
 MAP
+  # surface: a row highlight that keeps `foreground` readable. selection_background
+  # is often the foreground itself (terminals swap fg for selection_foreground),
+  # which apps without a selection fg (herdr) can't use as a background
+  # mixN: background moved N% toward foreground, the in-between tones (panels,
+  # outlines, dim text) that apps like spotifast want and palettes rarely ship
+  local bg fg n; bg="$(color background)"; fg="$(color foreground)"
+  if [[ $bg && $fg ]]; then
+    for key in surface:15 mix3:3 mix8:8 mix11:11 mix16:16 mix18:18 mix30:30 mix40:40 mix50:50 mix60:60 mix70:70 mix80:80 mix90:90; do
+      n=${key#*:}; key=${key%:*}
+      [[ -z $(color "$key") ]] && printf '%s = "#%02x%02x%02x"\n' "$key" \
+        $(( (16#${bg:1:2} * (100 - n) + 16#${fg:1:2} * n) / 100 )) \
+        $(( (16#${bg:3:2} * (100 - n) + 16#${fg:3:2} * n) / 100 )) \
+        $(( (16#${bg:5:2} * (100 - n) + 16#${fg:5:2} * n) / 100 )) >> "$OUT/colors.toml"
+    done
+  fi
 
   local sed_script; sed_script="$(mktemp)"
   while IFS='=' read -r key value; do
@@ -81,13 +110,19 @@ link_apps() {
   mkdir -p "$HOME/.claude/themes" "$HOME/.config/btop/themes"
   ln -sfn "$OUT/claude.json" "$HOME/.claude/themes/current.json"
   ln -sfn "$OUT/btop.theme" "$HOME/.config/btop/themes/current.theme"
+  # spotifast (macOS): one more palette in its picker, select "Dotfiles" there once
+  # ponytail: Linux spotifast follows Omarchy itself, not linked there
+  local sf="$HOME/Library/Application Support/me.paolino.spotifast/themes"
+  # a real file: spotifast's theme scan may skip symlinks
+  [[ -d $sf ]] && rm -f "$sf/Dotfiles.json" && cp "$OUT/spotifast.json" "$sf/Dotfiles.json"
 }
 
 set_theme() {
   local name="${1:-}"
   if [[ -z $name ]]; then
     command -v fzf >/dev/null || { echo "Usage: theme set <name>" >&2; exit 1; }
-    name="$(list | fzf --prompt='Theme: ' --height=~20)" || exit 0
+    name="$(list | while read -r t; do row "$t"; done |
+      fzf --ansi --delimiter='\t' --with-nth=2 --prompt='Theme: ' --height=~20 | cut -f1)" || exit 0
   fi
   [[ -f "$THEMES/$name/colors.toml" ]] || { echo "No such theme: $name" >&2; exit 1; }
   generate "$name"
@@ -96,27 +131,65 @@ set_theme() {
   echo "Theme set to $name"
 }
 
-# omarchy theme repo -> themes/<name>, its backgrounds/ -> wallpaper dir
-install_theme() {
-  local url="${1:?Usage: theme install <git-url>}" name
+# omarchy theme repo -> themes/<name>, its backgrounds/ -> wallpaper dir; echoes the name
+fetch_theme() {
+  local url="$1" name
   name="$(basename "${url%.git}")"
   [[ -e "$THEMES/$name" ]] && { echo "Already installed: $name" >&2; exit 1; }
-  git clone --depth 1 "$url" "$THEMES/$name"
+  git clone -q --depth 1 "$url" "$THEMES/$name" >&2
   rm -rf "$THEMES/$name/.git"
-  [[ -f "$THEMES/$name/colors.toml" ]] || { rm -rf "${THEMES:?}/$name"; echo "No colors.toml in $name (old omarchy format), not installed" >&2; exit 1; }
   if [[ -d "$THEMES/$name/backgrounds" ]]; then
     mkdir -p "$HOME/Pictures/wallpapers/$name"
     mv "$THEMES/$name/backgrounds/"* "$HOME/Pictures/wallpapers/$name/" 2>/dev/null || true
     rm -rf "$THEMES/$name/backgrounds"
   fi
+  echo "$name"
+}
+
+# claude -p writes themes/<name>/colors.toml from the theme's own files (old omarchy
+# format, ghostty/kitty/nvim/vscode...) plus any extra sources (urls, repos, hints)
+adapt_colors() {
+  local name="$1"; shift
+  local dir="$THEMES/$name"
+  echo "Generating colors.toml for $name with claude..." >&2
+  (cd "$dir" && claude -p --permission-mode acceptEdits \
+    --allowedTools Read Write Edit Glob Grep WebFetch WebSearch "Bash(git clone:*)" "Bash(curl:*)" "Bash(ls:*)" \
+    -- "Write ./colors.toml for the colour theme \"$name\" in the current directory.
+Sources: every file here (ignore an existing colors.toml, it may be wrong)${*:+, plus: $*}.
+If the local files are not enough, find the theme's palette online (clone/fetch into /tmp, not here).
+Format: flat TOML, values \"#rrggbb\" only, keys exactly:
+background, foreground, cursor, accent, selection_background, selection_foreground, color0 .. color15 (terminal ANSI order).
+Add mode = \"light\" for a light theme.
+Rules: color8 is muted/secondary text and must stay readable on background (contrast >= 3:1; use the theme's comment/dim colour, never a background shade).
+selection_background must differ visibly from background and keep foreground readable (not the foreground itself).
+accent is the theme's signature highlight colour.
+Write only colors.toml, change nothing else. Reply with one line: where the palette came from." < /dev/null)
+  local k
+  for k in background foreground accent selection_background color0 color8 color15; do
+    [[ $(color "$k" "$dir/colors.toml") ]] || { echo "adapt: no $k in $dir/colors.toml" >&2; exit 1; }
+  done
+}
+
+install_theme() {
+  local name; name="$(fetch_theme "${1:?Usage: theme install <git-url>}")"
+  [[ -f "$THEMES/$name/colors.toml" ]] || adapt_colors "$name"
+  set_theme "$name"
+}
+
+# theme adapt <git-url|installed-name> [source...]: (re)generate colors.toml, then set
+adapt_theme() {
+  local src="${1:?Usage: theme adapt <git-url|name> [source...]}" name; shift
+  if [[ -d "$THEMES/$src" ]]; then name="$src"; else name="$(fetch_theme "$src")"; fi
+  adapt_colors "$name" "$@"
   set_theme "$name"
 }
 
 case "${1:-}" in
   set) set_theme "${2:-}" ;;
   install) install_theme "${2:-}" ;;
+  adapt) shift; adapt_theme "$@" ;;
   link) link_apps ;;
   list) list ;;
   current) current ;;
-  *) echo "Usage: theme set [name] | install <git-url> | list | current | link" >&2; exit 1 ;;
+  *) echo "Usage: theme set [name] | install <git-url> | adapt <git-url|name> [source...] | list | current | link" >&2; exit 1 ;;
 esac

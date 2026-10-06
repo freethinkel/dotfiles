@@ -95,6 +95,12 @@ stow --target "$HOME" --restow "${PACKAGES[@]}"
 if [[ $(uname) == Darwin ]]; then
   skhd --start-service 2>/dev/null || skhd --restart-service 2>/dev/null || true
   open -ga OmniWM 2>/dev/null || true
+  statusbar/build.sh || echo "statusbar build failed" >&2
+  # Home Assistant VM: only on the Mac that has it
+  if [[ -d ~/Library/Containers/com.utmapp.UTM/Data/Documents/homeassistant.utm ]]; then
+    cp scripts/homeassistant.plist ~/Library/LaunchAgents/
+    launchctl bootstrap "gui/$UID" ~/Library/LaunchAgents/homeassistant.plist 2>/dev/null || true
+  fi
 fi
 
 # first run: no theme yet; otherwise just (re)link apps to the current one

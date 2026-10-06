@@ -1,38 +1,20 @@
-// statusbar — a native bar surface, in ONE process.
+// statusbar — a native menu bar replacement for OmniWM, in ONE process.
 //
-// SLICE: workspace chips + front-app pill, on the built-in display only,
-// drawn over sketchybar's own bar so the two can be watched side by side
-// (sketchybar keeps the external display). This exists to answer one
-// question with numbers rather than opinion: how much of the bar's
-// latency is the work, and how much is the process boundaries?
-//
-// The shape of the answer is in the data flow. sketchybar learns that a
-// workspace changed, forks a shell script, and that script spawns several
-// WM CLI calls to ask what happened before a pixel moves. This daemon already holds the window model in
-// memory, fed by the same SkyLight notifications the other daemons use,
-// so a workspace switch touches no subprocess at all: update one field,
-// draw one frame. The slow path (which windows exist, where) runs only
-// on window create/destroy, off the critical path.
+// Left: workspace chips with one icon per window, fed by OmniWM's
+// workspace-bar stream (fast path, no subprocess) and SkyLight window
+// events (slow path, a snapshot off the main queue). Right: pills whose
+// sources are read in process and publish — IOPS, CoreAudio,
+// DisplayServices, EventKit, TIS — so only the clock and the network
+// services (weather, tailscale, claude, home assistant) are polled.
 //
 // Timings land in /tmp/statusbar.log as `switch <ws> <ms>`.
-//
-// The right cluster is the same eight pills the bar already carries, but
-// reading their sources directly instead of forking a script that forks
-// `pmset`, `osascript`, `networksetup` and `ipconfig`: IOPS for power,
-// CoreAudio for volume, DisplayServices for brightness, SCDynamicStore
-// for the network, IOBluetooth for devices. Every one of those is a
-// publisher, so nothing here polls except the clock and the weather,
-// which have no publisher to listen to.
 import ApplicationServices
 import AppKit
 import Carbon
 import CoreAudio
-import CoreBluetooth
 import CoreLocation
-import CoreWLAN
-import IOBluetooth
+import EventKit
 import IOKit.ps
-import SystemConfiguration
 import UniformTypeIdentifiers
 
 // --- config ---------------------------------------------------------------
@@ -63,7 +45,22 @@ let POPUP_RADIUS: CGFloat = 8
 let CELL_PAD: CGFloat = 14        // table cells: added to the widest cell of a column
 
 // right cluster, screen order left to right
-let RIGHT_ITEMS = ["claude", "weather", "tailscale", "layout", "brightness", "volume", "battery", "clock", "activity"]
+let DEFAULT_ORDER = ["claude", "weather", "home", "tailscale", "caffeinate", "theme", "more", "agents", "layout", "brightness", "volume", "battery", "clock", "activity"]
+
+// Dragged order, kept in UserDefaults. Items added to DEFAULT_ORDER later
+// slot in at their default index; ones removed from it drop out.
+var rightOrder: [String] = {
+    var order = (UserDefaults.standard.stringArray(forKey: "rightOrder") ?? [])
+        .filter(DEFAULT_ORDER.contains)
+    for (i, name) in DEFAULT_ORDER.enumerated() where !order.contains(name) {
+        order.insert(name, at: min(i, order.count))
+    }
+    return order
+}()
+// whatever sits left of the "more" chevron hides behind it until clicked
+var collapsed = true
+var dragName: String? // the pill being dragged, if any
+var collapsible: ArraySlice<String> { rightOrder.prefix { $0 != "more" } }
 
 // above app windows, one below the native menu bar: with the menu bar on
 // auto-hide it slides in OVER the bar when the pointer hits the top edge
@@ -74,6 +71,11 @@ let WEATHER_POLL: TimeInterval = 1800
 let TAILSCALE_POLL: TimeInterval = 15
 let TAILSCALE_CLI = "/usr/local/bin/tailscale"
 let CLAUDE_POLL: TimeInterval = 300
+let HOME_POLL: TimeInterval = 15
+let AGENTS_POLL: TimeInterval = 5
+let ACTIVITY_POLL: TimeInterval = 60 // also the cpu averaging window
+let ACTIVITY_CPU_HOT = 0.8
+let HOME_DOMAINS: Set<String> = ["climate", "light", "switch", "fan"]
 
 // DisplayServices (private) — the same calls Control Center makes, and
 // the brightness keys go through.
@@ -88,9 +90,6 @@ func DSSetBrightness(_ display: CGDirectDisplayID, _ value: Float) -> Int32
 typealias DSBrightnessProc = @convention(c) (UnsafeRawPointer?, CGDirectDisplayID, UnsafeRawPointer?, UnsafeRawPointer?) -> Void
 @_silgen_name("DisplayServicesRegisterForBrightnessChangeNotifications")
 func DSRegisterBrightnessNotifications(_ display: CGDirectDisplayID, _ context: UnsafeMutableRawPointer?, _ callback: DSBrightnessProc) -> Int32
-
-@_silgen_name("IOBluetoothPreferenceGetControllerPowerState")
-func BTGetPower() -> Int32
 
 // --- SkyLight window events (borders.swift recipe) ------------------------
 
@@ -157,131 +156,40 @@ func focusWindow(_ id: String) { omniwmctl(["window", "focus", id]) }
 
 func focusWorkspace(_ ws: String) { omniwmctl(["workspace", "focus-name", ws]) }
 
-let logURL = URL(fileURLWithPath: "/tmp/statusbar.log")
+// one append-mode descriptor for the daemon's life: no open/close per line
+let logHandle: FileHandle = {
+    let fd = open("/tmp/statusbar.log", O_WRONLY | O_APPEND | O_CREAT, 0o644)
+    return fd >= 0 ? FileHandle(fileDescriptor: fd, closeOnDealloc: true) : .nullDevice
+}()
 func tlog(_ m: String) {
-    let line = "\(Date()) \(m)\n"
-    if let h = try? FileHandle(forWritingTo: logURL) {
-        h.seekToEndOfFile()
-        h.write(line.data(using: .utf8)!)
-        try? h.close()
-    } else {
-        try? line.data(using: .utf8)!.write(to: logURL)
-    }
+    // ponytail: start over past 1 MB; /tmp only empties on reboot
+    if logHandle.offsetInFile > 1_000_000 { try? logHandle.truncate(atOffset: 0) }
+    logHandle.write("\(Date()) \(m)\n".data(using: .utf8)!)
 }
 
-private struct BundleIdentifier {
-    let rawValue: String
-
-    init?(_ rawValue: String) {
-        let segments = rawValue.split(separator: ".", omittingEmptySubsequences: false)
-        guard segments.count >= 2,
-              segments.allSatisfy({ segment in
-                  guard let first = segment.unicodeScalars.first,
-                        BundleIdentifier.isAlphanumeric(first) else { return false }
-                  return segment.unicodeScalars.allSatisfy(BundleIdentifier.isAlphanumericOrHyphen)
-              })
-        else { return nil }
-        self.rawValue = rawValue
-    }
-
-    private static func isAlphanumeric(_ scalar: UnicodeScalar) -> Bool {
-        (48...57).contains(scalar.value) || (65...90).contains(scalar.value)
-            || (97...122).contains(scalar.value)
-    }
-
-    private static func isAlphanumericOrHyphen(_ scalar: UnicodeScalar) -> Bool {
-        isAlphanumeric(scalar) || scalar.value == 45
-    }
-}
-
-private enum WorkspaceIcon {
-    case glyph(String)
-    case image(NSImage)
-    case unavailable
-}
-
-private enum WorkspaceIconDeclaration {
-    case glyph(String)
-    case bundle(BundleIdentifier)
-}
-
-private struct WorkspaceIconConfig {
-    let values: [String: WorkspaceIcon]
-
-    func icon(for workspace: String) -> WorkspaceIcon? {
-        if let icon = values[workspace] { return icon }
-        guard workspace.count > 1,
-              workspace.unicodeScalars.allSatisfy({ (48...57).contains($0.value) }),
-              let last = workspace.unicodeScalars.last,
-              (49...57).contains(last.value)
-        else { return nil }
-        return values[String(Character(last))]
-    }
-}
-
-private func loadWorkspaceIconConfig() -> WorkspaceIconConfig {
-    let file = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent(".config/statusbar/workspace-icons.conf")
-    guard FileManager.default.fileExists(atPath: file.path) else {
-        return WorkspaceIconConfig(values: [:])
-    }
-    guard let text = try? String(contentsOf: file, encoding: .utf8) else {
-        tlog("workspace-icons: could not read \(file.path)")
-        return WorkspaceIconConfig(values: [:])
-    }
-
-    var declarations: [String: WorkspaceIconDeclaration] = [:]
-    for (offset, rawLine) in text.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
-        let lineNumber = offset + 1
-        let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !line.isEmpty, !line.hasPrefix("#") else { continue }
-        guard let separator = line.firstIndex(of: "=") else {
-            tlog("workspace-icons: malformed line \(lineNumber)")
-            continue
-        }
-        let key = String(line[..<separator]).trimmingCharacters(in: .whitespacesAndNewlines)
-        let value = String(line[line.index(after: separator)...]).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !key.isEmpty, !value.isEmpty else {
-            tlog("workspace-icons: malformed line \(lineNumber)")
-            continue
-        }
-
-        let declaration: WorkspaceIconDeclaration?
-        if let bundle = BundleIdentifier(value) {
-            declaration = .bundle(bundle)
-        } else if value.unicodeScalars.count == 1 {
-            declaration = .glyph(value)
+// Optional chip icons, ~/.config/statusbar/workspace-icons.conf:
+//   1 = com.apple.Safari      an app's icon, by bundle id
+//   2 = 󰊯                      a single glyph
+// A workspace "12" with no line of its own uses "2"'s. Missing file = digits.
+enum WorkspaceIcon { case glyph(String), image(NSImage) }
+let workspaceIcons: [String: WorkspaceIcon] = {
+    let path = NSHomeDirectory() + "/.config/statusbar/workspace-icons.conf"
+    guard let text = try? String(contentsOfFile: path, encoding: .utf8) else { return [:] }
+    var icons: [String: WorkspaceIcon] = [:]
+    for line in text.split(separator: "\n") where !line.hasPrefix("#") {
+        let kv = line.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
+        guard kv.count == 2, !kv[1].isEmpty else { continue }
+        if kv[1].count == 1 {
+            icons[kv[0]] = .glyph(kv[1])
+        } else if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: kv[1]) {
+            icons[kv[0]] = .image(NSWorkspace.shared.icon(forFile: url.path))
         } else {
-            declaration = nil
-        }
-        guard let declaration else {
-            tlog("workspace-icons: malformed line \(lineNumber)")
-            continue
-        }
-        if declarations[key] != nil {
-            tlog("workspace-icons: duplicate \(key) on line \(lineNumber), last valid value wins")
-        }
-        declarations[key] = declaration
-    }
-
-    var values: [String: WorkspaceIcon] = [:]
-    for (key, declaration) in declarations {
-        switch declaration {
-        case .glyph(let glyph):
-            values[key] = .glyph(glyph)
-        case .bundle(let identifier):
-            guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: identifier.rawValue) else {
-                tlog("workspace-icons: \(key) could not resolve \(identifier.rawValue)")
-                values[key] = .unavailable
-                continue
-            }
-            values[key] = .image(NSWorkspace.shared.icon(forFile: url.path))
+            tlog("workspace-icons: \(kv[0]): no app \(kv[1])")
         }
     }
-    return WorkspaceIconConfig(values: values)
-}
-
-private let workspaceIconConfig = loadWorkspaceIconConfig()
+    return icons
+}()
+func workspaceIcon(_ ws: String) -> WorkspaceIcon? { workspaceIcons[ws] ?? ws.last.flatMap { workspaceIcons[String($0)] } }
 
 // --- theme ----------------------------------------------------------------
 // The same palette sketchybar reads. Parsed once and kept as colours, not
@@ -296,6 +204,7 @@ struct Palette {
     var red = NSColor.systemRed
     var green = NSColor.systemGreen
     var yellow = NSColor.systemYellow
+    var orange = NSColor.systemOrange // not themed: bar.sh has no orange
 }
 
 func color(fromARGB v: UInt64) -> NSColor {
@@ -333,7 +242,18 @@ func loadPalette() -> Palette {
 // `--default` silently handed half the bar "Hack Nerd Font", which is not
 // installed, so the text fell back to a system face and nothing said so.
 // A missing family is a loud fallback here, once, at startup.
+// Cached: draw() asks for the same few faces every frame, and a descriptor
+// match per call was a good part of a 25-40 ms repaint.
+var fontCache: [String: NSFont] = [:]
 func nerdFont(_ face: String, _ size: CGFloat) -> NSFont {
+    let key = "\(face)|\(size)"
+    if let f = fontCache[key] { return f }
+    let f = loadNerdFont(face, size)
+    fontCache[key] = f
+    return f
+}
+
+func loadNerdFont(_ face: String, _ size: CGFloat) -> NSFont {
     let desc = NSFontDescriptor(fontAttributes: [
         .family: FONT_FAMILY,
         .face: face,
@@ -361,6 +281,10 @@ final class Model {
     var focused = "" // globally focused workspace
     var apps: [String: [BarWin]] = [:] // ws -> one entry per window, OmniWM-bar style
     var occupied: Set<String> = []
+    // floating windows stay off the chips. Only the windows QUERY says
+    // which are floating; the workspace-bar stream does not, so the
+    // snapshot keeps the set and the stream filters by it.
+    var floating: Set<String> = []
     var frontApp = ""
     var media = Media()
 }
@@ -386,6 +310,7 @@ struct Snapshot {
     var perMonitor: [String: (workspaces: [String], visible: String)] = [:]
     var apps: [String: [BarWin]] = [:]
     var occupied: Set<String> = []
+    var floating: Set<String> = []
     var focused = ""
 }
 
@@ -432,7 +357,7 @@ func omniwmSnapshot() -> Snapshot {
             guard let ws = (w["workspace"] as? [String: Any])?["rawName"] as? String,
                   let app = (w["app"] as? [String: Any])?["name"] as? String,
                   let id = w["id"] as? String else { continue }
-            guard (w["mode"] as? String) != "floating" else { continue }
+            guard (w["mode"] as? String) != "floating" else { s.floating.insert(id); continue }
             s.occupied.insert(ws)
             s.apps[ws, default: []].append(BarWin(app: app, id: id, focused: (w["isFocused"] as? Bool) == true))
         }
@@ -458,6 +383,7 @@ func apply(_ s: Snapshot) -> Bool {
             changed = true
         }
     }
+    model.floating = s.floating
     if model.occupied != s.occupied { model.occupied = s.occupied; changed = true }
     if model.apps != s.apps { model.apps = s.apps; changed = true }
     if !s.focused.isEmpty, model.focused != s.focused {
@@ -477,64 +403,46 @@ func setFocused(_ ws: String) {
     for surface in surfaces where surface.mine.contains(ws) { surface.visible = ws }
 }
 
-// --- media (Spotify announces itself; the title needs no subprocess) -------
-// media.sh spawns osascript to ask what is playing. Spotify's own
-// PlaybackStateChanged notification already carries Name, Artist and
-// Player State, so the only subprocess left is the one a click sends —
-// and that is user-initiated, where 20 ms does not show.
+// --- media (Spotifast, polled) ----------------------------------------------
+// Spotifast posts no distributed notification and MediaRemote is closed
+// to third parties, so the pill asks its CLI. One call is ~10 ms and
+// runs only while Spotifast does.
+// ponytail: 2 s poll, a track change shows up to 2 s late; switch to a
+// push source if Spotifast ever grows one
 
-let spotifyBundleID = "com.spotify.client"
+let spotifastBundleID = "rocks.spotifast.Spotifast"
+let SPOTIFAST_CLI = "/Applications/Spotifast.app/Contents/MacOS/Spotifast"
+let MEDIA_POLL: TimeInterval = 2
 
-func spotifyRunning() -> Bool {
-    !NSRunningApplication.runningApplications(withBundleIdentifier: spotifyBundleID).isEmpty
+func spotifastRunning() -> Bool {
+    !NSRunningApplication.runningApplications(withBundleIdentifier: spotifastBundleID).isEmpty
 }
 
-func updateMedia(from info: [AnyHashable: Any]? = nil) {
-    var next = Media()
-    next.running = spotifyRunning()
-    if next.running {
-        if let info {
-            next.playing = (info["Player State"] as? String) == "Playing"
-            let name = info["Name"] as? String ?? ""
-            let artist = info["Artist"] as? String ?? ""
-            next.title = artist.isEmpty ? name : "\(artist) — \(name)"
-        } else {
-            next.title = model.media.title
-            next.playing = model.media.playing
-        }
-    }
+func setMedia(_ next: Media) {
     guard next != model.media else { return }
-    let t0 = DispatchTime.now().uptimeNanoseconds
     model.media = next
     repaint()
-    tlog(String(format: "media %@ %@ %.2f ms", next.playing ? "play" : "pause", next.title,
-                Double(DispatchTime.now().uptimeNanoseconds - t0) / 1_000_000))
+    tlog("media \(next.playing ? "play" : "pause") \(next.title)")
 }
 
-// startup only: the notification fires on change, so the current track
-// has to be asked for once
-func primeMedia() {
-    guard spotifyRunning() else { return }
-    rebuildQueue.async {
-        let script = """
-        tell application "Spotify" to if it is running then \
-        return (player state as text) & "|" & artist of current track & "|" & name of current track
-        """
-        let out = shell("/usr/bin/osascript", ["-e", script])
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        let parts = out.split(separator: "|", omittingEmptySubsequences: false).map(String.init)
-        guard parts.count == 3 else { return }
-        DispatchQueue.main.async {
-            model.media = Media(running: true, playing: parts[0] == "playing",
-                                title: parts[1].isEmpty ? parts[2] : "\(parts[1]) — \(parts[2])")
-            repaint()
-        }
+func updateMedia() {
+    guard spotifastRunning() else { return setMedia(Media()) }
+    DispatchQueue.global(qos: .utility).async {
+        // state, title, artists, album, … tab-separated
+        let f = shell(SPOTIFAST_CLI, ["now-playing", "--raw"])
+            .trimmingCharacters(in: .newlines)
+            .split(separator: "\t", omittingEmptySubsequences: false).map(String.init)
+        let next = f.count < 3 ? Media(running: true)
+            : Media(running: true, playing: f[0] == "playing",
+                    title: f[2].isEmpty ? f[1] : "\(f[2]) — \(f[1])")
+        DispatchQueue.main.async { setMedia(next) }
     }
 }
 
-func spotify(_ command: String) {
+func spotifast(_ command: String) {
     DispatchQueue.global(qos: .userInitiated).async {
-        _ = shell("/usr/bin/osascript", ["-e", "tell application \"Spotify\" to \(command)"])
+        _ = shell(SPOTIFAST_CLI, [command])
+        DispatchQueue.main.async { updateMedia() }
     }
 }
 
@@ -550,6 +458,9 @@ struct BarItem: Equatable {
     // theme switch recolours every pill in the repaint it already does
     var iconColor: KeyPath<Palette, NSColor>?
     var drawing = true
+    var badge = false // dot on the icon's top-right corner
+    var badgeColor: KeyPath<Palette, NSColor> = \.red
+    var stale = false // last good fetch is 2+ polls old: drawn muted
 }
 
 var rightItems: [String: BarItem] = [:]
@@ -567,14 +478,29 @@ func set(_ name: String, _ mutate: (inout BarItem) -> Void) {
     tlog(String(format: "item %@ %.2f ms", name, Double(DispatchTime.now().uptimeNanoseconds - t0) / 1_000_000))
 }
 
-func shell(_ launch: String, _ args: [String]) -> String {
+// A failed fetch keeps the last value on the pill, dimmed once the last
+// good one is two polls old: a stale number should not pass for a live one.
+var lastFetch: [String: Date] = [:]
+func fetchFailed(_ name: String, poll: TimeInterval) {
+    let age = Date().timeIntervalSince(lastFetch[name] ?? .distantPast)
+    tlog("\(name): fetch failed, last good \(Int(min(age, 1e9)))s ago")
+    set(name) { $0.stale = age > 2 * poll }
+}
+
+func shell(_ launch: String, _ args: [String], stdin input: String? = nil) -> String {
     let p = Process()
     p.executableURL = URL(fileURLWithPath: launch)
     p.arguments = args
     let pipe = Pipe()
     p.standardOutput = pipe
     p.standardError = FileHandle.nullDevice
+    let inPipe = Pipe()
+    if input != nil { p.standardInput = inPipe }
     guard (try? p.run()) != nil else { return "" }
+    if let input { // ponytail: small inputs only — written whole before reading
+        inPipe.fileHandleForWriting.write(input.data(using: .utf8)!)
+        try? inPipe.fileHandleForWriting.close()
+    }
     let out = pipe.fileHandleForReading.readDataToEndOfFile()
     p.waitUntilExit()
     return String(data: out, encoding: .utf8) ?? ""
@@ -583,11 +509,253 @@ func shell(_ launch: String, _ args: [String]) -> String {
 // --- clock (no publisher: the one honest timer, aligned to the minute)
 func updateClock() {
     let f = DateFormatter()
-    f.dateFormat = "dd.MM.yyyy HH:mm"
+    f.locale = Locale(identifier: "en_US_POSIX")
+    f.dateFormat = "dd MMM HH:mm"
     set("clock") { $0.icon = "sf:calendar"; $0.label = f.string(from: Date()) }
 }
 
+// --- calendar events (EventKit publishes EKEventStoreChanged; "now"
+// moving past an event is the clock's minute tick)
+let eventStore = EKEventStore()
+var todayEvents: [EKEvent] = []
+
+func updateEvents() {
+    guard EKEventStore.authorizationStatus(for: .event) == .fullAccess else { return }
+    let now = Date()
+    let cal = Calendar.current
+    let end = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: now)) ?? now
+    // all-day ones (birthdays, holidays) would keep the dot lit all day
+    todayEvents = eventStore.events(matching: eventStore.predicateForEvents(withStart: now, end: end, calendars: nil))
+        .filter { e in
+            !e.isAllDay && e.status != .canceled && e.endDate > now
+                && e.attendees?.first(where: \.isCurrentUser)?.participantStatus != .declined
+        }
+        .sorted { $0.startDate < $1.startDate }
+    set("clock") { $0.badge = !todayEvents.isEmpty }
+    if openPopup == "clock" { refreshPopup() }
+}
+
+// ponytail: a host list, add one when a call link opens Calendar instead
+let MEETING_HOSTS = ["zoom.us", "meet.google.com", "teams.microsoft.com", "teams.live.com",
+                     "telemost", "webex.com", "whereby.com", "meet.jit.si", "facetime.apple.com"]
+
+func meetingLink(_ e: EKEvent) -> URL? {
+    let text = [e.url?.absoluteString, e.location, e.notes].compactMap { $0 }.joined(separator: "\n")
+    let links = (try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue))?
+        .matches(in: text, range: NSRange(text.startIndex..., in: text)).compactMap(\.url) ?? []
+    return links.first { u in MEETING_HOSTS.contains { u.host?.contains($0) == true } }
+}
+
+// --- caffeinate: the CLI as a child, `-w` tied to our pid so a crashed
+// bar never leaves the Mac awake; `-t` ends it on its own.
+// A closed lid sleeps through any assertion (unless clamshell with an
+// external display), so "lid" also flips pmset's disablesleep, which
+// needs root, and flips it back only if it was off before.
+let CAFF_MODES: [(flags: String, text: String)] = [
+    ("-di", "stay awake"),
+    ("-i", "screen off, ssh up"),
+    ("lid", "lid closed"),
+]
+var caffProc: Process?
+var caffFlags = "-di"
+var caffUntil: Date?
+// on disk, so a crash in lid mode is undone at the next start
+let lidFile = "\(NSHomeDirectory())/.local/state/statusbar/lid"
+var lidSetByUs = FileManager.default.fileExists(atPath: lidFile) {
+    didSet {
+        guard lidSetByUs != oldValue else { return }
+        if lidSetByUs {
+            try? FileManager.default.createDirectory(atPath: (lidFile as NSString).deletingLastPathComponent,
+                                                     withIntermediateDirectories: true)
+            FileManager.default.createFile(atPath: lidFile, contents: nil)
+        } else {
+            try? FileManager.default.removeItem(atPath: lidFile)
+        }
+    }
+}
+
+func sleepDisabled() -> Bool {
+    shell("/usr/bin/pmset", ["-g"]).split(separator: "\n")
+        .contains { $0.contains("SleepDisabled") && $0.hasSuffix("1") }
+}
+
+let pmsetQueue = DispatchQueue(label: "com.freethinkel.statusbar.pmset") // serial: on/off land in order
+
+// Flips only when the setting is not there already, so a disablesleep the
+// user set themselves is never undone — and `lidSetByUs` records exactly
+// the flips that were ours. The pmset read and write both run off main.
+func setDisableSleep(_ on: Bool) {
+    let cmd = "/usr/bin/pmset -a disablesleep \(on ? 1 : 0)"
+    pmsetQueue.async {
+        guard sleepDisabled() != on else { return }
+        DispatchQueue.main.async { lidSetByUs = on }
+        // a NOPASSWD sudoers line for pmset skips the prompt; without one, the admin dialog
+        let sudo = Process()
+        sudo.executableURL = URL(fileURLWithPath: "/usr/bin/sudo")
+        sudo.arguments = ["-n"] + cmd.split(separator: " ").map(String.init)
+        sudo.standardError = FileHandle.nullDevice
+        var ok = false
+        if (try? sudo.run()) != nil { sudo.waitUntilExit(); ok = sudo.terminationStatus == 0 }
+        if !ok {
+            _ = shell("/usr/bin/osascript", ["-e", "do shell script \"\(cmd)\" with administrator privileges"])
+        }
+    }
+}
+
+func startCaffeinate(_ flags: String, until: Date? = nil) {
+    // lid -> lid (a new deadline) keeps disablesleep as is, no off/on round trip
+    let keepLid = flags == "lid" && lidSetByUs
+    lidSetByUs = lidSetByUs && !keepLid
+    stopCaffeinate()
+    if keepLid {
+        lidSetByUs = true
+    } else if flags == "lid" {
+        setDisableSleep(true)
+    }
+    let p = Process()
+    p.executableURL = URL(fileURLWithPath: "/usr/bin/caffeinate")
+    p.arguments = [flags == "lid" ? "-i" : flags, "-w", "\(getpid())"]
+        + (until.map { ["-t", "\(max(1, Int($0.timeIntervalSinceNow)))"] } ?? [])
+    p.terminationHandler = { done in
+        DispatchQueue.main.async {
+            guard caffProc === done else { return } // a restart already replaced it
+            stopCaffeinate()
+        }
+    }
+    guard (try? p.run()) != nil else { return }
+    caffProc = p
+    caffFlags = flags
+    caffUntil = until
+    updateCaffeinate()
+}
+
+func stopCaffeinate() {
+    caffProc?.terminate()
+    caffProc = nil
+    caffUntil = nil
+    if lidSetByUs { lidSetByUs = false; setDisableSleep(false) }
+    updateCaffeinate()
+}
+
+func updateCaffeinate() {
+    var left = ""
+    if let until = caffUntil {
+        let m = Int((until.timeIntervalSinceNow / 60).rounded(.up))
+        left = m >= 60 ? "\(m / 60)h\(m % 60 > 0 ? "\(m % 60)m" : "")" : "\(m)m"
+    }
+    set("caffeinate") {
+        $0.icon = caffProc == nil ? "sf:cup.and.saucer" : "sf:cup.and.saucer.fill"
+        $0.iconColor = caffProc == nil ? nil : \.yellow
+        $0.label = left
+        // night shift has no pill of its own: an orange dot here says it is on
+        $0.badge = blueLightStatus()?.enabled.boolValue == true
+        $0.badgeColor = \.orange
+    }
+}
+
+func caffeinateRows() -> [PopupRow] {
+    var rows = [PopupRow(text: caffProc == nil ? "awake: off" : "awake: on", hero: true)]
+    for m in CAFF_MODES {
+        rows.append(PopupRow(text: m.text, detail: m.flags == "lid" ? "-i + pmset" : m.flags,
+                             highlight: m.flags == caffFlags, action: {
+            // a running one switches mode and keeps its deadline
+            if caffProc != nil { startCaffeinate(m.flags, until: caffUntil) } else { caffFlags = m.flags }
+            refreshPopup()
+        }))
+    }
+    rows.append(PopupRow(separator: true))
+    let spans: [(String, TimeInterval?)] = [("30 min", 1800), ("1 hour", 3600), ("2 hours", 7200),
+                                            ("4 hours", 14400), ("until stopped", nil)]
+    for (text, span) in spans {
+        rows.append(PopupRow(text: text, action: {
+            startCaffeinate(caffFlags, until: span.map { Date().addingTimeInterval($0) })
+            closePopup()
+        }))
+    }
+    if caffProc != nil {
+        rows.append(PopupRow(text: "stop", dim: true, action: { stopCaffeinate(); closePopup() }))
+    }
+    // night shift lives here rather than in a pill of its own
+    if blueLightStatus()?.available.boolValue == true { rows.append(PopupRow(separator: true)) }
+    // read in process, every time the rows are built: the row says what
+    // CoreBrightness says now, and a Mac without night shift gets no row
+    // rather than a lying one
+    if let ns = blueLightStatus(), ns.available.boolValue {
+        let on = ns.enabled.boolValue
+        rows.append(PopupRow(text: "night shift \(on ? "on" : "off")", action: {
+            setNightShift(!on)
+            refreshPopup()
+        }))
+    }
+    return rows
+}
+
+// --- theme: themes/ via the ~/.config/themes link, `theme set` does the rest
+let THEMES_DIR = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".config/themes").resolvingSymlinksInPath()
+
+func currentTheme() -> String {
+    let f = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".config/theme/.current")
+    return ((try? String(contentsOf: f, encoding: .utf8)) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+}
+
+func updateTheme() { set("theme") { $0.icon = "sf:paintpalette.fill"; $0.iconColor = nil; $0.label = "" } }
+
+func themeRows() -> [PopupRow] {
+    let names = ((try? FileManager.default.contentsOfDirectory(atPath: THEMES_DIR.path)) ?? [])
+        .filter { FileManager.default.fileExists(atPath: THEMES_DIR.appendingPathComponent("\($0)/colors.toml").path) }
+        .map { ($0, themePreview(THEMES_DIR.appendingPathComponent($0))) }
+        .sorted { ($0.1.0 ? 0 : 1, $0.0) < ($1.1.0 ? 0 : 1, $1.0) } // light first, then by name
+    let current = currentTheme()
+    var rows = [PopupRow(text: "theme", hero: true)]
+    let bin = THEMES_DIR.deletingLastPathComponent().appendingPathComponent("bin/theme").path
+    for (name, (light, swatches)) in names {
+        rows.append(PopupRow(icon: light ? "sf:sun.max.fill" : "sf:moon.fill", text: name,
+                             swatches: swatches, highlight: name == current, action: {
+            closePopup()
+            // login shell: launchd's PATH lacks brew, which theme-apply's reloads need
+            DispatchQueue.global(qos: .userInitiated).async { _ = shell("/bin/zsh", ["-lc", "\"$0\" set \"$1\"", bin, name]) }
+        }))
+    }
+    return rows
+}
+
+// light?, then bg / fg / accent / red — same picks as `theme set`'s fzf rows
+func themePreview(_ dir: URL) -> (Bool, [NSColor]) {
+    let text = (try? String(contentsOf: dir.appendingPathComponent("colors.toml"), encoding: .utf8)) ?? ""
+    var colors: [String: NSColor] = [:]
+    var light = FileManager.default.fileExists(atPath: dir.appendingPathComponent("light.mode").path)
+    for line in text.split(separator: "\n") {
+        let parts = line.split(separator: "=", maxSplits: 1)
+        guard parts.count == 2 else { continue }
+        let key = parts[0].trimmingCharacters(in: .whitespaces)
+        let value = parts[1].trimmingCharacters(in: CharacterSet(charactersIn: " \"'"))
+        if key == "mode" && value.hasPrefix("light") { light = true }
+        guard value.hasPrefix("#"), value.count >= 7,
+              let v = UInt64(value.dropFirst().prefix(6), radix: 16) else { continue }
+        colors[key] = color(fromARGB: 0xff00_0000 | v)
+    }
+    let picks = [["background"], ["foreground"], ["accent", "blue", "color4"], ["color1", "red"]]
+    return (light, picks.compactMap { $0.lazy.compactMap { colors[$0] }.first })
+}
+
 // --- battery (IOPS publishes, capacity ticks included)
+var battery = (pct: 0, charging: false, minutes: -1)
+
+func batteryRows() -> [PopupRow] {
+    let b = battery
+    let time = b.minutes > 0 ? "\(b.minutes / 60):\(String(format: "%02d", b.minutes % 60))" : "—"
+    return [
+        PopupRow(text: "battery", hero: true),
+        PopupRow(text: "\(b.pct)%", detail: b.charging ? (b.pct >= 100 ? "charged" : "charging") : "on battery", dim: true),
+        PopupRow(text: b.charging ? "until full" : "time left", detail: b.pct >= 100 && b.charging ? "—" : time, dim: true),
+        PopupRow(separator: true),
+        PopupRow(text: "battery settings…", dim: true, action: {
+            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Battery-Settings.extension")!)
+            closePopup()
+        }),
+    ]
+}
+
 func updateBattery() {
     guard let blob = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
           let list = IOPSCopyPowerSourcesList(blob)?.takeRetainedValue() as? [CFTypeRef]
@@ -608,9 +776,45 @@ func updateBattery() {
         default: break
         }
         if charging { icon = "sf:battery.100percent.bolt"; color = \.green }
-        set("battery") { $0.icon = icon; $0.iconColor = color; $0.label = "\(pct)%" }
+        // minutes; IOPS reports -1 while it is still estimating
+        let toEmpty = d[kIOPSTimeToEmptyKey] as? Int ?? -1, toFull = d[kIOPSTimeToFullChargeKey] as? Int ?? -1
+        battery = (pct, charging, charging ? toFull : toEmpty)
+        if openPopup == "battery" { refreshPopup() }
+        set("battery") { $0.icon = icon; $0.iconColor = color; $0.label = charging && pct >= 100 ? "" : "\(pct)%" }
         return
     }
+}
+
+// --- activity: the cpu pill stays a quiet glyph and only speaks up when
+// the machine is struggling — cpu busy over the last poll, memory
+// pressure (critical only, red without a word), thermal throttling. Click still opens btop for the culprit.
+let hostPort = mach_host_self()
+var lastTicks: host_cpu_load_info?
+
+func cpuBusy() -> Double? { // share of ticks since the previous call, nil on the first
+    var info = host_cpu_load_info()
+    var count = mach_msg_type_number_t(MemoryLayout<host_cpu_load_info>.stride / MemoryLayout<integer_t>.stride)
+    let kr = withUnsafeMutablePointer(to: &info) {
+        $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { host_statistics(hostPort, HOST_CPU_LOAD_INFO, $0, &count) }
+    }
+    guard kr == KERN_SUCCESS else { return nil }
+    defer { lastTicks = info }
+    guard let prev = lastTicks else { return nil }
+    let t = info.cpu_ticks, p = prev.cpu_ticks // user, system, idle, nice
+    let busy = Double(t.0 &- p.0) + Double(t.1 &- p.1) + Double(t.3 &- p.3)
+    let total = busy + Double(t.2 &- p.2)
+    return total > 0 ? busy / total : nil
+}
+
+func updateActivity() {
+    var level: Int32 = 1, size = MemoryLayout<Int32>.size // 1 normal, 2 warn, 4 critical
+    sysctlbyname("kern.memorystatus_vm_pressure_level", &level, &size, nil, 0)
+    let thermal = ProcessInfo.processInfo.thermalState
+    var flags: [String] = [], color: KeyPath<Palette, NSColor> = \.accent
+    if let cpu = cpuBusy(), cpu >= ACTIVITY_CPU_HOT { flags.append("\(Int(cpu * 100))%"); color = \.yellow }
+    if thermal.rawValue >= ProcessInfo.ThermalState.serious.rawValue { flags.append("hot"); color = \.yellow }
+    if level >= 4 || thermal == .critical { color = \.red }
+    set("activity") { $0.icon = "sf:cpu"; $0.iconColor = color; $0.label = flags.joined(separator: " ") }
 }
 
 // --- volume (CoreAudio publishes on the device itself)
@@ -699,19 +903,49 @@ func audioOutputDevices() -> [(id: AudioDeviceID, name: String)] {
         guard AudioObjectGetPropertyDataSize(id, &streams, 0, nil, &streamSize) == noErr, streamSize > 0
         else { continue }
 
-        var nameAddr = AudioObjectPropertyAddress(mSelector: kAudioObjectPropertyName,
-                                                  mScope: kAudioObjectPropertyScopeGlobal,
-                                                  mElement: kAudioObjectPropertyElementMain)
-        var name: CFString = "" as CFString
-        var nameSize = UInt32(MemoryLayout<CFString>.size)
-        var ok = false
-        withUnsafeMutablePointer(to: &name) { ptr in
-            ok = AudioObjectGetPropertyData(id, &nameAddr, 0, nil, &nameSize, ptr) == noErr
-        }
-        guard ok else { continue }
-        result.append((id, name as String))
+        guard let name = audioDeviceName(id) else { continue }
+        result.append((id, name))
     }
     return result
+}
+
+func audioDeviceName(_ id: AudioDeviceID) -> String? {
+    var nameAddr = AudioObjectPropertyAddress(mSelector: kAudioObjectPropertyName,
+                                              mScope: kAudioObjectPropertyScopeGlobal,
+                                              mElement: kAudioObjectPropertyElementMain)
+    var name: CFString = "" as CFString
+    var nameSize = UInt32(MemoryLayout<CFString>.size)
+    var ok = false
+    withUnsafeMutablePointer(to: &name) { ptr in
+        ok = AudioObjectGetPropertyData(id, &nameAddr, 0, nil, &nameSize, ptr) == noErr
+    }
+    return ok ? name as String : nil
+}
+
+// What the output IS, when it is worn: AirPods by their model's symbol,
+// any other Bluetooth device or the headphone jack as headphones, nil for
+// speakers. Only the name tells AirPods models apart — gen 3/4 have no
+// distinct name, so they share the plain glyph.
+func headphonesIcon(_ dev: AudioDeviceID) -> String? {
+    let name = audioDeviceName(dev) ?? ""
+    if name.contains("AirPods Max") { return "sf:airpods.max" }
+    if name.contains("AirPods Pro") { return "sf:airpods.pro" }
+    if name.contains("AirPods") { return "sf:airpods" }
+    func u32(_ selector: AudioObjectPropertySelector, _ scope: AudioObjectPropertyScope) -> UInt32 {
+        var addr = AudioObjectPropertyAddress(mSelector: selector, mScope: scope,
+                                              mElement: kAudioObjectPropertyElementMain)
+        var value: UInt32 = 0
+        var size = UInt32(MemoryLayout<UInt32>.size)
+        AudioObjectGetPropertyData(dev, &addr, 0, nil, &size, &value)
+        return value
+    }
+    let transport = u32(kAudioDevicePropertyTransportType, kAudioObjectPropertyScopeGlobal)
+    if transport == kAudioDeviceTransportTypeBluetooth || transport == kAudioDeviceTransportTypeBluetoothLE
+        || u32(kAudioDevicePropertyDataSource, kAudioDevicePropertyScopeOutput) == 0x6864_706e // 'hdpn'
+        || name.localizedCaseInsensitiveContains("headphone") {
+        return "sf:headphones"
+    }
+    return nil
 }
 
 func setDefaultOutputDevice(_ id: AudioDeviceID) {
@@ -726,7 +960,9 @@ func setDefaultOutputDevice(_ id: AudioDeviceID) {
 func updateVolume() {
     guard let v = readVolume() else { return }
     let icon: String
-    if v.muted || v.percent == 0 {
+    if let worn = headphonesIcon(defaultOutputDevice()) {
+        icon = worn // no level variants; the label carries the level and "mute"
+    } else if v.muted || v.percent == 0 {
         icon = "sf:speaker.slash.fill"
     } else if v.percent >= 70 {
         icon = "sf:speaker.wave.3.fill"
@@ -812,16 +1048,12 @@ func updateBrightness() {
     set("brightness") { $0.drawing = true; $0.icon = icon; $0.iconColor = nil; $0.label = "\(pct)%" }
 }
 
-// --- location (what the network name costs) -------------------------------
-// macOS classes the SSID as location data. Two things are required and
-// neither alone is enough: this grant, and a BUNDLED binary — measured,
-// an unbundled build reads nil with authorisation held, services on and
-// updates running, while a bundled one reads the name the instant the
-// answer lands. The one coordinate read feeds the weather: wttr.in's IP
-// geolocation lands wherever the VPN exit node is.
+// --- location (one coordinate, for the weather) ---------------------------
+// wttr.in's IP geolocation lands wherever the VPN exit node is, so the
+// weather asks CoreLocation where the machine really is.
 //
-// Gated like bluetooth: TCC judges the RESPONSIBLE process, so only the
-// launchd-started bar may prompt and running it by hand stays quiet.
+// TCC judges the RESPONSIBLE process, so only the launchd-started bar may
+// prompt and running it by hand stays quiet.
 final class LocationGate: NSObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private var managed: Bool { ProcessInfo.processInfo.environment["STATUSBAR_MANAGED"] != nil }
@@ -830,10 +1062,9 @@ final class LocationGate: NSObject, CLLocationManagerDelegate {
         manager.delegate = self
         switch manager.authorizationStatus {
         case .authorizedAlways, .authorized:
-            updateWifi() // the name is readable now; the pill may predate it
             manager.requestLocation()
         case .denied, .restricted:
-            tlog("location: denied — the wi-fi pill stays nameless")
+            tlog("location: denied — weather falls back to the timezone city")
         default:
             guard managed else {
                 tlog("location: not launchd-managed, so not prompting")
@@ -843,11 +1074,8 @@ final class LocationGate: NSObject, CLLocationManagerDelegate {
         }
     }
 
-    // the name appears the moment the answer lands — no restart, and no
-    // polling for a permission that publishes
     func locationManagerDidChangeAuthorization(_ m: CLLocationManager) {
         tlog("location: authorization now \(m.authorizationStatus.rawValue)")
-        updateWifi()
         refresh()
     }
 
@@ -932,123 +1160,19 @@ func watchNightShift() {
     }
     let block: @convention(block) () -> Void = {
         DispatchQueue.main.async {
+            updateCaffeinate()
             guard let s = blueLightStatus() else { return }
             // which field a schedule boundary actually moves is worth
             // having in the log the morning after
             tlog("night shift changed: enabled=\(s.enabled.boolValue) "
                 + "active=\(s.active.boolValue) mode=\(s.mode)")
-            if openPopup == "brightness" { refreshPopup() }
+            if openPopup == "caffeinate" { refreshPopup() }
         }
     }
     nightShiftBlock = block
     typealias SetFn = @convention(c) (AnyObject, Selector, Any) -> Void
     unsafeBitCast(method_getImplementation(m), to: SetFn.self)(bl.client, sel, block)
 }
-
-// --- wifi (SCDynamicStore publishes; SSID needs a subprocess, so it is
-// fetched off-main and only when the network actually changed)
-var wifiDevice = CWWiFiClient.shared().interface()?.interfaceName ?? "en0"
-
-func updateWifi() {
-    let powered = CWWiFiClient.shared().interface()?.powerOn() ?? false
-    guard powered else {
-        set("wifi") { $0.icon = "sf:wifi.slash"; $0.iconColor = nil; $0.label = "off" }
-        return
-    }
-    // The name lives in the POPUP, not the pill: a seventeen-character
-    // SSID is ~150pt of bar, and the right cluster is right-aligned, so
-    // on the notched display it pushed the far end under the notch. The
-    // icon says connected; a click says to what.
-    set("wifi") { $0.icon = "sf:wifi"; $0.iconColor = nil; $0.label = "" }
-}
-
-// --- bluetooth (IOBluetooth publishes connect/disconnect)
-//
-// IOBluetooth ABORTS the process outright — SIGABRT, no exception to
-// catch — if it is touched without the Bluetooth privacy grant. Learnt
-// here the same way watcher.swift learnt it: exit code 134 and an empty
-// log. So the grant is gated on CBCentralManager.authorization (reading
-// that never prompts), and the pill simply stays hidden when it is not
-// held. The binary carries helper/bar-info.plist for the usage string,
-// without which the prompt cannot even be raised.
-func updateBluetooth() {
-    guard CBCentralManager.authorization == .allowedAlways else { return }
-    guard BTGetPower() != 0 else {
-        set("bluetooth") { $0.drawing = true; $0.icon = "bt"; $0.iconColor = \.muted; $0.label = "off" }
-        return
-    }
-    let connected = ((IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice]) ?? [])
-        .filter { $0.isConnected() }.count
-    set("bluetooth") {
-        $0.drawing = true
-        $0.icon = "bt"
-        $0.iconColor = nil
-        $0.label = connected > 0 ? "\(connected)" : ""
-    }
-}
-
-// IOBluetooth's connect/disconnect notifications are ObjC target/action,
-// so they need a real object to aim at; CoreBluetooth's delegate is what
-// tells us the grant has landed.
-final class BluetoothWatcher: NSObject, CBCentralManagerDelegate {
-    private var central: CBCentralManager?
-    private var classicStarted = false
-
-    // Creating a CBCentralManager is itself an access, and TCC judges it
-    // by the RESPONSIBLE process rather than this binary: started from a
-    // shell the whole process is killed (SIGABRT, exit 134, no report),
-    // embedded Info.plist and signature notwithstanding. Under launchd it
-    // is responsible for itself and may prompt — which is the only reason
-    // watcher.swift could. The plist sets STATUSBAR_MANAGED so that running
-    // this by hand for a test stays safe instead of dying.
-    private var managed: Bool { ProcessInfo.processInfo.environment["STATUSBAR_MANAGED"] != nil }
-
-    func start() {
-        switch CBCentralManager.authorization {
-        case .allowedAlways:
-            startClassic()
-            central = CBCentralManager(delegate: self, queue: .main)
-        case .denied, .restricted:
-            tlog("bluetooth: permission denied — pill hidden")
-            set("bluetooth") { $0.drawing = false }
-        default:
-            guard managed else {
-                tlog("bluetooth: not launchd-managed, so not prompting — pill hidden")
-                set("bluetooth") { $0.drawing = false }
-                return
-            }
-            set("bluetooth") { $0.drawing = false }
-            central = CBCentralManager(delegate: self, queue: .main) // raises the prompt
-        }
-    }
-
-    private func startClassic() {
-        guard !classicStarted else { return }
-        classicStarted = true
-        IOBluetoothDevice.register(forConnectNotifications: self,
-                                   selector: #selector(connected(_:device:)))
-        for device in (IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice]) ?? []
-        where device.isConnected() {
-            device.register(forDisconnectNotification: self, selector: #selector(changed(_:device:)))
-        }
-        updateBluetooth()
-    }
-
-    @objc func connected(_ note: IOBluetoothUserNotification, device: IOBluetoothDevice) {
-        device.register(forDisconnectNotification: self, selector: #selector(changed(_:device:)))
-        DispatchQueue.main.async { updateBluetooth() }
-    }
-
-    @objc func changed(_ note: IOBluetoothUserNotification, device: IOBluetoothDevice) {
-        DispatchQueue.main.async { updateBluetooth() }
-    }
-
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        if CBCentralManager.authorization == .allowedAlways { startClassic() }
-        DispatchQueue.main.async { updateBluetooth() }
-    }
-}
-let bluetoothWatcher = BluetoothWatcher()
 
 // --- weather (no publisher; wttr.in, refreshed on a long timer)
 // One j1 fetch feeds both the pill and its popup — weather.sh does the
@@ -1057,22 +1181,12 @@ let bluetoothWatcher = BluetoothWatcher()
 // be expressed.
 
 struct Weather {
-    var emoji = ""
-    var symbol = ""
-    var temp = ""
-    var desc = ""
-    var feels = ""
-    var low = ""
-    var high = ""
-    var wind = ""
-    var humidity = ""
-    var rain = ""
-    var sunrise = ""
-    var sunset = ""
-    var moon = ""
-    var location = ""
-    var uv = ""
-    var days: [(name: String, emoji: String, low: String, high: String, rain: Int, uv: String)] = []
+    var symbol = "", temp = "", desc = "", feels = ""
+    var wind = "", humidity = "", pressure = "", visibility = "", uv = "", rain = ""
+    var sunrise = "", sunset = "", moon = "", location = ""
+    var fetched = Date()
+    var hours: [(time: String, symbol: String, temp: String, rain: Int)] = []
+    var days: [(name: String, symbol: String, low: String, high: String, rain: Int, wind: String, uv: String)] = []
 }
 
 func uvLevel(_ uv: String) -> String {
@@ -1083,21 +1197,7 @@ func uvLevel(_ uv: String) -> String {
 
 var weather: Weather?
 
-// WWO condition code -> glyph, night-aware for the clear/partly pair
-func weatherEmoji(_ code: Int, night: Bool) -> String {
-    switch code {
-    case 113: return night ? "🌙" : "☀️"
-    case 116: return night ? "☁️" : "⛅"
-    case 119, 122: return "☁️"
-    case 143, 248, 260: return "🌫️"
-    case 176, 263, 266, 293, 296, 353: return "🌦️"
-    case 299, 302, 305, 308, 356, 359: return "🌧️"
-    case 200, 386, 389, 392, 395: return "⛈️"
-    case 179, 182, 185, 227, 230, 281, 284, 311...338, 350, 362...368, 374...377: return "❄️"
-    default: return "🌡️"
-    }
-}
-
+// WWO condition code -> SF Symbol, night-aware for the clear/partly pair
 func weatherSymbol(_ code: Int, night: Bool) -> String {
     switch code {
     case 113: return night ? "sf:moon.stars.fill" : "sf:sun.max.fill"
@@ -1126,6 +1226,16 @@ func moonEmoji(_ phase: String) -> String {
     }
 }
 
+// wttr's "06:45 AM" -> minutes since midnight
+func clockMinutes(_ s: String) -> Int? {
+    let f = DateFormatter()
+    f.locale = Locale(identifier: "en_US_POSIX")
+    f.dateFormat = "hh:mm a"
+    guard let d = f.date(from: s) else { return nil }
+    let c = Calendar.current.dateComponents([.hour, .minute], from: d)
+    return (c.hour ?? 0) * 60 + (c.minute ?? 0)
+}
+
 var weatherCoord: CLLocationCoordinate2D?
 
 func updateWeather() {
@@ -1141,59 +1251,80 @@ func updateWeather() {
         guard let data,
               let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let current = (root["current_condition"] as? [[String: Any]])?.first,
-              let today = (root["weather"] as? [[String: Any]])?.first
-        else { return }
+              let days = root["weather"] as? [[String: Any]],
+              let today = days.first
+        else { return DispatchQueue.main.async { fetchFailed("weather", poll: WEATHER_POLL) } }
 
         func text(_ d: [String: Any], _ key: String) -> String { d[key] as? String ?? "" }
+        func int(_ d: [String: Any], _ key: String) -> Int { Int(text(d, key)) ?? 0 }
         func nested(_ d: [String: Any], _ key: String) -> String {
             ((d[key] as? [[String: Any]])?.first?["value"] as? String) ?? ""
         }
 
         var w = Weather()
-        let hour = Calendar.current.component(.hour, from: Date())
-        w.emoji = weatherEmoji(Int(text(current, "weatherCode")) ?? 0, night: hour < 7 || hour >= 20)
-        w.symbol = weatherSymbol(Int(text(current, "weatherCode")) ?? 0, night: hour < 7 || hour >= 20)
+        // night by the real sun, not a fixed 7-20: a winter 17:00 is dark
+        let astro = (today["astronomy"] as? [[String: Any]])?.first ?? [:]
+        let sunrise = clockMinutes(text(astro, "sunrise")), sunset = clockMinutes(text(astro, "sunset"))
+        func night(_ minute: Int) -> Bool {
+            guard let sunrise, let sunset else { return minute < 7 * 60 || minute >= 20 * 60 }
+            return minute < sunrise || minute >= sunset
+        }
+        func hhmm(_ minute: Int) -> String { String(format: "%02d:%02d", minute / 60, minute % 60) }
+        let now = Calendar.current.dateComponents([.hour, .minute], from: Date())
+        let nowMin = (now.hour ?? 0) * 60 + (now.minute ?? 0)
+
+        w.symbol = weatherSymbol(int(current, "weatherCode"), night: night(nowMin))
         w.temp = text(current, "temp_C")
         w.desc = nested(current, "weatherDesc").lowercased()
         w.feels = text(current, "FeelsLikeC")
-        w.low = text(today, "mintempC")
-        w.high = text(today, "maxtempC")
         w.humidity = text(current, "humidity")
+        w.pressure = text(current, "pressure")
+        w.visibility = text(current, "visibility")
         w.uv = text(current, "uvIndex")
+        if let sunrise, let sunset { w.sunrise = hhmm(sunrise); w.sunset = hhmm(sunset) }
+        let phase = text(astro, "moon_phase")
+        if !phase.isEmpty { w.moon = "\(moonEmoji(phase)) \(phase.lowercased())" }
+
+        let arrows = ["↓", "↙", "←", "↖", "↑", "↗", "→", "↘"]
+        func arrow(_ degrees: Int) -> String { arrows[((degrees + 180) / 45) % 8] }
+        let speed = int(current, "windspeedKmph"), gust = int(current, "WindGustKmph")
+        w.wind = "\(arrow(int(current, "winddirDegree"))) \(speed) km/h"
+        if gust >= speed * 3 / 2, gust > speed + 10 { w.wind += " · gusts \(gust)" }
+
+        // rain earns a row only with real signal: falling now, or likely today
+        let precip = Double(text(current, "precipMM")) ?? 0
+        let todayHours = (today["hourly"] as? [[String: Any]]) ?? []
+        let chance = todayHours.map { int($0, "chanceofrain") }.max() ?? 0
+        var rain: [String] = []
+        if precip > 0 { rain.append("\(text(current, "precipMM")) mm now") }
+        if chance >= 30 { rain.append("\(chance)% today") }
+        w.rain = rain.joined(separator: " · ")
+
+        // the next six 3-hour slots, today's remainder then tomorrow's start
+        for (i, day) in days.prefix(2).enumerated() {
+            for h in (day["hourly"] as? [[String: Any]]) ?? [] where w.hours.count < 6 {
+                let minute = int(h, "time") / 100 * 60
+                // today: the slot that holds now, and later ones
+                guard i > 0 || minute + 180 > nowMin else { continue }
+                w.hours.append((hhmm(minute), weatherSymbol(int(h, "weatherCode"), night: night(minute)),
+                                text(h, "tempC"), int(h, "chanceofrain")))
+            }
+        }
+
         let iso = DateFormatter()
         iso.dateFormat = "yyyy-MM-dd"
         let short = DateFormatter()
         short.dateFormat = "EEE"
-        for (i, day) in ((root["weather"] as? [[String: Any]]) ?? []).enumerated() {
+        for (i, day) in days.enumerated() {
             let hourly = (day["hourly"] as? [[String: Any]]) ?? []
             let noon = hourly.count > 4 ? hourly[4] : hourly.first ?? [:]
             let name = i == 0 ? "today"
                 : iso.date(from: text(day, "date")).map { short.string(from: $0).lowercased() } ?? text(day, "date")
-            w.days.append((name, weatherEmoji(Int(text(noon, "weatherCode")) ?? 0, night: false),
+            w.days.append((name, weatherSymbol(int(noon, "weatherCode"), night: false),
                            text(day, "mintempC"), text(day, "maxtempC"),
-                           hourly.compactMap { Int(($0["chanceofrain"] as? String) ?? "0") }.max() ?? 0,
+                           hourly.map { int($0, "chanceofrain") }.max() ?? 0,
+                           "\(hourly.map { int($0, "windspeedKmph") }.max() ?? 0) km/h",
                            text(day, "uvIndex")))
-        }
-
-        let degrees = Int(text(current, "winddirDegree")) ?? 0
-        let arrows = ["↓", "↙", "←", "↖", "↑", "↗", "→", "↘"]
-        w.wind = "\(arrows[((degrees + 180) / 45) % 8]) \(text(current, "windspeedKmph")) km/h"
-
-        // rain earns a row only with real signal: falling now, or likely today
-        let precip = Double(text(current, "precipMM")) ?? 0
-        let chance = ((today["hourly"] as? [[String: Any]]) ?? [])
-            .compactMap { Int(($0["chanceofrain"] as? String) ?? "0") }.max() ?? 0
-        if precip > 0 {
-            w.rain = "☔ \(text(current, "precipMM"))mm now"
-            if chance >= 30 { w.rain += " · rain \(chance)% today" }
-        } else if chance >= 30 {
-            w.rain = "☔ rain \(chance)% today"
-        }
-
-        if let astro = (today["astronomy"] as? [[String: Any]])?.first {
-            w.sunrise = text(astro, "sunrise")
-            w.sunset = text(astro, "sunset")
-            w.moon = "\(moonEmoji(text(astro, "moon_phase"))) \(text(astro, "moon_phase").lowercased())"
         }
 
         if let area = (root["nearest_area"] as? [[String: Any]])?.first {
@@ -1214,7 +1345,8 @@ func updateWeather() {
 
         DispatchQueue.main.async {
             weather = w
-            set("weather") { $0.icon = w.symbol; $0.label = "\(w.temp)°" }
+            lastFetch["weather"] = Date()
+            set("weather") { $0.icon = w.symbol; $0.label = "\(w.temp)°"; $0.stale = false }
             if openPopup == "weather" { refreshPopup() }
         }
     }.resume()
@@ -1232,6 +1364,7 @@ struct PopupRow {
     var image: NSImage? // 16pt leading icon — Recent Items entries
     var text = ""
     var detail = "" // right-aligned, dim — menu shortcuts live here
+    var swatches: [NSColor] = [] // right-aligned colour chips — theme previews
     var separator = false // a thin rule instead of content
     var hero = false // accent, bold — the title row
     var dim = false // the quiet action footer
@@ -1244,13 +1377,21 @@ struct PopupRow {
     var cells: [String] = []
     var cellDim: Set<Int> = []
     var cellMark: Int? // accent plate, e.g. today in the calendar
+    var cellRing: Int? // accent outline — the picked day
+    var cellDots: [[NSColor]] = [] // per cell, up to 3 dots under the text
+    var onCell: ((Int) -> Void)?
     var labelCol = false // first cell is a left-aligned label, the rest centred
+    var bar: NSColor? // leading colour stripe — an event's calendar
+    var strike = false // declined / cancelled
+    var pager: ((Int) -> Void)? // ‹ title ›, a click on either half pages by ∓1
+    var minWidth: CGFloat = 0 // content width floor, so the popup keeps its size between pages
 }
 
 
 final class PopupView: NSView {
     var rows: [PopupRow] = []
     private var rowRects: [(Int, NSRect)] = []
+    private var cellRects: [(Int, Int, NSRect)] = [] // row, cell, box
     // the row under the pointer, actionable rows only — menus read as
     // menus when they answer the hover
     private var hoveredRow: Int?
@@ -1278,6 +1419,9 @@ final class PopupView: NSView {
     // rule made long menus read bulky instead of sectioned
     func rowH(_ row: PopupRow) -> CGFloat { row.separator ? 10 : ROW_HEIGHT }
 
+    // a cell is text, or an "sf:" symbol drawn at the row's point size
+    func cellWidth(_ c: String, _ f: NSFont) -> CGFloat { c.hasPrefix("sf:") ? inkBox(c, f).width : advance(c, f) }
+
     // per row: its table's column widths ([] for a plain row)
     func tableWidths() -> [[CGFloat]] {
         var out: [[CGFloat]] = []
@@ -1289,7 +1433,7 @@ final class PopupView: NSView {
             while j < rows.count && rows[j].cells.count == n { j += 1 }
             var w = [CGFloat](repeating: 0, count: n)
             for r in rows[i..<j] {
-                for (k, c) in r.cells.enumerated() { w[k] = max(w[k], advance(c, font(r))) }
+                for (k, c) in r.cells.enumerated() { w[k] = max(w[k], cellWidth(c, font(r))) }
             }
             out.append(contentsOf: Array(repeating: w.map { $0 + CELL_PAD }, count: j - i))
             i = j
@@ -1311,6 +1455,10 @@ final class PopupView: NSView {
             if !row.detail.isEmpty { w += advance(row.detail, nerdFont("Regular", 11)) + 24 }
             if !row.icon.isEmpty { w += inkBox(row.icon, nerdFont("Bold", 13)).width + 8 }
             if row.image != nil { w += 22 }
+            if row.bar != nil { w += 10 }
+            if row.pager != nil { w += 40 }
+            w = max(w, row.minWidth)
+            if !row.swatches.isEmpty { w += CGFloat(row.swatches.count) * 14 + 16 }
             if row.slider != nil { w = max(w, 150) }
             width = max(width, w)
             height += rowH(row)
@@ -1320,6 +1468,7 @@ final class PopupView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         rowRects.removeAll()
+        cellRects.removeAll()
         // plain fill: the scroll CONTAINER carries the rounded clip and
         // border, so corners stay put while tall content scrolls
         palette.barBG.setFill()
@@ -1339,7 +1488,10 @@ final class PopupView: NSView {
             }
             if !row.cells.isEmpty {
                 let f = font(row)
-                var cx = rect.minX
+                // label tables hug the left edge; a bare grid (the calendar) centres
+                var cx = row.labelCol ? rect.minX : rect.midX - tables[index].reduce(0, +) / 2
+                // dotted rows lift the text to make room underneath
+                let textY = row.cellDots.isEmpty ? rect.midY : rect.midY + 3
                 for (k, cell) in row.cells.enumerated() {
                     let cw = tables[index][k]
                     let box = NSRect(x: cx, y: rect.minY, width: cw, height: rect.height)
@@ -1347,13 +1499,32 @@ final class PopupView: NSView {
                     if marked {
                         palette.accent.setFill()
                         NSBezierPath(roundedRect: box.insetBy(dx: 1, dy: 2), xRadius: RADIUS, yRadius: RADIUS).fill()
+                    } else if k == row.cellRing {
+                        palette.accent.setStroke()
+                        let ring = NSBezierPath(roundedRect: box.insetBy(dx: 1.5, dy: 2.5), xRadius: RADIUS, yRadius: RADIUS)
+                        ring.lineWidth = 1
+                        ring.stroke()
                     }
                     let tint = marked ? palette.barBG
                         : row.cellDim.contains(k) ? palette.label.withAlphaComponent(0.4) : color(row)
                     // a 2-cell label row is key/value: the value reads left-aligned
                     let left = row.labelCol && (k == 0 || row.cells.count == 2)
-                    let tx = left ? cx + 4 : cx + (cw - advance(cell, f)) / 2
-                    drawText(cell, f, tint, leftAt: tx, midY: rect.midY)
+                    if cell.hasPrefix("sf:") {
+                        drawIcon(cell, f, tint, centeredIn: box)
+                    } else {
+                        let tx = left ? cx + 4 : cx + (cw - advance(cell, f)) / 2
+                        drawText(cell, f, tint, leftAt: tx, midY: textY)
+                    }
+                    if k < row.cellDots.count {
+                        let dots = row.cellDots[k].prefix(3)
+                        var dx = box.midX - CGFloat(dots.count) * 5 / 2
+                        for dot in dots {
+                            (marked ? palette.barBG : dot).setFill()
+                            NSBezierPath(ovalIn: NSRect(x: dx + 1, y: rect.minY + 5, width: 3, height: 3)).fill()
+                            dx += 5
+                        }
+                    }
+                    cellRects.append((index, k, box))
                     cx += cw
                 }
                 rowRects.append((index, rect))
@@ -1364,6 +1535,20 @@ final class PopupView: NSView {
                 NSBezierPath(roundedRect: rect.insetBy(dx: -2, dy: 2), xRadius: 4, yRadius: 4).fill()
             }
             var x = rect.minX + 4
+            if row.pager != nil {
+                let f = font(row)
+                drawText(row.text, f, color(row), leftAt: rect.midX - advance(row.text, f) / 2, midY: rect.midY)
+                drawText("‹", f, color(row), leftAt: x, midY: rect.midY)
+                drawText("›", f, color(row), leftAt: rect.maxX - advance("›", f) - 4, midY: rect.midY)
+                rowRects.append((index, rect))
+                continue
+            }
+            if let bar = row.bar {
+                bar.withAlphaComponent(row.strike || row.dim ? 0.4 : 1).setFill()
+                NSBezierPath(roundedRect: NSRect(x: x, y: rect.minY + 5, width: 3, height: rect.height - 10),
+                             xRadius: 1.5, yRadius: 1.5).fill()
+                x += 10
+            }
             if let image = row.image {
                 image.draw(in: NSRect(x: x, y: rect.midY - 8, width: 16, height: 16))
                 x += 22
@@ -1392,6 +1577,23 @@ final class PopupView: NSView {
             } else {
                 let tint = index == hoveredRow && row.action != nil ? palette.accent : color(row)
                 drawText(row.text, font(row), tint, leftAt: x, midY: rect.midY)
+                if row.strike {
+                    tint.setFill()
+                    NSRect(x: x, y: rect.midY - 0.5, width: advance(row.text, font(row)), height: 1).fill()
+                }
+                var sx = rect.maxX - 4
+                for chip in row.swatches.reversed() {
+                    sx -= 10
+                    let box = NSRect(x: sx, y: rect.midY - 5, width: 10, height: 10)
+                    chip.setFill()
+                    let path = NSBezierPath(roundedRect: box, xRadius: 3, yRadius: 3)
+                    path.fill()
+                    // a bg-coloured chip vanishes against a similar popup: outline it
+                    palette.label.withAlphaComponent(0.2).setStroke()
+                    path.lineWidth = 0.5
+                    path.stroke()
+                    sx -= 4
+                }
                 if !row.detail.isEmpty {
                     let df = nerdFont("Regular", 11)
                     drawText(row.detail, df, palette.label.withAlphaComponent(0.5),
@@ -1434,13 +1636,17 @@ final class PopupView: NSView {
         onSlide(min(1, max(0, (p.x - trackX) / trackW)))
     }
 
-    override func mouseDown(with event: NSEvent) { slide(event) }
     override func mouseDragged(with event: NSEvent) { slide(event) }
-
+    override func mouseDown(with event: NSEvent) { slide(event) }
     override func mouseUp(with event: NSEvent) {
         let p = convert(event.locationInWindow, from: nil)
-        guard let (index, _) = rowRects.first(where: { $0.1.contains(p) }),
-              rows[index].slider == nil, let action = rows[index].action else { return }
+        if let (index, k, _) = cellRects.first(where: { $0.2.contains(p) }), let onCell = rows[index].onCell {
+            onCell(k)
+            return
+        }
+        guard let (index, rect) = rowRects.first(where: { $0.1.contains(p) }) else { return }
+        if let pager = rows[index].pager { pager(p.x < rect.midX ? -1 : 1); return }
+        guard rows[index].slider == nil, let action = rows[index].action else { return }
         action()
     }
 }
@@ -1455,6 +1661,7 @@ var popupView: PopupView?
 var openPopup: String? // which bar item owns it
 
 func closePopup() {
+    calDay = nil // the calendar reopens on today
     popupWindow?.orderOut(nil)
     popupWindow = nil
     popupView = nil
@@ -1493,11 +1700,13 @@ func refreshPopup() {
     view.display()
 }
 
-func showPopup(_ name: String, under anchor: NSRect, on surface: BarSurface, alignLeft: Bool = false) {
-    if openPopup == name { closePopup(); return }
+// false when the item has no popup to show (rows are built once, here)
+@discardableResult
+func showPopup(_ name: String, under anchor: NSRect, on surface: BarSurface, alignLeft: Bool = false) -> Bool {
+    if openPopup == name { closePopup(); return true }
     closePopup()
     let rows = popupRows(for: name)
-    guard !rows.isEmpty else { return }
+    guard !rows.isEmpty else { return false }
 
     let view = PopupView(frame: .zero)
     view.rows = rows
@@ -1543,42 +1752,110 @@ func showPopup(_ name: String, under anchor: NSRect, on surface: BarSurface, ali
     popupWindow = window
     popupView = view
     openPopup = name
+    return true
 }
 
 // --- popup content ---------------------------------------------------------
+
+var calDay: Date? // the picked day, nil = today
 
 func calendarRows() -> [PopupRow] {
     var rows: [PopupRow] = []
     let now = Date()
     var cal = Calendar(identifier: .gregorian)
     cal.firstWeekday = 2 // Monday, like the shell version
+    cal.minimumDaysInFirstWeek = 4 // ISO week numbers
+    let picked = cal.startOfDay(for: calDay ?? now)
+    // the grid's own width: 8 columns, the font is mono and every cell is two glyphs.
+    // Fixed so a long title or agenda never resizes the popup on a pick
+    let width = 8 * (advance("00", nerdFont("Regular", 13)) + CELL_PAD)
     let title = DateFormatter()
     title.dateFormat = "MMMM yyyy"
-    rows.append(PopupRow(text: title.string(from: now).lowercased(), hero: true))
-    rows.append(PopupRow(cells: ["mo", "tu", "we", "th", "fr", "sa", "su"], cellDim: Set(0..<7)))
+    rows.append(PopupRow(text: title.string(from: picked).lowercased(), hero: true, pager: { step in
+        calDay = cal.date(byAdding: .month, value: step, to: picked)
+        refreshPopup()
+    }, minWidth: width))
+    rows.append(PopupRow(cells: ["w", "mo", "tu", "we", "th", "fr", "sa", "su"], cellDim: Set(0..<8)))
 
-    guard let monthStart = cal.date(from: cal.dateComponents([.year, .month], from: now)),
-          let range = cal.range(of: .day, in: .month, for: now) else { return rows }
-    let today = cal.component(.day, from: now)
+    guard let monthStart = cal.date(from: cal.dateComponents([.year, .month], from: picked)) else { return rows }
     // weekday index with Monday = 0
     let leading = (cal.component(.weekday, from: monthStart) + 5) % 7
-    let prevDays = cal.range(of: .day, in: .month,
-                             for: cal.date(byAdding: .month, value: -1, to: monthStart)!)!.count
+    let gridStart = cal.date(byAdding: .day, value: -leading, to: monthStart)!
+    let weeks = Int(ceil(Double(leading + cal.range(of: .day, in: .month, for: picked)!.count) / 7))
+    let days = (0..<weeks * 7).map { cal.date(byAdding: .day, value: $0, to: gridStart)! }
+    let gridEnd = cal.date(byAdding: .day, value: 1, to: days.last!)!
 
-    var cells: [(Int, Bool)] = [] // day, in-month
-    for i in 0..<leading { cells.append((prevDays - leading + 1 + i, false)) }
-    for d in range { cells.append((d, true)) }
-    var next = 1
-    while cells.count % 7 != 0 { cells.append((next, false)); next += 1 }
-
-    for week in stride(from: 0, to: cells.count, by: 7) {
-        let slice = cells[week..<min(week + 7, cells.count)]
-        rows.append(PopupRow(cells: slice.map { "\($0.0)" },
-                             cellDim: Set(slice.indices.filter { !cells[$0].1 }.map { $0 - week }),
-                             cellMark: slice.firstIndex { $0.0 == today && $0.1 }.map { $0 - week }))
+    let access = EKEventStore.authorizationStatus(for: .event) == .fullAccess
+    let events = access ? eventStore.events(matching: eventStore.predicateForEvents(
+        withStart: gridStart, end: gridEnd, calendars: nil)) : []
+    func declined(_ e: EKEvent) -> Bool {
+        e.status == .canceled || e.attendees?.first(where: \.isCurrentUser)?.participantStatus == .declined
     }
-    let week = cal.component(.weekOfYear, from: now)
-    rows.append(PopupRow(text: "week \(week)", dim: true))
+    func on(_ day: Date) -> [EKEvent] {
+        let end = cal.date(byAdding: .day, value: 1, to: day)!
+        return events.filter { $0.startDate < end && $0.endDate > day }
+    }
+
+    for w in 0..<weeks {
+        let week = Array(days[w * 7..<w * 7 + 7])
+        var dots: [[NSColor]] = [[]]
+        for day in week {
+            var colors: [NSColor] = []
+            for e in on(day) where !declined(e) && !colors.contains(e.calendar.color) { colors.append(e.calendar.color) }
+            dots.append(colors)
+        }
+        let inMonth = { (d: Date) in cal.isDate(d, equalTo: monthStart, toGranularity: .month) }
+        rows.append(PopupRow(cells: ["\(cal.component(.weekOfYear, from: week[0]))"] + week.map { "\(cal.component(.day, from: $0))" },
+                             cellDim: Set([0] + week.indices.filter { !inMonth(week[$0]) }.map { $0 + 1 }),
+                             cellMark: week.firstIndex { cal.isDateInToday($0) }.map { $0 + 1 },
+                             cellRing: week.firstIndex { $0 == picked && !cal.isDateInToday($0) }.map { $0 + 1 },
+                             cellDots: dots,
+                             onCell: { k in
+                                 guard k > 0 else { return }
+                                 calDay = week[k - 1]
+                                 refreshPopup()
+                             }))
+    }
+
+    // the picked day's agenda: a call opens its link, anything else opens Calendar
+    rows.append(PopupRow(separator: true))
+    let head = DateFormatter()
+    head.dateFormat = "EEEE d MMMM"
+    rows.append(PopupRow(text: cal.isDateInToday(picked) ? "today" : head.string(from: picked).lowercased(), dim: true))
+    let agenda = on(picked).sorted { ($0.isAllDay ? 0 : 1, $0.startDate) < ($1.isAllDay ? 0 : 1, $1.startDate) }
+    if agenda.isEmpty { rows.append(PopupRow(text: access ? "no events" : "no calendar access", dim: true)) }
+    let hm = DateFormatter()
+    hm.dateFormat = "HH:mm"
+    for e in agenda {
+        let link = meetingLink(e)
+        // ponytail: relative time only inside the hour, the clock covers the rest
+        let mins = Int(ceil(e.startDate.timeIntervalSince(now) / 60))
+        let when = e.isAllDay || e.endDate <= now ? nil
+            : mins <= 0 ? "now" : mins <= 60 ? "in \(mins)m" : nil
+        // "all day" is 7 wide; the font is mono, so padding lines the titles up
+        let time = e.isAllDay ? "all day" : hm.string(from: e.startDate).padding(toLength: 7, withPad: " ", startingAt: 0)
+        let detail = [when, link != nil && e.endDate > now ? "join" : nil].compactMap { $0 }.joined(separator: " · ")
+        // the same sums PopupView.measure does: stripe + text + detail
+        let room = width - 10 - (detail.isEmpty ? 0 : advance(detail, nerdFont("Regular", 11)) + 24)
+        // only the title gives way: the time always stays
+        let f = nerdFont("Regular", 13)
+        var name = e.title ?? ""
+        if advance("\(time) \(name)", f) > room {
+            while !name.isEmpty && advance("\(time) \(name)…", f) > room { name.removeLast() }
+            name += "…"
+        }
+        let text = "\(time) \(name)"
+        rows.append(PopupRow(text: text,
+                             detail: detail,
+                             dim: !e.isAllDay && e.endDate <= now,
+                             highlight: when == "now",
+                             action: {
+                                 closePopup()
+                                 NSWorkspace.shared.open(link ?? URL(fileURLWithPath: "/System/Applications/Calendar.app"))
+                             },
+                             bar: e.calendar.color,
+                             strike: declined(e)))
+    }
     return rows
 }
 
@@ -1596,16 +1873,6 @@ func brightnessRows() -> [PopupRow] {
                  slider: shade,
                  onSlide: { setShade($0) }),
     ]
-    // read in process, every time the rows are built: the row says what
-    // CoreBrightness says now, and a Mac without night shift gets no row
-    // rather than a lying one
-    if let ns = blueLightStatus(), ns.available.boolValue {
-        let on = ns.enabled.boolValue
-        rows.append(PopupRow(text: "night shift \(on ? "on" : "off")", action: {
-            setNightShift(!on)
-            refreshPopup()
-        }))
-    }
     rows.append(PopupRow(text: "display settings…", dim: true, action: {
         NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Displays-Settings.extension")!)
         closePopup()
@@ -1641,107 +1908,6 @@ func volumeRows() -> [PopupRow] {
     return rows
 }
 
-// SCDynamicStore answers both in process. The popup used to fork
-// ipconfig on the click path just for the address — and the router,
-// the one number you actually want when the network misbehaves, was
-// never shown at all.
-func wifiIPv4() -> (ip: String, router: String) {
-    guard let store = SCDynamicStoreCreate(nil, "statusbar-ipv4" as CFString, nil, nil)
-    else { return ("", "") }
-    let global = SCDynamicStoreCopyValue(store, "State:/Network/Global/IPv4" as CFString)
-        as? [String: Any]
-    let iface = SCDynamicStoreCopyValue(store,
-        "State:/Network/Interface/\(wifiDevice)/IPv4" as CFString) as? [String: Any]
-    return ((iface?["Addresses"] as? [String])?.first ?? "",
-            global?["Router"] as? String ?? "")
-}
-
-// Name only what is certain — the generic personal/enterprise cases
-// cover several generations and guessing one would be a lie.
-func securityName(_ s: CWSecurity) -> String? {
-    switch s {
-    case .none: return "open"
-    case .WEP, .dynamicWEP: return "WEP"
-    case .wpaPersonal, .wpaPersonalMixed, .wpaEnterprise, .wpaEnterpriseMixed: return "WPA"
-    case .wpa2Personal, .wpa2Enterprise: return "WPA2"
-    case .wpa3Personal, .wpa3Enterprise, .wpa3Transition: return "WPA3"
-    case .OWE, .oweTransition: return "OWE"
-    default: return nil
-    }
-}
-
-func wifiRows() -> [PopupRow] {
-    let interface = CWWiFiClient.shared().interface()
-    var rows: [PopupRow] = [
-        // the SSID is location-sensitive data: it needs the Location
-        // grant AND a bundled binary (measured on macOS 26.3 — an
-        // unbundled build reads nil however it is authorised), which
-        // is why the bar ships inside a .app. See install.sh.
-        PopupRow(text: interface?.ssid() ?? "wi-fi", hero: true),
-    ]
-    let net = wifiIPv4()
-    rows.append(PopupRow(text: "ip \(net.ip.ifEmpty("none"))"))
-    if !net.router.isEmpty { rows.append(PopupRow(text: "router \(net.router)")) }
-    if let rssi = interface?.rssiValue(), rssi != 0 {
-        let verdict = rssi >= -55 ? "excellent" : (rssi >= -67 ? "good" : (rssi >= -75 ? "fair" : "weak"))
-        rows.append(PopupRow(text: "signal \(rssi) dBm  \(verdict)"))
-    }
-    // how fast, and how safe — the two questions the old rows left open
-    var link: [String] = []
-    if let rate = interface?.transmitRate(), rate > 0 { link.append("\(Int(rate)) Mbps") }
-    if let sec = interface?.security(), let name = securityName(sec) { link.append(name) }
-    if !link.isEmpty { rows.append(PopupRow(text: "link " + link.joined(separator: "  "))) }
-    if let channel = interface?.wlanChannel() {
-        // a bare channel number means nothing to most people; the band
-        // is what says "you are on the fast radio"
-        var parts = ["channel \(channel.channelNumber)"]
-        switch channel.channelBand {
-        case .band2GHz: parts.append("2.4 GHz")
-        case .band5GHz: parts.append("5 GHz")
-        case .band6GHz: parts.append("6 GHz")
-        default: break
-        }
-        switch channel.channelWidth {
-        case .width20MHz: parts.append("20 MHz")
-        case .width40MHz: parts.append("40 MHz")
-        case .width80MHz: parts.append("80 MHz")
-        case .width160MHz: parts.append("160 MHz")
-        default: break
-        }
-        rows.append(PopupRow(text: parts.joined(separator: "  ")))
-    }
-    rows.append(PopupRow(text: "network settings…", dim: true, action: {
-        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.wifi-settings-extension")!)
-        closePopup()
-    }))
-    return rows
-}
-
-func bluetoothRows() -> [PopupRow] {
-    var rows: [PopupRow] = [PopupRow(text: "bluetooth", hero: true)]
-    guard CBCentralManager.authorization == .allowedAlways else {
-        rows.append(PopupRow(text: "no permission in this launch context", dim: true))
-        return rows
-    }
-    let devices = ((IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice]) ?? [])
-        .sorted { ($0.isConnected() ? 0 : 1, $0.name ?? "") < ($1.isConnected() ? 0 : 1, $1.name ?? "") }
-    for device in devices { // connected first, then by name
-        let name = device.name ?? device.addressString ?? "device"
-        rows.append(PopupRow(icon: "bt", text: name,
-                             highlight: device.isConnected(),
-                             action: {
-                                 if device.isConnected() { device.closeConnection() } else { device.openConnection() }
-                                 updateBluetooth()
-                                 refreshPopup()
-                             }))
-    }
-    rows.append(PopupRow(text: "bluetooth settings…", dim: true, action: {
-        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.BluetoothSettings")!)
-        closePopup()
-    }))
-    return rows
-}
-
 // --- claude usage: the OAuth usage endpoint Claude Code itself reads, with
 // the token Claude Code keeps (and refreshes) in the login keychain
 struct ClaudeWindow { var used: Double; var resets: Date? }
@@ -1753,14 +1919,15 @@ func updateClaude() {
                                 ["find-generic-password", "-s", "Claude Code-credentials", "-w"]).data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: creds) as? [String: Any],
               let token = (json["claudeAiOauth"] as? [String: Any])?["accessToken"] as? String,
-              let url = URL(string: "https://api.anthropic.com/api/oauth/usage") else { return }
+              let url = URL(string: "https://api.anthropic.com/api/oauth/usage")
+        else { return DispatchQueue.main.async { fetchFailed("claude", poll: CLAUDE_POLL) } }
         var request = URLRequest(url: url)
         request.timeoutInterval = 15
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
         URLSession.shared.dataTask(with: request) { data, _, _ in
             guard let data, let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-            else { return }
+            else { return DispatchQueue.main.async { fetchFailed("claude", poll: CLAUDE_POLL) } }
             let iso = ISO8601DateFormatter()
             iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
             func window(_ key: String) -> ClaudeWindow? {
@@ -1768,16 +1935,18 @@ func updateClaude() {
                 return ClaudeWindow(used: used, resets: (w["resets_at"] as? String).flatMap { iso.date(from: $0) })
             }
             guard let five = window("five_hour"), let week = window("seven_day") else {
-                tlog("claude: no usage in response")
-                return
+                tlog("claude: no usage in response") // an expired token lands here too
+                return DispatchQueue.main.async { fetchFailed("claude", poll: CLAUDE_POLL) }
             }
             DispatchQueue.main.async {
                 claudeUsage = (five, week)
+                lastFetch["claude"] = Date()
                 let worst = max(five.used, week.used)
                 set("claude") {
                     $0.icon = "donut:\(five.used / 100)"
                     $0.iconColor = worst >= 90 ? \.red : worst >= 70 ? \.yellow : \.accent
                     $0.label = "\(Int(five.used))%"
+                    $0.stale = false
                 }
                 if openPopup == "claude" { refreshPopup() }
             }
@@ -1804,6 +1973,157 @@ func claudeRows() -> [PopupRow] {
             closePopup()
         }),
     ]
+}
+
+// --- agents: one mark per agent of the chosen orchestrator, herdr-style:
+// ◐ working, ● done, ◎ blocked (wants input), ○ idle. Three orchestrators,
+// each read through its own CLI; the pick lives on the right button.
+// ponytail: 5 s poll — herdr and zeron both stream events if this ever lags
+
+enum AgentState: Int, Comparable {
+    case blocked, working, done, idle // pill order: what needs you first
+    static func < (a: AgentState, b: AgentState) -> Bool { a.rawValue < b.rawValue }
+    var color: NSColor {
+        switch self {
+        case .blocked: return palette.red
+        case .working: return palette.accent
+        case .done: return palette.green
+        case .idle: return palette.muted
+        }
+    }
+}
+
+struct Agent {
+    var state: AgentState
+    var name = "", detail = ""
+    var open: () -> Void = {}
+}
+
+var agents: [Agent] = []
+let ORCHESTRATORS = ["herdr", "zeron", "superconductor"]
+var orchestrator: String {
+    get { UserDefaults.standard.string(forKey: "orchestrator") ?? ORCHESTRATORS[0] }
+    set { UserDefaults.standard.set(newValue, forKey: "orchestrator"); updateAgents() }
+}
+
+func activate(_ app: String) { NSWorkspace.shared.open(URL(fileURLWithPath: "/Applications/\(app).app")) }
+func basename(_ path: String) -> String { (path as NSString).lastPathComponent }
+
+let HERDR_BIN = "/opt/homebrew/bin/herdr"
+func herdrAgents() -> [Agent] {
+    guard let data = shell(HERDR_BIN, ["api", "snapshot"]).data(using: .utf8),
+          let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          let list = ((json["result"] as? [String: Any])?["snapshot"] as? [String: Any])?["agents"] as? [[String: Any]]
+    else { return [] }
+    let states: [String: AgentState] = ["working": .working, "blocked": .blocked, "done": .done]
+    return list.map { a -> Agent in
+        let pane = a["pane_id"] as? String ?? ""
+        return Agent(state: states[a["agent_status"] as? String ?? ""] ?? .idle,
+                     name: basename(a["cwd"] as? String ?? ""), detail: a["agent"] as? String ?? "",
+                     open: {
+                         DispatchQueue.global(qos: .userInitiated).async { _ = shell(HERDR_BIN, ["agent", "focus", pane]) }
+                         activate("Herdr")
+                     })
+    }
+}
+
+// the engine's IPC is a private websocket; `zeron mcp` is the documented door to it
+let ZERON_BIN = "/Applications/Zeron.app/Contents/MacOS/zeron"
+func zeronAgents() -> [Agent] {
+    let rpc = """
+    {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"statusbar","version":"0"}}}
+    {"jsonrpc":"2.0","method":"notifications/initialized"}
+    {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"list_chats","arguments":{}}}
+
+    """
+    guard let line = shell(ZERON_BIN, ["mcp"], stdin: rpc).split(separator: "\n").last,
+          let reply = try? JSONSerialization.jsonObject(with: Data(line.utf8)) as? [String: Any],
+          let text = ((reply["result"] as? [String: Any])?["content"] as? [[String: Any]])?.first?["text"] as? String,
+          let body = try? JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any],
+          let chats = body["chats"] as? [[String: Any]] else { return [] }
+    let iso = ISO8601DateFormatter()
+    iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return chats.compactMap { c -> Agent? in
+        guard c["archived"] as? Bool != true, let status = c["status"] as? String else { return nil }
+        let state: AgentState = status.hasPrefix("working") ? .working
+            : status == "awaitingInput" || status == "errored" ? .blocked : .idle
+        // chats never die, so an idle one counts only while it is recent
+        let last = (c["lastMessageAt"] as? String).flatMap(iso.date) ?? .distantPast
+        guard state != .idle || last.timeIntervalSinceNow > -3600 else { return nil }
+        let id = c["id"] as? String ?? ""
+        let project = (c["project"] as? [String: Any])?["name"] as? String ?? ""
+        return Agent(state: state, name: c["title"] as? String ?? project, detail: project,
+                     open: { NSWorkspace.shared.open(URL(string: "zeron://open/chat/\(id)")!) })
+    }
+}
+
+let SC_BIN = NSHomeDirectory() + "/.superconductor/bin/sc"
+func superconductorAgents() -> [Agent] {
+    guard let data = shell(SC_BIN, ["chat", "list", "--json"]).data(using: .utf8),
+          let json = try? JSONSerialization.jsonObject(with: data) else { return [] }
+    // ponytail: the list's shape is unverified (the app was down when this was
+    // written) — any object carrying a known status string counts as an agent
+    let states: [String: AgentState] = ["running": .working, "awaiting_user_input": .blocked,
+                                        "completion_candidate": .done, "idle": .idle, "unknown": .idle]
+    var found: [Agent] = []
+    func walk(_ v: Any) {
+        if let d = v as? [String: Any] {
+            if let s = ["agent_status", "status", "phase", "state"].compactMap({ d[$0] as? String }).first(where: { states[$0] != nil }) {
+                found.append(Agent(state: states[s]!,
+                                   name: d["label"] as? String ?? d["title"] as? String ?? basename(d["worktree_path"] as? String ?? ""),
+                                   detail: d["provider"] as? String ?? "", open: { activate("super.engineering") }))
+                return
+            }
+            d.values.forEach(walk)
+        } else if let a = v as? [Any] { a.forEach(walk) }
+    }
+    walk(json)
+    return found
+}
+
+func updateAgents() {
+    let which = orchestrator
+    DispatchQueue.global(qos: .utility).async {
+        let list: [Agent]
+        switch which {
+        case "zeron": list = zeronAgents()
+        case "superconductor": list = superconductorAgents()
+        default: list = herdrAgents()
+        }
+        let sorted = list.sorted { $0.state < $1.state }
+        DispatchQueue.main.async {
+            guard which == orchestrator else { return } // switched while we polled
+            agents = sorted
+            // one mark per agent that is doing something; the idle ones (a
+            // dozen parked herdr panes) fold into a single ring and a count
+            // ponytail: active marks cap at 8 with no overflow hint
+            let active = sorted.filter { $0.state != .idle }, idle = sorted.count - active.count
+            set("agents") {
+                $0.icon = sorted.isEmpty ? "sf:circle.dotted"
+                    : "agents:" + active.prefix(8).map { String($0.state.rawValue) }.joined() + (idle > 0 ? "\(AgentState.idle.rawValue)" : "")
+                $0.iconColor = sorted.isEmpty ? \Palette.muted : nil
+                $0.label = idle > 1 ? "\(idle)" : ""
+            }
+        }
+    }
+}
+
+func orchestratorRows() -> [PopupRow] {
+    [PopupRow(text: "orchestrator", hero: true)] + ORCHESTRATORS.map { name in
+        PopupRow(text: name, highlight: name == orchestrator, action: { orchestrator = name; closePopup() })
+    }
+}
+
+func agentRows() -> [PopupRow] {
+    var rows = [PopupRow(text: orchestrator, hero: true)]
+    if agents.isEmpty { rows.append(PopupRow(text: "no agents", dim: true)) }
+    // the widest row sets the popup's width, and a zeron chat title runs a whole sentence
+    func clip(_ s: String, _ n: Int) -> String { s.count > n ? s.prefix(n - 1) + "…" : s }
+    for a in agents {
+        rows.append(PopupRow(icon: "agents:\(a.state.rawValue)", text: clip(a.name, 28), detail: clip(a.detail, 14),
+                             action: { a.open(); closePopup() }))
+    }
+    return rows
 }
 
 // --- keyboard layout (TIS publishes a distributed notification) ----------
@@ -1901,7 +2221,7 @@ func tailscaleRows() -> [PopupRow] {
     rows.append(PopupRow(icon: "sf:power", text: t.running ? "disconnect" : "connect",
                          action: run(t.running ? ["down"] : ["up"])))
     rows.append(PopupRow(separator: true))
-    rows.append(PopupRow(icon: t.running ? "sf:network" : "sf:network.slash",
+    rows.append(PopupRow(icon: t.running ? "ts" : "ts:off",
                          text: t.running ? "connected" : "disconnected",
                          detail: t.running ? t.ip : "", dim: true))
     if t.running && !t.exitNodes.isEmpty {
@@ -1922,30 +2242,181 @@ func tailscaleRows() -> [PopupRow] {
     return rows
 }
 
+// --- home assistant: the REST API, polled. HA_URL and HA_TOKEN (a
+// long-lived token from the HA profile page) come from ~/.env, the file
+// bin/acc sources too — no token, no item.
+// ponytail: whatever HA has in HOME_DOMAINS shows up, no per-device config
+
+struct HomeEntity {
+    var id = "", name = "", state = ""
+    var temp: Double?, target: Double? // climate only
+    var minT = 16.0, maxT = 30.0, step = 1.0
+    var domain: String { String(id.prefix { $0 != "." }) }
+    var on: Bool { !["off", "unavailable", "unknown"].contains(state) }
+}
+var home: [HomeEntity]? // nil = HA unreachable
+var homeSlide: DispatchWorkItem? // debounces the climate slider
+
+// re-read on every call: editing ~/.env needs no rebuild or restart
+func dotenv(_ key: String) -> String {
+    let text = (try? String(contentsOfFile: NSHomeDirectory() + "/.env", encoding: .utf8)) ?? ""
+    for line in text.split(separator: "\n") {
+        let kv = line.split(separator: "=", maxSplits: 1)
+        guard kv.count == 2, kv[0].trimmingCharacters(in: .whitespaces) == key else { continue }
+        return kv[1].trimmingCharacters(in: CharacterSet(charactersIn: " \"'"))
+    }
+    return ""
+}
+var HA_URL: String { dotenv("HA_URL") }
+func haToken() -> String { dotenv("HA_TOKEN") }
+
+func haRequest(_ path: String, _ body: [String: Any]? = nil, done: @escaping (Data?) -> Void) {
+    DispatchQueue.global(qos: .utility).async {
+        let token = haToken()
+        guard !token.isEmpty, let url = URL(string: HA_URL + "/api/" + path) else { return done(nil) }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 10
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if let body {
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        }
+        URLSession.shared.dataTask(with: request) { data, response, _ in
+            done((response as? HTTPURLResponse)?.statusCode == 200 ? data : nil)
+        }.resume()
+    }
+}
+
+func haCall(_ e: HomeEntity, _ service: String, _ extra: [String: Any] = [:]) {
+    haRequest("services/\(e.domain)/\(service)", extra.merging(["entity_id": e.id]) { a, _ in a }) { _ in
+        updateHome()
+    }
+}
+
+func updateHome() {
+    DispatchQueue.global(qos: .utility).async {
+        guard !haToken().isEmpty else { return } // not set up: the item stays hidden
+        haRequest("states") { data in
+            var list: [HomeEntity]?
+            if let data, let states = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+                list = states.compactMap { s in
+                    guard let id = s["entity_id"] as? String, let state = s["state"] as? String,
+                          state != "unavailable" else { return nil }
+                    var e = HomeEntity(id: id, state: state)
+                    guard HOME_DOMAINS.contains(e.domain) else { return nil }
+                    let a = s["attributes"] as? [String: Any] ?? [:]
+                    e.name = a["friendly_name"] as? String ?? id
+                    e.temp = a["current_temperature"] as? Double
+                    e.target = a["temperature"] as? Double
+                    e.minT = a["min_temp"] as? Double ?? e.minT
+                    e.maxT = a["max_temp"] as? Double ?? e.maxT
+                    e.step = a["target_temp_step"] as? Double ?? e.step
+                    return e
+                }.sorted { a, b in
+                    // climate first, then by name
+                    a.domain == b.domain || (a.domain != "climate" && b.domain != "climate")
+                        ? a.name < b.name : a.domain == "climate"
+                }
+            }
+            DispatchQueue.main.async {
+                home = list
+                set("home") {
+                    $0.drawing = true
+                    $0.icon = "sf:house.fill"
+                    $0.iconColor = list == nil ? \.red : nil
+                }
+                if openPopup == "home" { refreshPopup() }
+            }
+        }
+    }
+}
+
+func homeRows() -> [PopupRow] {
+    guard rightItems["home"]?.drawing == true else { return [] }
+    var rows = [PopupRow(text: "home assistant", hero: true)]
+    if let list = home {
+        for e in list {
+            let on = e.on
+            switch e.domain {
+            case "climate":
+                let temp = e.temp.map { "\(Int($0.rounded()))° · " } ?? ""
+                rows.append(PopupRow(icon: on ? "sf:snowflake" : "sf:power", text: e.name,
+                                     detail: temp + e.state, highlight: on,
+                                     action: { haCall(e, on ? "turn_off" : "turn_on") }))
+                guard on, let target = e.target else { continue }
+                let span = e.maxT - e.minT
+                rows.append(PopupRow(text: String(format: target.truncatingRemainder(dividingBy: 1) == 0 ? "%.0f°" : "%.1f°", target),
+                                     slider: (target - e.minT) / span,
+                                     onSlide: { f in
+                                         let v = e.minT + ((f * span) / e.step).rounded() * e.step
+                                         // the row follows the pointer now, HA hears it once the drag settles
+                                         if let i = home?.firstIndex(where: { $0.id == e.id }) { home?[i].target = v }
+                                         refreshPopup()
+                                         homeSlide?.cancel()
+                                         let work = DispatchWorkItem { haCall(e, "set_temperature", ["temperature": v]) }
+                                         homeSlide = work
+                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: work)
+                                     }))
+            default:
+                let icon = ["light": "sf:lightbulb", "fan": "sf:fan"][e.domain] ?? "sf:power"
+                rows.append(PopupRow(icon: icon, text: e.name, detail: e.state, highlight: on,
+                                     action: { haCall(e, "toggle") }))
+            }
+        }
+        if list.isEmpty { rows.append(PopupRow(text: "no devices", dim: true)) }
+    } else {
+        rows.append(PopupRow(icon: "sf:exclamationmark.triangle", text: "unreachable", detail: HA_URL, dim: true))
+    }
+    rows.append(PopupRow(separator: true))
+    rows.append(PopupRow(text: "open Home Assistant…", dim: true, action: {
+        if let url = URL(string: HA_URL) { NSWorkspace.shared.open(url) }
+        closePopup()
+    }))
+    return rows
+}
+
 func weatherRows() -> [PopupRow] {
     guard let w = weather else { return [] }
-    var rows: [PopupRow] = [PopupRow(text: "\(w.emoji) \(w.temp)°C \(w.desc)", hero: true)]
     func kv(_ k: String, _ v: String) -> PopupRow { PopupRow(cells: [k, v], cellDim: [0], labelCol: true) }
+    // a label column, then one column per slot; cells under 10% rain read dim
+    func head(_ label: String, _ cols: [String]) -> PopupRow {
+        PopupRow(cells: [label] + cols, cellDim: Set(0...cols.count), labelCol: true)
+    }
+    func line(_ label: String, _ cols: [String], dim: [Bool] = []) -> PopupRow {
+        PopupRow(cells: [label] + cols, cellDim: Set([0] + dim.indices.filter { dim[$0] }.map { $0 + 1 }), labelCol: true)
+    }
+    var rows: [PopupRow] = [PopupRow(icon: w.symbol, text: "\(w.temp)°C \(w.desc)", hero: true)]
     if w.feels != w.temp { rows.append(kv("feels", "\(w.feels)°C")) }
     rows.append(kv("wind", w.wind))
     rows.append(kv("humidity", "\(w.humidity)%"))
+    if !w.pressure.isEmpty { rows.append(kv("pressure", "\(w.pressure) hPa")) }
+    if !w.visibility.isEmpty { rows.append(kv("visibility", "\(w.visibility) km")) }
     if !w.uv.isEmpty { rows.append(kv("uv", uvLevel(w.uv))) }
-    if !w.rain.isEmpty { rows.append(kv("rain", w.rain.replacingOccurrences(of: "☔ ", with: ""))) }
+    if !w.rain.isEmpty { rows.append(kv("rain", w.rain)) }
     if !w.sunrise.isEmpty { rows.append(kv("sun", "\(w.sunrise) → \(w.sunset)")) }
     if !w.moon.isEmpty { rows.append(kv("moon", w.moon)) }
+    if !w.hours.isEmpty {
+        rows.append(PopupRow(separator: true))
+        rows.append(head("", w.hours.map(\.time)))
+        rows.append(line("", w.hours.map(\.symbol)))
+        rows.append(line("temp", w.hours.map { "\($0.temp)°" }))
+        rows.append(line("rain", w.hours.map { "\($0.rain)%" }, dim: w.hours.map { $0.rain < 10 }))
+    }
     if !w.days.isEmpty {
-        // the forecast: one column per day
         rows.append(PopupRow(separator: true))
-        rows.append(PopupRow(cells: [""] + w.days.map(\.name), cellDim: Set(0...w.days.count), labelCol: true))
-        rows.append(PopupRow(cells: [""] + w.days.map(\.emoji), labelCol: true))
-        rows.append(PopupRow(cells: ["temp"] + w.days.map { "\($0.low)–\($0.high)°" }, cellDim: [0], labelCol: true))
-        rows.append(PopupRow(cells: ["rain"] + w.days.map { "\($0.rain)%" }, cellDim: [0], labelCol: true))
-        rows.append(PopupRow(cells: ["uv"] + w.days.map(\.uv), cellDim: [0], labelCol: true))
+        rows.append(head("", w.days.map(\.name)))
+        rows.append(line("", w.days.map(\.symbol)))
+        rows.append(line("temp", w.days.map { "\($0.low)–\($0.high)°" }))
+        rows.append(line("rain", w.days.map { "\($0.rain)%" }, dim: w.days.map { $0.rain < 10 }))
+        rows.append(line("wind", w.days.map(\.wind)))
+        rows.append(line("uv", w.days.map(\.uv)))
     }
-    if !w.location.isEmpty {
-        rows.append(PopupRow(separator: true))
-        rows.append(PopupRow(text: w.location, dim: true))
-    }
+    rows.append(PopupRow(separator: true))
+    let at = DateFormatter()
+    at.dateFormat = "HH:mm"
+    rows.append(PopupRow(text: w.location.isEmpty ? "wttr.in" : w.location,
+                         detail: "updated \(at.string(from: w.fetched))", dim: true))
     return rows
 }
 
@@ -1986,12 +2457,15 @@ func popupRows(for name: String) -> [PopupRow] {
     case "weather": return weatherRows()
     case "brightness": return brightnessRows()
     case "volume": return volumeRows()
-    case "wifi": return wifiRows()
-    case "bluetooth": return bluetoothRows()
+    case "battery": return batteryRows()
     case "tailscale": return tailscaleRows()
+    case "home": return homeRows()
     case "layout": return layoutRows()
     case "claude": return claudeRows()
-    case "appmenu": return appMenuRows()
+    case "agents": return agentRows()
+    case "agents:pick": return orchestratorRows()
+    case "caffeinate": return caffeinateRows()
+    case "theme": return themeRows()
     default: return []
     }
 }
@@ -2111,30 +2585,14 @@ func frontAppAXMenuBar() -> AXUIElement? {
     return (bar as! AXUIElement)
 }
 
-// The REAL Apple menu — child 0 of the front app's menu bar, the item
-// the app drill-down skips — through the same drill machinery. Falls back to the hand-rolled rows
-// when Accessibility is not granted or AX has nothing.
+// The REAL Apple menu — child 0 of the front app's menu bar — with
+// submenus drilled into behind a back row. Falls back to the hand-rolled
+// rows when Accessibility is not granted or AX has nothing.
 func appleMenuRows() -> [PopupRow] {
     guard AXIsProcessTrusted(),
           let menubar = frontAppAXMenuBar(),
           let apple = axChildren(menubar).first
     else { return appleRows() }
-    if !appMenuStack.isEmpty {
-        return appMenuRows()
-    }
-    let rows = rowsForMenu(apple, collapseAlternates: true)
-    guard !rows.isEmpty else { return appleRows() }
-    return rows
-}
-
-func appMenuRows() -> [PopupRow] {
-    let opts = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
-    guard AXIsProcessTrustedWithOptions(opts) else {
-        return [PopupRow(text: "grant Accessibility to statusbar", hero: true),
-                PopupRow(text: "System Settings opened the pane — toggle the bar on,", dim: true),
-                PopupRow(text: "then click the app name again", dim: true)]
-    }
-    // drilled into a menu: its items, behind a back row
     if let top = appMenuStack.last {
         var rows = [PopupRow(icon: "‹", text: top.title, highlight: true, action: {
             appMenuStack.removeLast()
@@ -2143,373 +2601,9 @@ func appMenuRows() -> [PopupRow] {
         rows.append(contentsOf: rowsForMenu(top.element, context: top.title))
         return rows
     }
-    // NOT frontmostApplication: the click that opens this popup makes
-    // the bar itself frontmost for a beat, and the popup bailed empty.
-    // model.frontApp tracks the real app and ignores our own pid.
-    guard let menubar = frontAppAXMenuBar() else {
-        tlog("appmenu: no menu bar for '\(model.frontApp)'")
-        return []
-    }
-    // no hero title: the app's name is literally the pill this popup
-    // hangs from. Index 0 is the Apple menu — our apple pill's ground.
-    var rows: [PopupRow] = []
-    for item in axChildren(menubar).dropFirst() {
-        let title = axString(item, "AXTitle")
-        guard !title.isEmpty else { continue }
-        rows.append(PopupRow(icon: "›", text: title, action: {
-            appMenuStack.append((title, item))
-            refreshPopup()
-        }))
-    }
-    if !rows.isEmpty { rows[0].highlight = true }
+    let rows = rowsForMenu(apple, collapseAlternates: true)
+    guard !rows.isEmpty else { return appleRows() }
     return rows
-}
-
-extension String {
-    func ifEmpty(_ fallback: String) -> String { isEmpty ? fallback : self }
-}
-
-// --- cheatsheet (Super+K) --------------------------------------------------
-// Rendered from the LIVE OmniWM settings.toml, never from a list kept here: a cheatsheet
-// that can disagree with the keys is worse than no cheatsheet. The
-// config's own section comments become the headings, so the grouping is
-// the author's rather than a second opinion about it.
-
-struct CheatEntry {
-    let group: String
-    let key: String
-    let action: String
-}
-
-func cheatEntries() -> [CheatEntry] { omniwmCheatEntries() }
-
-// "Control+Option+Command+Shift+1" -> "Super+Shift+1": Super IS
-// cmd-ctrl-alt here (Caps Lock sends it). The key names arrive already
-// capitalised; only " Arrow" is dropped, so the arrows read "Left".
-func prettyOmniKey(_ raw: String) -> String {
-    var rest = raw
-    var parts: [String] = []
-    if rest.hasPrefix("Control+Option+Command+") {
-        parts.append("Super")
-        rest = String(rest.dropFirst("Control+Option+Command+".count))
-    }
-    for comp in rest.split(separator: "+") {
-        var key = String(comp)
-        if key.hasSuffix(" Arrow") { key = String(key.dropLast(" Arrow".count)) }
-        parts.append(key)
-    }
-    return parts.joined(separator: "+")
-}
-
-// "switchWorkspace.0" -> "switch workspace 1": the raw catalog ids were
-// printed verbatim once, on the theory that the config's truth beats a
-// pretty lie — and read as a mess (0-based suffixes beside 1-based
-// keycaps, camelCase runs). The id's meaning survives; only the casing
-// and indexing are translated to match the keycap next to it.
-func humanizeOmniId(_ id: String) -> String {
-    func words(_ s: String) -> String {
-        var out = ""
-        for ch in s { out.append(ch.isUppercase ? " " + String(ch).lowercased() : String(ch)) }
-        return out.trimmingCharacters(in: .whitespaces)
-    }
-    let parts = id.split(separator: ".", maxSplits: 1).map(String.init)
-    // dwindle reality beats the catalog's niri-flavored names: moveColumn
-    // is a tile SWAP there (the binding people reach for daily), and
-    // plain move STACKS into the neighbor as a group
-    let renamed = ["moveColumn": "swap window", "move": "stack into"]
-    let head = renamed[parts[0]] ?? words(parts[0])
-    guard parts.count > 1 else { return head }
-    if let n = Int(parts[1]) { return "\(head) \(n + 1)" }
-    switch parts[1] {
-    case "decrease10Percent": return "\(head) −10%"
-    case "increase10Percent": return "\(head) +10%"
-    default: return "\(head) \(words(parts[1]))"
-    }
-}
-
-// with the comment headings stripped by the strict-decoder rewrite, the
-// sheet gets its sections from the id families instead
-func omniGroup(_ id: String) -> String {
-    let h = String(id.split(separator: ".").first ?? "")
-    if h.lowercased().contains("workspace") { return "Workspaces" }
-    if h.hasPrefix("focus") { return "Focus" }
-    if h.hasPrefix("move") || h.hasPrefix("summon") { return "Move" }
-    if h.contains("Span") || h.hasPrefix("resize") || h.hasPrefix("balance")
-        || h.hasPrefix("cycleSize") || h.hasPrefix("set") { return "Size" }
-    if h.hasPrefix("toggle") || h.contains("Layout") || h.contains("Column")
-        || h.hasPrefix("preselect") || h.contains("olumn") { return "Layout & columns" }
-    return "System"
-}
-
-// [[hotkeys]] tables out of OmniWM's settings.toml: a binding string and
-// an action id per table, in either order.
-func omniwmCheatEntries() -> [CheatEntry] {
-    let path = "\(NSHomeDirectory())/.config/omniwm/settings.toml"
-    guard let text = try? String(contentsOfFile: path, encoding: .utf8) else { return [] }
-    var entries: [CheatEntry] = []
-    var group = ""
-    var lastWasComment = false
-    var inHotkey = false
-    var binding = ""
-    var id = ""
-    func flush() {
-        // the canonical settings file carries EVERY catalog id — most
-        // Unassigned. A cheatsheet's job is what you CAN press, so the
-        // ~90 unassigned rows stay out (they made the sheet a wall).
-        if inHotkey, !binding.isEmpty, binding != "Unassigned", !id.isEmpty {
-            entries.append(CheatEntry(
-                group: group.isEmpty ? omniGroup(id) : group,
-                key: prettyOmniKey(binding), action: humanizeOmniId(id)))
-        }
-        binding = ""
-        id = ""
-    }
-    for raw in text.split(separator: "\n", omittingEmptySubsequences: false) {
-        let line = raw.trimmingCharacters(in: .whitespaces)
-        if line.hasPrefix("#") {
-            // a comment between tables starts the NEXT group: a complete
-            // pending entry belongs to the heading it was written under,
-            // not the one about to be read (a half-read table keeps its
-            // keys — TOML allows comments between them)
-            if !binding.isEmpty, !id.isEmpty { flush() }
-            // first line of a comment block is a heading — the "---" ruler
-            // decoration is trimmed off
-            if !lastWasComment {
-                var title = String(line.dropFirst())
-                    .trimmingCharacters(in: CharacterSet(charactersIn: "- "))
-                if let c = title.firstIndex(where: { $0 == ":" || $0 == "." }) {
-                    title = String(title[..<c])
-                }
-                title = title.trimmingCharacters(in: .whitespaces)
-                if title.count > 34 { title = String(title.prefix(33)) + "…" }
-                group = title
-            }
-            lastWasComment = true
-            continue
-        }
-        lastWasComment = false
-        if line.hasPrefix("[") {
-            flush()
-            inHotkey = line == "[[hotkeys]]"
-            continue
-        }
-        guard inHotkey, let eq = line.firstIndex(of: "=") else { continue }
-        let key = line[line.startIndex..<eq].trimmingCharacters(in: .whitespaces)
-        let value = line[line.index(after: eq)...].trimmingCharacters(in: .whitespaces)
-        guard let q = value.first, q == "'" || q == "\"",
-            let close = value.dropFirst().firstIndex(of: q)
-        else { continue }
-        let v = String(value[value.index(after: value.startIndex)..<close])
-        if key == "binding" { binding = v } else if key == "id" { id = v }
-    }
-    flush()
-    // derived groups arrive interleaved (switch/move alternate per
-    // workspace) — order them section by section, keeping in-group
-    // order (index tiebreak kept explicit rather than leaning on
-    // sort stability)
-    let sectionOrder = ["Workspaces", "Focus", "Move", "Layout & columns", "Size", "System"]
-    let indexed = entries.enumerated().map { ($0.offset, $0.element) }
-    entries = indexed.sorted { a, b in
-        let ga = sectionOrder.firstIndex(of: a.1.group) ?? 99
-        let gb = sectionOrder.firstIndex(of: b.1.group) ?? 99
-        return ga != gb ? ga < gb : a.0 < b.0
-    }.map { $0.1 }
-    // the exec chords live in Karabiner while OmniWM runs (its hotkeys
-    // cannot exec) — the sheet must show them or half the muscle-memory
-    // map is invisible. Read our own injected rules back by their
-    // description prefix.
-    return entries
-}
-
-
-let cheatColumns = 3
-let cheatRowH: CGFloat = 20
-let cheatPad: CGFloat = 18
-
-// the sheet takes key focus while open (the overview's pattern) so it
-// can be typed into; hideCheatsheet hands focus back to the app that
-// had it, so the search never costs the user their window
-final class CheatWindow: NSWindow {
-    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect { frameRect }
-    override var canBecomeKey: Bool { true }
-}
-
-final class CheatsheetView: NSView {
-    var entries: [CheatEntry] = []
-    var filter = ""
-    private var keyFont: NSFont { nerdFont("Bold", 12) }
-    private var actFont: NSFont { nerdFont("Regular", 12) }
-    private var headFont: NSFont { nerdFont("Bold", 13) }
-
-    private func visibleEntries() -> [CheatEntry] {
-        guard !filter.isEmpty else { return entries }
-        let f = filter.lowercased()
-        return entries.filter {
-            $0.key.lowercased().contains(f) || $0.action.lowercased().contains(f)
-                || $0.group.lowercased().contains(f)
-        }
-    }
-
-    // rows are (heading?, entry?) laid into balanced columns
-    private func rows() -> [(String?, CheatEntry?)] {
-        var out: [(String?, CheatEntry?)] = []
-        var seen = ""
-        for e in visibleEntries() {
-            if e.group != seen {
-                if !out.isEmpty { out.append((nil, nil)) } // breathing room
-                out.append((e.group, nil))
-                seen = e.group
-            }
-            out.append((nil, e))
-        }
-        return out
-    }
-
-    private func columns() -> [[(String?, CheatEntry?)]] {
-        let all = rows()
-        guard !all.isEmpty else { return [] }
-        let per = Int((Double(all.count) / Double(cheatColumns)).rounded(.up))
-        return stride(from: 0, to: all.count, by: per).map {
-            Array(all[$0..<min($0 + per, all.count)])
-        }
-    }
-
-    private func columnWidths() -> [(key: CGFloat, total: CGFloat)] {
-        columns().map { col in
-            var k: CGFloat = 0, a: CGFloat = 0
-            for (head, e) in col {
-                if let head { k = max(k, advance(head, headFont)) }
-                if let e {
-                    k = max(k, advance(e.key, keyFont))
-                    a = max(a, advance(e.action, actFont))
-                }
-            }
-            return (k, k + 14 + a)
-        }
-    }
-
-    func measure() -> NSSize {
-        let cols = columns()
-        guard !cols.isEmpty else { return NSSize(width: 320, height: 80) }
-        let widths = columnWidths()
-        let w = widths.reduce(0) { $0 + $1.total } + CGFloat(cols.count - 1) * 28
-        let tallest = cols.map(\.count).max() ?? 0
-        return NSSize(width: w + cheatPad * 2,
-                      height: CGFloat(tallest) * cheatRowH + cheatPad * 2 + 26)
-    }
-
-    override func draw(_ dirtyRect: NSRect) {
-        let body = NSBezierPath(roundedRect: bounds.insetBy(dx: 0.5, dy: 0.5),
-                                xRadius: POPUP_RADIUS, yRadius: POPUP_RADIUS)
-        palette.barBG.setFill()
-        body.fill()
-        palette.accent.setStroke()
-        body.lineWidth = 1
-        body.stroke()
-
-        let title = filter.isEmpty
-            ? "keybindings — Super is Caps Lock · type to search · Super+K, Esc or click to close"
-            : "search: \(filter)▏ — \(visibleEntries().count) match\(visibleEntries().count == 1 ? "" : "es") · Esc clears"
-        drawText(title, nerdFont("Bold", 12), palette.accent.withAlphaComponent(0.8),
-                 leftAt: cheatPad, midY: bounds.maxY - cheatPad - 6)
-
-        var x = cheatPad
-        for (i, col) in columns().enumerated() {
-            let width = columnWidths()[i]
-            var y = bounds.maxY - cheatPad - 30
-            for (head, e) in col {
-                if let head {
-                    drawText(head, headFont, palette.accent, leftAt: x, midY: y - cheatRowH / 2)
-                } else if let e {
-                    drawText(e.key, keyFont, palette.label, leftAt: x, midY: y - cheatRowH / 2)
-                    drawText(e.action, actFont, palette.muted,
-                             leftAt: x + width.key + 14, midY: y - cheatRowH / 2)
-                }
-                y -= cheatRowH
-            }
-            x += width.total + 28
-        }
-    }
-
-    override func mouseDown(with event: NSEvent) { hideCheatsheet() }
-
-    override var acceptsFirstResponder: Bool { true }
-    override func keyDown(with event: NSEvent) {
-        switch event.keyCode {
-        case 53: // esc — clear an active search first, close on the second
-            if filter.isEmpty { hideCheatsheet() } else { filter = ""; refit() }
-        case 51: // backspace
-            if !filter.isEmpty { filter.removeLast(); refit() }
-        case 40 where event.modifierFlags.contains([.command, .control, .option]):
-            hideCheatsheet() // Super+K toggles closed even while we hold key
-        default:
-            guard let chars = event.charactersIgnoringModifiers,
-                !chars.isEmpty,
-                !event.modifierFlags.contains(.command),
-                chars.rangeOfCharacter(from: .alphanumerics.union(CharacterSet(charactersIn: "+- "))) != nil
-            else { return }
-            filter += chars
-            refit()
-        }
-    }
-
-    // the sheet shrinks to its matches — re-measure and keep the centre
-    private func refit() {
-        guard let window = window else { needsDisplay = true; return }
-        let size = measure()
-        let c = NSPoint(x: window.frame.midX, y: window.frame.midY)
-        frame = NSRect(origin: .zero, size: size)
-        window.setFrame(NSRect(x: c.x - size.width / 2, y: c.y - size.height / 2,
-                               width: size.width, height: size.height), display: true)
-        needsDisplay = true
-    }
-}
-
-var cheatWindow: CheatWindow?
-var cheatPrevApp: NSRunningApplication?
-
-func hideCheatsheet() {
-    cheatWindow?.orderOut(nil)
-    cheatWindow = nil
-    // hand focus back to whoever had it before the sheet took key
-    cheatPrevApp?.activate()
-    cheatPrevApp = nil
-}
-
-func toggleCheatsheet() {
-    if cheatWindow != nil { hideCheatsheet(); return }
-    let entries = cheatEntries()
-    guard !entries.isEmpty else {
-        tlog("cheatsheet: no bindings parsed from omniwm settings.toml")
-        return
-    }
-    let view = CheatsheetView(frame: .zero)
-    view.entries = entries
-    let size = view.measure()
-    view.frame = NSRect(origin: .zero, size: size)
-    // centred on the display holding the cursor, like every other
-    // full-surface thing here
-    let mouse = NSEvent.mouseLocation
-    let screen = NSScreen.screens.first { $0.frame.contains(mouse) } ?? NSScreen.main!
-    let window = CheatWindow(
-        contentRect: NSRect(x: screen.frame.midX - size.width / 2,
-                            y: screen.frame.midY - size.height / 2,
-                            width: size.width, height: size.height),
-        styleMask: .borderless, backing: .buffered, defer: false)
-    window.isOpaque = false
-    window.backgroundColor = .clear
-    window.hasShadow = true
-    window.level = .popUpMenu
-    window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
-    window.contentView = view
-    // take key so typing filters — remember the app that had focus, the
-    // close path activates it again
-    cheatPrevApp = NSWorkspace.shared.frontmostApplication
-    NSApp.activate(ignoringOtherApps: true)
-    window.makeKeyAndOrderFront(nil)
-    window.makeFirstResponder(view)
-    cheatWindow = window
-    tlog("cheatsheet: \(entries.count) bindings")
 }
 
 // --- view -----------------------------------------------------------------
@@ -2528,10 +2622,13 @@ func toggleCheatsheet() {
 // height rather than ink for text because it does not move when the
 // content changes — "28°C" and "8:05 PM" sit on the same baseline.
 func inkBox(_ s: String, _ font: NSFont) -> CGRect {
-    if s == "bt" { return CGRect(origin: .zero, size: bluetoothRune(font).size) }
     if s.hasPrefix("ts") { return CGRect(x: 0, y: 0, width: font.pointSize, height: font.pointSize) }
     if s.hasPrefix("key:") { return CGRect(origin: .zero, size: keyBadge(s, font).size) }
     if s.hasPrefix("donut:") { return CGRect(x: 0, y: 0, width: font.pointSize, height: font.pointSize) }
+    if s.hasPrefix("agents:") {
+        let m = agentMark(font)
+        return CGRect(x: 0, y: 0, width: CGFloat(s.count - 7) * m.step - m.gap, height: font.pointSize)
+    }
     if let img = sfSymbol(s, font) { return CGRect(origin: .zero, size: img.size) }
     let line = CTLineCreateWithAttributedString(
         NSAttributedString(string: s, attributes: [.font: font]))
@@ -2559,37 +2656,69 @@ func drawLine(_ s: String, _ font: NSFont, _ color: NSColor, baseline origin: CG
 // like text; anything else is a font glyph
 func sfSymbol(_ s: String, _ font: NSFont, _ color: NSColor? = nil) -> NSImage? {
     guard s.hasPrefix("sf:") else { return nil }
+    // cached by name, size and tint; a theme switch only adds keys
+    let key = "\(s)|\(font.pointSize)|\(color?.description ?? "")"
+    if let img = symbolCache[key] { return img }
+    let img = loadSymbol(s, font, color)
+    symbolCache[key] = img
+    return img
+}
+
+var symbolCache: [String: NSImage?] = [:]
+func loadSymbol(_ s: String, _ font: NSFont, _ color: NSColor?) -> NSImage? {
     var config = NSImage.SymbolConfiguration(pointSize: font.pointSize, weight: .medium)
     if let color { config = config.applying(.init(paletteColors: [color])) }
     return NSImage(systemSymbolName: String(s.dropFirst(3)), accessibilityDescription: nil)?
         .withSymbolConfiguration(config)
 }
 
-// SF Symbols has no Bluetooth mark, so "bt" is drawn: the rune as one
-// stroke, sized and weighted to sit with the symbols around it
-func bluetoothRune(_ font: NSFont) -> (path: NSBezierPath, size: NSSize) {
-    let h = font.pointSize * 0.95, a = h * 0.26, b = h * 0.25
-    let p = NSBezierPath()
-    p.move(to: NSPoint(x: -a, y: -b))
-    p.line(to: NSPoint(x: a, y: b))
-    p.line(to: NSPoint(x: 0, y: h / 2))
-    p.line(to: NSPoint(x: 0, y: -h / 2))
-    p.line(to: NSPoint(x: a, y: -b))
-    p.line(to: NSPoint(x: -a, y: b))
-    p.lineWidth = max(1.4, font.pointSize / 10)
-    p.lineJoinStyle = .round
-    p.lineCapStyle = .round
-    return (p, NSSize(width: a * 2 + p.lineWidth, height: h + p.lineWidth))
-}
-
 // "key:<text>" is a keycap: a filled rounded plate, the text in the bar's background colour
 func keyBadge(_ s: String, _ font: NSFont) -> (text: String, font: NSFont, size: NSSize) {
-    let text = String(s.dropFirst(4)), f = nerdFont("Bold", (font.pointSize * 0.62).rounded())
-    return (text, f, NSSize(width: (advance(text, f) + 8).rounded(), height: font.pointSize))
+    // Heavy: knocked-out text reads a weight lighter than the bar's Bold
+    let text = String(s.dropFirst(4)), f = nerdFont("Heavy", (font.pointSize * 0.62).rounded())
+    return (text, f, NSSize(width: (advance(text, f) + 8).rounded(), height: font.pointSize + 1))
+}
+
+// "agents:<states>" is a row of status marks, one digit (AgentState) each
+func agentMark(_ font: NSFont) -> (d: CGFloat, gap: CGFloat, step: CGFloat) {
+    let d = (font.pointSize * 0.55).rounded(), gap: CGFloat = 5
+    return (d, gap, d + gap)
 }
 
 // "donut:<0...1>" is a progress ring the size of a glyph
 func drawIcon(_ s: String, _ font: NSFont, _ color: NSColor, centeredIn box: CGRect) {
+    if s.hasPrefix("agents:") {
+        let m = agentMark(font), lw: CGFloat = 1.5, r = m.d / 2 - lw / 2
+        let marks = s.dropFirst(7)
+        var x = box.midX - CGFloat(marks.count - 1) * m.step / 2
+        for ch in marks {
+            guard let st = ch.wholeNumberValue.flatMap({ AgentState(rawValue: $0) }) else { continue }
+            let c = NSPoint(x: x.rounded(), y: box.midY.rounded())
+            func circle(_ radius: CGFloat) -> NSBezierPath {
+                let p = NSBezierPath(ovalIn: NSRect(x: c.x - radius, y: c.y - radius, width: radius * 2, height: radius * 2))
+                p.lineWidth = lw
+                return p
+            }
+            st.color.setStroke()
+            st.color.setFill()
+            switch st {
+            case .idle: circle(r).stroke()
+            case .done: circle(r + lw / 2).fill()
+            case .working: // the right half filled, like a moon
+                circle(r).stroke()
+                let half = NSBezierPath()
+                half.move(to: c)
+                half.appendArc(withCenter: c, radius: r, startAngle: 90, endAngle: -90, clockwise: true)
+                half.close()
+                half.fill()
+            case .blocked: // a dot inside a ring: the one that wants you
+                circle(r).stroke()
+                circle(max(1, r - lw - 1)).fill()
+            }
+            x += m.step
+        }
+        return
+    }
     if s.hasPrefix("donut:"), let f = Double(s.dropFirst(6)) {
         let d = font.pointSize, lw = max(2, d / 6), r = (d - lw) / 2
         let c = NSPoint(x: box.midX.rounded(), y: box.midY.rounded())
@@ -2630,13 +2759,6 @@ func drawIcon(_ s: String, _ font: NSFont, _ color: NSColor, centeredIn box: CGR
         }
         return
     }
-    if s == "bt" {
-        let rune = bluetoothRune(font)
-        rune.path.transform(using: AffineTransform(translationByX: box.midX.rounded(), byY: box.midY.rounded()))
-        color.setStroke()
-        rune.path.stroke()
-        return
-    }
     if let img = sfSymbol(s, font, color) {
         img.draw(in: NSRect(x: (box.midX - img.size.width / 2).rounded(),
                             y: (box.midY - img.size.height / 2).rounded(),
@@ -2670,22 +2792,11 @@ func appIcon(_ name: String) -> NSImage? {
     return icon
 }
 
-// The terminal the activity pill opens btop in. install.sh writes the
-// RESOLVED choice (apps.local.conf overrides already applied) next to the
-// other daemon configs, because a launchd agent cannot read the repo when
-// the clone sits under ~/Documents — which is exactly where this one is.
-let terminalApp: String = {
-    let config = URL(fileURLWithPath: NSHomeDirectory())
-        .appendingPathComponent(".config/statusbar/apps.conf")
-    guard let text = try? String(contentsOf: config, encoding: .utf8) else { return "Ghostty" }
-    for line in text.split(separator: "\n") where line.hasPrefix("TERMINAL=") {
-        return line.dropFirst("TERMINAL=".count)
-            .trimmingCharacters(in: CharacterSet(charactersIn: "\" "))
-    }
-    return "Ghostty"
-}()
+let terminalApp = "Ghostty" // the activity pill opens btop here
 
-final class BarView: NSView {
+let barItemType = NSPasteboard.PasteboardType("dev.freethinkel.statusbar.item")
+
+final class BarView: NSView, NSDraggingSource {
     weak var surface: BarSurface?
     var chipRects: [(String, NSRect)] = []
     var winRects: [(String, NSRect)] = [] // window id -> its icon, checked before chips
@@ -2702,7 +2813,8 @@ final class BarView: NSView {
     // then drawn glyph-by-glyph with different spacing, so the pill came
     // out 7 px wider than its contents. One layout, used by both.
     private func mediaGlyphs() -> [(String, String)] {
-        [("prev", "󰒮"), ("play", model.media.playing ? "󰏤" : "󰐊"), ("next", "󰒭")]
+        [("prev", "sf:backward.end.fill"), ("play", model.media.playing ? "sf:pause.fill" : "sf:play.fill"),
+         ("next", "sf:forward.end.fill")]
     }
 
     // Positions first, size second: the pill is as wide as what it holds
@@ -2711,17 +2823,17 @@ final class BarView: NSView {
     // advance the way the leading edge is not.
     private func mediaLayout(_ titleFont: NSFont, _ iconFont: NSFont)
         -> (width: CGFloat, glyphs: [(String, String, CGFloat, CGFloat)], titleX: CGFloat) {
-        var x: CGFloat = 10
+        // square PILL_HEIGHT buttons, like the apple one: hover fills a
+        // square and the glyph sits in its centre
+        var x: CGFloat = 0
         var placed: [(String, String, CGFloat, CGFloat)] = []
         for (name, glyph) in mediaGlyphs() {
-            let w = inkBox(glyph, iconFont).width
-            placed.append((name, glyph, x, w))
-            x += w + 6
+            placed.append((name, glyph, x, PILL_HEIGHT))
+            x += PILL_HEIGHT
         }
-        x += 6 // transport-to-title gap, on top of the 6 already added
+        x += 4 // transport-to-title gap
         let titleX = x
-        let ink = inkBox(clippedTitle, titleFont)
-        return (titleX + ink.maxX + 10, placed, titleX)
+        return (titleX + titleWidth(titleFont) + 10, placed, titleX)
     }
 
     private func mediaSize(_ titleFont: NSFont, _ iconFont: NSFont) -> CGFloat {
@@ -2729,10 +2841,54 @@ final class BarView: NSView {
         return mediaLayout(titleFont, iconFont).width
     }
 
-    private var clippedTitle: String {
-        let limit = (surface?.notched ?? false) ? 20 : 28
+    private var titleLimit: Int { (surface?.notched ?? false) ? 20 : 28 }
+    private var titleScrolls: Bool { model.media.title.count > titleLimit }
+
+    // a long title keeps the width of `limit` characters and scrolls
+    // through it instead of being cut with an ellipsis
+    private func titleWidth(_ font: NSFont) -> CGFloat {
         let title = model.media.title
-        return title.count <= limit ? title : String(title.prefix(limit - 1)) + "…"
+        return titleScrolls ? advance(String(title.prefix(titleLimit)), font) : inkBox(title, font).maxX
+    }
+
+    // ponytail: redraws the whole bar at 30 fps while a title scrolls;
+    // cache the bar into a layer and move only the title if CPU shows up
+    private var marqueeScheduled = false
+    // right-click on the title: still, showing the start of the title
+    var marqueeOn: Bool {
+        get { !UserDefaults.standard.bool(forKey: "marqueeOff") }
+        set { UserDefaults.standard.set(!newValue, forKey: "marqueeOff") }
+    }
+    private func drawMarquee(_ font: NSFont, in box: NSRect, midY: CGFloat) {
+        let title = model.media.title
+        let cycle = advance(title, font) + 40 // 40 px gap before the repeat
+        // a paused track holds still: scrolling redraws the whole bar at 30 fps
+        let scrolling = marqueeOn && model.media.playing
+        let offset = scrolling ? CGFloat(CACurrentMediaTime() * 30).truncatingRemainder(dividingBy: cycle) : 0
+        guard let ctx = NSGraphicsContext.current?.cgContext else { return }
+        ctx.saveGState()
+        ctx.clip(to: box)
+        // text in its own layer, then the edges erased with a gradient:
+        // a fade mask that works over any pill background
+        ctx.beginTransparencyLayer(auxiliaryInfo: nil)
+        drawText(title, font, palette.label, leftAt: box.minX - offset, midY: midY)
+        drawText(title, font, palette.label, leftAt: box.minX - offset + cycle, midY: midY)
+        ctx.setBlendMode(.destinationOut)
+        let fade: CGFloat = 12
+        let erase = CGGradient(colorsSpace: nil, colors: [NSColor.black.cgColor, NSColor.clear.cgColor] as CFArray,
+                               locations: [0, 1])!
+        if scrolling {
+            ctx.drawLinearGradient(erase, start: CGPoint(x: box.minX, y: 0), end: CGPoint(x: box.minX + fade, y: 0), options: [])
+        }
+        ctx.drawLinearGradient(erase, start: CGPoint(x: box.maxX, y: 0), end: CGPoint(x: box.maxX - fade, y: 0), options: [])
+        ctx.endTransparencyLayer()
+        ctx.restoreGState()
+        guard scrolling, !marqueeScheduled else { return }
+        marqueeScheduled = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 / 30) { [weak self] in
+            self?.marqueeScheduled = false
+            self?.needsDisplay = true
+        }
     }
 
     private func drawMedia(at origin: CGFloat, _ titleFont: NSFont, _ iconFont: NSFont) {
@@ -2742,14 +2898,24 @@ final class BarView: NSView {
 
         let layout = mediaLayout(titleFont, iconFont)
         for (name, glyph, dx, w) in layout.glyphs {
-            drawIcon(glyph, iconFont, palette.label,
-                     centeredIn: NSRect(x: pill.minX + dx, y: pill.minY, width: w, height: pill.height))
-            mediaRects.append((name, NSRect(x: pill.minX + dx - 4, y: 0, width: w + 8, height: BAR_HEIGHT)))
+            let hit = NSRect(x: pill.minX + dx, y: 0, width: w, height: BAR_HEIGHT)
+            pressing(hit) {
+                drawIcon(glyph, iconFont, palette.label,
+                         centeredIn: NSRect(x: pill.minX + dx, y: pill.minY, width: w, height: pill.height))
+            }
+            mediaRects.append((name, hit))
         }
-        drawText(clippedTitle, titleFont, palette.label,
-                 leftAt: pill.minX + layout.titleX, midY: pill.midY)
-        mediaRects.append(("title", NSRect(x: pill.minX + layout.titleX, y: 0,
-                                           width: advance(clippedTitle, titleFont), height: BAR_HEIGHT)))
+        let titleHit = NSRect(x: pill.minX + layout.titleX, y: 0,
+                              width: titleWidth(titleFont), height: BAR_HEIGHT)
+        pressing(titleHit) {
+            if titleScrolls {
+                drawMarquee(titleFont, in: titleHit, midY: pill.midY)
+            } else {
+                drawText(model.media.title, titleFont, palette.label,
+                         leftAt: titleHit.minX, midY: pill.midY)
+            }
+        }
+        mediaRects.append(("title", titleHit))
     }
 
     private func draw(_ s: String, _ font: NSFont, _ color: NSColor, centeredIn box: NSRect) {
@@ -2770,6 +2936,12 @@ final class BarView: NSView {
         let chipFont = nerdFont("SemiBold", 13)
         let iconFont = nerdFont("Bold", ICON_SIZE)
         guard let surface else { return }
+        // press eases in, release eases back out
+        let pressTarget: CGFloat = pressedRect != nil ? 1 : 0
+        pressAnim += (pressTarget - pressAnim) * 0.58 // 1 - 0.65², twice the old 0.35
+        if abs(pressTarget - pressAnim) < 0.01 { pressAnim = pressTarget } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 / 60) { [weak self] in self?.needsDisplay = true }
+        }
         // one solid strip, no per-item islands
         palette.barBG.setFill()
         bounds.fill()
@@ -2792,14 +2964,13 @@ final class BarView: NSView {
         // edge stays at PAD_LEFT, so only the inner edge moves.
         let appleW = PILL_HEIGHT
         let apple = NSRect(x: PAD_LEFT, y: (BAR_HEIGHT - PILL_HEIGHT) / 2, width: appleW, height: PILL_HEIGHT)
-        drawIcon(appleGlyph, appleFont, palette.accent, centeredIn: apple)
         appleRect = NSRect(x: apple.minX, y: 0, width: appleW, height: BAR_HEIGHT)
+        pressing(appleRect) { drawIcon(appleGlyph, appleFont, palette.accent, centeredIn: apple) }
 
         // one pill per workspace, like OmniWM's own bar: label, then an
         // icon per window. Floating windows and OmniWM's excluded apps are
         // already dropped by the time names reach model.apps.
         var x = apple.maxX + 10
-        let chipsStart = x
         for ws in shown {
             let apps = model.apps[ws] ?? []
             let iconsW = apps.isEmpty ? 0 : CGFloat(apps.count) * (APP_ICON_SIZE + APP_ICON_GAP) + 4
@@ -2808,6 +2979,8 @@ final class BarView: NSView {
             // each display marks the workspace IT is showing, not the
             // globally focused one
             let active = ws == surface.visible
+            let chipHit = NSRect(x: chip.minX, y: 0, width: chip.width, height: BAR_HEIGHT)
+            pressing(chipHit) {
             // OmniWM-bar style: the active workspace is outlined, not
             // filled, and everything outside it sits back at half strength
             if active {
@@ -2820,13 +2993,13 @@ final class BarView: NSView {
             let tint: NSColor = active ? palette.accent : palette.muted
             let fade: CGFloat = active ? 1 : 0.5
             let labelBox = NSRect(x: chip.minX + CHIP_PAD, y: 0, width: CHIP_BOX, height: BAR_HEIGHT)
-            switch workspaceIconConfig.icon(for: ws) {
-            case .some(.glyph(let glyph)):
+            switch workspaceIcon(ws) {
+            case .glyph(let glyph)?:
                 drawIcon(glyph, iconFont, tint, centeredIn: labelBox)
-            case .some(.image(let icon)):
+            case .image(let icon)?:
                 icon.draw(in: NSRect(x: labelBox.midX - 9, y: BAR_HEIGHT / 2 - 9, width: 18, height: 18),
                           from: .zero, operation: .sourceOver, fraction: fade)
-            case .some(.unavailable), .none:
+            case nil:
                 draw(String(ws.suffix(1)), chipFont, tint, centeredIn: labelBox)
             }
             var ix = labelBox.maxX + 2
@@ -2842,42 +3015,45 @@ final class BarView: NSView {
                 nextAnim[win.id] = t
                 let e = t * t * (3 - 2 * t) // smoothstep
                 let grow = APP_ICON_SIZE * 0.05 * e
-                appIcon(win.app)?.draw(in: r.insetBy(dx: -grow, dy: -grow), from: .zero,
-                                       operation: .sourceOver, fraction: 0.5 + 0.5 * e)
-                winRects.append((win.id, NSRect(x: r.minX - APP_ICON_GAP / 2, y: 0,
-                                                width: APP_ICON_SIZE + APP_ICON_GAP, height: BAR_HEIGHT)))
+                let winHit = NSRect(x: r.minX - APP_ICON_GAP / 2, y: 0,
+                                    width: APP_ICON_SIZE + APP_ICON_GAP, height: BAR_HEIGHT)
+                pressing(winHit) {
+                    appIcon(win.app)?.draw(in: r.insetBy(dx: -grow, dy: -grow), from: .zero,
+                                           operation: .sourceOver, fraction: 0.5 + 0.5 * e)
+                }
+                winRects.append((win.id, winHit))
                 ix += APP_ICON_SIZE + APP_ICON_GAP
             }
-            chipRects.append((ws, NSRect(x: chip.minX, y: 0, width: chip.width, height: BAR_HEIGHT)))
+            }
+            chipRects.append((ws, chipHit))
             x = chip.maxX + CHIP_GAP
         }
         winAnim = nextAnim
         if animating {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 / 60) { [weak self] in self?.needsDisplay = true }
         }
-        let bracket = NSRect(x: chipsStart, y: 0, width: max(0, x - CHIP_GAP - chipsStart), height: BAR_HEIGHT)
 
-        // no front-app pill: the native menu bar (auto-hide, over the bar)
-        // already names the app and carries its menus
-        let leftEdge = bracket.maxX
-        appPillRect = .zero
-
-        // media: centred where there is room, in the left cluster where a
-        // notch owns the middle
-        let mediaW = mediaSize(chipFont, iconFont)
-        if mediaW > 0 {
-            drawMedia(at: surface.notched ? leftEdge + GAP : (bounds.width - mediaW) / 2,
-                      chipFont, iconFont)
+        // media: centred where there is room; where a notch owns the
+        // middle it joins the right cluster, after it is laid out
+        let mediaIconFont = nerdFont("Bold", 12) // SF transport glyphs; 16 pt read heavier than the title
+        let mediaW = mediaSize(chipFont, mediaIconFont)
+        if mediaW > 0, !surface.notched {
+            drawMedia(at: (bounds.width - mediaW) / 2, chipFont, mediaIconFont)
         }
 
         // right cluster: laid out from the right edge inwards, so a pill
         // changing width never shifts the ones outside it
         var cursor = bounds.maxX - PAD_LEFT
-        for name in RIGHT_ITEMS.reversed() {
-            guard let item = rightItems[name], item.drawing,
-                  !(item.icon.isEmpty && item.label.isEmpty) else { continue }
+        for name in rightOrder.reversed() {
+            guard var item = rightItems[name], item.drawing,
+                  !(item.icon.isEmpty && item.label.isEmpty),
+                  dragName != nil || !(collapsed && collapsible.contains(name)) else { continue }
+            // a hidden pill's red dot moves onto the chevron, so it is not lost
+            if name == "more" {
+                item.badge = collapsed && collapsible.contains { rightItems[$0]?.badge == true && rightItems[$0]?.drawing == true }
+            }
             let labelFont = chipFont
-            let iconColor = item.iconColor.map { palette[keyPath: $0] } ?? palette.label
+            let iconColor = item.stale ? palette.muted : item.iconColor.map { palette[keyPath: $0] } ?? palette.label
             let hasIcon = !item.icon.isEmpty
             let hasLabel = !item.label.isEmpty
             // An icon-only pill centres the glyph on its INK, with the same
@@ -2894,19 +3070,174 @@ final class BarView: NSView {
             let width = ITEM_PAD + iconInk + innerGap + labelAdv + ITEM_PAD
             let pill = NSRect(x: cursor - width, y: (BAR_HEIGHT - PILL_HEIGHT) / 2,
                               width: width, height: PILL_HEIGHT)
+            let hit = NSRect(x: pill.minX, y: 0, width: width, height: BAR_HEIGHT)
+            // the dragged pill's slot: an empty outline where it will land
+            if name == dragName {
+                let slot = NSBezierPath(roundedRect: pill.insetBy(dx: 1, dy: 1), xRadius: 6, yRadius: 6)
+                slot.lineWidth = 1
+                slot.setLineDash([3, 3], count: 2, phase: 0)
+                palette.muted.setStroke()
+                slot.stroke()
+                itemRects.append((name, hit))
+                cursor = pill.minX - ITEM_GAP
+                continue
+            }
+            pressing(hit) {
             if hasIcon {
-                drawIcon(item.icon, iconFont, iconColor,
-                         centeredIn: square ? pill
-                             : NSRect(x: pill.minX + ITEM_PAD, y: pill.minY,
-                                      width: iconInk, height: pill.height))
+                let box = square ? pill
+                    : NSRect(x: pill.minX + ITEM_PAD, y: pill.minY, width: iconInk, height: pill.height)
+                drawIcon(item.icon, iconFont, iconColor, centeredIn: box)
+                if item.badge {
+                    let ink = inkBox(item.icon, iconFont)
+                    let c = NSPoint(x: box.midX + ink.width / 2, y: box.midY + ink.height / 2)
+                    palette[keyPath: item.badgeColor].setFill()
+                    NSBezierPath(ovalIn: NSRect(x: c.x - 3, y: c.y - 3, width: 6, height: 6)).fill()
+                }
             }
             if hasLabel {
-                drawText(item.label, labelFont, palette.label,
+                drawText(item.label, labelFont, item.stale ? palette.muted : palette.label,
                          leftAt: pill.minX + ITEM_PAD + iconInk + innerGap, midY: pill.midY)
             }
-            itemRects.append((name, NSRect(x: pill.minX, y: 0, width: width, height: BAR_HEIGHT)))
+            }
+            itemRects.append((name, hit))
             cursor = pill.minX - ITEM_GAP
         }
+        // left of the right cluster, unless that runs under the notch:
+        // hidden beats half-drawn
+        let notchRight = surface.screen.auxiliaryTopRightArea.map { $0.minX - surface.screen.frame.minX } ?? 0
+        if mediaW > 0, surface.notched, cursor - GAP - mediaW >= notchRight {
+            drawMedia(at: cursor - GAP - mediaW, chipFont, mediaIconFont)
+        }
+        // hover/press feedback for whatever the pointer is over: one tint
+        // laid over the clickable rect, so every target reacts the same way
+        if let p = hoverPoint, let r = clickRect(at: p) {
+            let box = NSRect(x: r.minX, y: (BAR_HEIGHT - PILL_HEIGHT) / 2, width: r.width, height: PILL_HEIGHT)
+            pressing(r) {
+                palette.label.withAlphaComponent(0.1 + 0.12 * (r == scaleRect ? pressAnim : 0)).setFill()
+                NSBezierPath(roundedRect: box, xRadius: 6, yRadius: 6).fill()
+            }
+        }
+    }
+
+    // Draws a target shrunk around its centre while it is (or was just)
+    // pressed. Hit rects are rebuilt each frame from the same layout, so
+    // equality finds the target again; a chip wraps its window icons, so a
+    // pressed chip shrinks with them.
+    private func pressing(_ hit: NSRect, _ body: () -> Void) {
+        guard pressAnim > 0, hit == scaleRect else { return body() }
+        // Rasterise at full size, then scale the bitmap. Drawing text and
+        // glyphs under a scaled CTM re-lays them out per frame and snaps
+        // each to the pixel grid, so they jitter; a bitmap shrinks smoothly.
+        let scale = window?.backingScaleFactor ?? 2
+        guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil,
+                                         pixelsWide: Int((hit.width * scale).rounded(.up)),
+                                         pixelsHigh: Int((hit.height * scale).rounded(.up)),
+                                         bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                         colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0),
+              let ctx = NSGraphicsContext(bitmapImageRep: rep)
+        else { return body() }
+        rep.size = hit.size
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = ctx
+        ctx.cgContext.scaleBy(x: scale, y: scale)
+        ctx.cgContext.translateBy(x: -hit.minX, y: -hit.minY)
+        body()
+        NSGraphicsContext.restoreGraphicsState()
+
+        let k = 1 - 0.08 * pressAnim
+        let dst = hit.insetBy(dx: hit.width * (1 - k) / 2, dy: hit.height * (1 - k) / 2)
+        rep.draw(in: dst, from: .zero, operation: .sourceOver, fraction: 1,
+                 respectFlipped: true, hints: [.interpolation: NSNumber(value: NSImageInterpolation.high.rawValue)])
+    }
+
+    private var hoverPoint: NSPoint?
+    private var pressedRect: NSRect?
+    private var pressAnim: CGFloat = 0
+    private var scaleRect: NSRect? // the pressed target, kept while release eases out
+
+    // same priority as mouseDown, so the lit rect is the one a click hits
+    private func clickRect(at p: NSPoint) -> NSRect? {
+        if appleRect.contains(p) { return appleRect }
+        return (winRects + chipRects + mediaRects + itemRects).first { $0.1.contains(p) }?.1
+    }
+
+    override func mouseMoved(with event: NSEvent) {
+        hoverPoint = convert(event.locationInWindow, from: nil)
+        needsDisplay = true
+    }
+
+    // Right-cluster pills act on mouseUp, not mouseDown, so a press can
+    // turn into a drag instead. Dragging reorders live, with the hidden
+    // pills shown; dropping one left of the chevron hides it.
+    private var downName: String?
+    private var downX: CGFloat = 0
+
+    // Native drag: AppKit flies a snapshot of the pill, every bar is a
+    // drop target (so pills cross displays), and the slot it would land in
+    // is drawn as an outline that moves as the pointer does.
+    override func mouseDragged(with event: NSEvent) {
+        guard dragName == nil, let name = downName,
+              let rect = itemRects.first(where: { $0.0 == name })?.1,
+              abs(convert(event.locationInWindow, from: nil).x - downX) > 4 else { return }
+        closePopup()
+        // snapshot without the press shrink or hover tint
+        pressedRect = nil; scaleRect = nil; pressAnim = 0; hoverPoint = nil
+        let pill = NSRect(x: rect.minX, y: (BAR_HEIGHT - PILL_HEIGHT) / 2, width: rect.width, height: PILL_HEIGHT)
+        guard let rep = bitmapImageRepForCachingDisplay(in: pill) else { return }
+        cacheDisplay(in: pill, to: rep)
+        // clipped and tinted like the hover plate, not a square cut of the bar
+        let image = NSImage(size: pill.size, flipped: false) { r in
+            NSBezierPath(roundedRect: r, xRadius: 6, yRadius: 6).addClip()
+            rep.draw(in: r)
+            palette.label.withAlphaComponent(0.1).setFill()
+            r.fill()
+            return true
+        }
+
+        let pb = NSPasteboardItem()
+        pb.setString(name, forType: barItemType)
+        let item = NSDraggingItem(pasteboardWriter: pb)
+        item.setDraggingFrame(pill, contents: image)
+        dragName = name
+        downName = nil
+        repaint()
+        beginDraggingSession(with: [item], event: event, source: self)
+    }
+
+    func draggingSession(_ session: NSDraggingSession,
+                         sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation { .move }
+
+    // dropped anywhere — on a bar or not — the live order is the result;
+    // AppKit slides the image back itself when it lands outside a bar
+    func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
+        dragName = nil
+        UserDefaults.standard.set(rightOrder, forKey: "rightOrder")
+        repaint()
+    }
+
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation { draggingUpdated(sender) }
+
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard let name = dragName else { return [] }
+        let x = convert(sender.draggingLocation, from: nil).x
+        // ponytail: swaps with whichever pill the pointer is over; fine at a dozen pills
+        if let over = itemRects.first(where: { $0.0 != name && $0.1.minX <= x && x < $0.1.maxX })?.0,
+           let from = rightOrder.firstIndex(of: name), let to = rightOrder.firstIndex(of: over) {
+            rightOrder.remove(at: from)
+            rightOrder.insert(name, at: to)
+            repaint()
+        }
+        return .move
+    }
+
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool { dragName != nil }
+
+    override func mouseUp(with event: NSEvent) {
+        pressedRect = nil
+        needsDisplay = true
+        defer { downName = nil }
+        guard let name = downName, let rect = itemRects.first(where: { $0.0 == name })?.1 else { return }
+        activate(name, rect)
     }
 
 
@@ -2917,35 +3248,33 @@ final class BarView: NSView {
         super.updateTrackingAreas()
         trackingAreas.forEach(removeTrackingArea)
         addTrackingArea(NSTrackingArea(rect: bounds,
-                                       options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+                                       options: [.mouseEnteredAndExited, .mouseMoved, .activeAlways, .inVisibleRect],
                                        owner: self))
     }
 
-    override func mouseExited(with event: NSEvent) { scheduleHullCheck() }
+    override func mouseExited(with event: NSEvent) {
+        hoverPoint = nil
+        pressedRect = nil
+        needsDisplay = true
+        scheduleHullCheck()
+    }
 
     private func hit(_ event: NSEvent) -> String? {
         let p = convert(event.locationInWindow, from: nil)
         return itemRects.first(where: { $0.1.contains(p) })?.0
     }
 
-    var appPillRect = NSRect.zero
-
     override func mouseDown(with event: NSEvent) {
         let p = convert(event.locationInWindow, from: nil)
-        if appPillRect != .zero, appPillRect.contains(p), let surface {
+        hoverPoint = p
+        pressedRect = clickRect(at: p)
+        scaleRect = pressedRect
+        needsDisplay = true
+        if appleRect.contains(p), let surface {
             appMenuStack.removeAll()
             // clicking the bar deactivated the app, which makes its menu
             // items read disabled and presses land nowhere — hand focus
             // straight back while our popup (never key) stays up
-            NSWorkspace.shared.runningApplications
-                .first { $0.localizedName == model.frontApp }?
-                .activate()
-            showPopup("appmenu", under: window?.convertToScreen(convert(appPillRect, to: nil)) ?? appPillRect,
-                      on: surface, alignLeft: true)
-            return
-        }
-        if appleRect.contains(p), let surface {
-            appMenuStack.removeAll()
             NSWorkspace.shared.runningApplications
                 .first { $0.localizedName == model.frontApp }?
                 .activate()
@@ -2966,37 +3295,58 @@ final class BarView: NSView {
         if let part = mediaRects.first(where: { $0.1.contains(p) })?.0 {
             closePopup()
             switch part {
-            case "prev": spotify("previous track")
-            case "play": spotify("playpause")
-            case "next": spotify("next track")
-            default:
-                if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: spotifyBundleID) {
-                    NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
-                }
+            case "prev": spotifast("previous")
+            case "play": spotifast("play-pause")
+            case "next": spotifast("next")
+            default: spotifast("show")
             }
             return
         }
-        guard let name = hit(event), let rect = itemRects.first(where: { $0.0 == name })?.1 else {
+        guard let name = hit(event) else {
             closePopup()
             return
         }
+        downName = name
+        downX = p.x
+    }
+
+    private func activate(_ name: String, _ rect: NSRect) {
+        // left click toggles with the last mode; its menu is on the right button
+        if name == "caffeinate" {
+            closePopup()
+            caffProc == nil ? startCaffeinate(caffFlags) : stopCaffeinate()
+            return
+        }
         // an item with a popup toggles it; the rest still act directly
-        if !popupRows(for: name).isEmpty, let surface {
-            let anchor = window?.convertToScreen(convert(rect, to: nil)) ?? rect
-            showPopup(name, under: anchor, on: surface)
+        if let surface, showPopup(name, under: window?.convertToScreen(convert(rect, to: nil)) ?? rect, on: surface) {
             return
         }
         closePopup()
         switch name {
-        case "battery":
-            NSWorkspace.shared.open(
-                URL(string: "x-apple.systempreferences:com.apple.Battery-Settings.extension")!)
+        case "more":
+            collapsed.toggle()
+            set("more") { $0.icon = collapsed ? "sf:chevron.left" : "sf:chevron.right" }
         case "activity":
             DispatchQueue.global(qos: .userInitiated).async {
-                _ = shell("/usr/bin/open", ["-na", terminalApp, "--args", "--title=statusbar-activity", "-e", "btop"])
+                // login zsh: a launchd agent's PATH lacks /opt/homebrew/bin
+                _ = shell("/usr/bin/open", ["-na", terminalApp, "--args", "--title=statusbar-activity", "-e", "/bin/zsh", "-lc", "btop"])
             }
         default: break
         }
+    }
+
+    override func rightMouseDown(with event: NSEvent) {
+        let p = convert(event.locationInWindow, from: nil)
+        if mediaRects.contains(where: { $0.0 == "title" && $0.1.contains(p) }) {
+            marqueeOn.toggle()
+            repaint()
+            return
+        }
+        guard let name = hit(event), name == "caffeinate" || name == "agents", let surface,
+              let rect = itemRects.first(where: { $0.0 == name })?.1 else { return }
+        // the agents pill picks its orchestrator on the right button
+        showPopup(name == "agents" ? "agents:pick" : name,
+                  under: window?.convertToScreen(convert(rect, to: nil)) ?? rect, on: surface)
     }
 
     // A trackpad flick delivers dozens of precise events plus a momentum
@@ -3066,7 +3416,7 @@ final class BarSurface {
     let view: BarView
 
     // A notched display has no usable centre, so the media capsule joins
-    // the left cluster there — the same rule the shell bar applies, but
+    // the right cluster there — the same rule the shell bar applies, but
     // read from the screen itself instead of asked of a helper.
     var notched: Bool { screen.safeAreaInsets.top > 0 }
 
@@ -3084,6 +3434,7 @@ final class BarSurface {
         window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
         window.acceptsMouseMovedEvents = true // tracking areas need the moves
         view = BarView(frame: NSRect(origin: .zero, size: frame.size))
+        view.registerForDraggedTypes([barItemType])
         window.contentView = view
         view.surface = self
         if !fullscreenDisplays().contains(screenID(screen)) { window.orderFrontRegardless() }
@@ -3250,11 +3601,6 @@ func watch(_ path: String, create: Bool, handler: @escaping () -> Void) {
     src.resume()
 }
 
-// Super+K writes this; the bar has no key tap and should not grow one
-let cheatPath = "/tmp/statusbar-cheatsheet"
-watch(cheatPath, create: true) { toggleCheatsheet() }
-
-
 // --- omniwm fast path -------------------------------------------------------
 // A switch between two EMPTY workspaces moves no windows, so SkyLight
 // says nothing. OmniWM publishes instead: its active-workspace
@@ -3293,14 +3639,20 @@ func omniWorkspaceBarEvent(_ line: Data) {
         for w in list {
             guard let name = w["rawName"] as? String else { continue }
             if (w["isFocused"] as? Bool) == true { active = name }
-            let wins = ((w["windows"] as? [[String: Any]]) ?? [])
-                .filter { ($0["appName"] as? String)?.hasPrefix("statusbar") != true }
+            // the stream groups windows by APP (one entry, allWindows
+            // inside); the snapshot is per window. Same shape here, or the
+            // two paths disagree on every rebuild and the chips flicker.
+            var wins: [BarWin] = []
+            for group in (w["windows"] as? [[String: Any]]) ?? [] {
+                guard let app = group["appName"] as? String, !app.hasPrefix("statusbar") else { continue }
+                for win in (group["allWindows"] as? [[String: Any]]) ?? [group] {
+                    guard let id = win["id"] as? String, !model.floating.contains(id) else { continue }
+                    wins.append(BarWin(app: app, id: id, focused: (win["isFocused"] as? Bool) == true))
+                }
+            }
             if !wins.isEmpty {
                 occupied.insert(name)
-                apps[name] = wins.compactMap { w in
-                    guard let app = w["appName"] as? String, let id = w["id"] as? String else { return nil }
-                    return BarWin(app: app, id: id, focused: (w["isFocused"] as? Bool) == true)
-                }
+                apps[name] = wins
             }
         }
         guard !active.isEmpty else { continue }
@@ -3587,7 +3939,6 @@ watch(FileManager.default.homeDirectoryForCurrentUser
     palette = loadPalette()
     iconCache.removeAll()
     repaint()
-    if cheatWindow != nil { hideCheatsheet(); toggleCheatsheet() } // repaint in the new palette
     let ms = Double(DispatchTime.now().uptimeNanoseconds - t0) / 1_000_000
     tlog(String(format: "theme %.2f ms", ms))
 }
@@ -3686,27 +4037,8 @@ if DSRegisterBrightnessNotifications(builtinDisplayID(), nil, brightnessProc) !=
 // change nobody else would tell an open popup about
 watchNightShift()
 
-// network: the same SCDynamicStore keys the watcher uses
-var storeContext = SCDynamicStoreContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
-if let store = SCDynamicStoreCreate(nil, "statusbar" as CFString,
-                                    { _, _, _ in DispatchQueue.main.async { updateWifi() } }, &storeContext) {
-    SCDynamicStoreSetNotificationKeys(store, nil, [
-        "State:/Network/Global/IPv4",
-        "State:/Network/Interface/en.*/Link",
-        "State:/Network/Interface/en.*/AirPort",
-    ] as CFArray)
-    if let src = SCDynamicStoreCreateRunLoopSource(nil, store, 0) {
-        CFRunLoopAddSource(CFRunLoopGetCurrent(), src, .defaultMode)
-    }
-} else {
-    tlog("SCDynamicStoreCreate failed — wifi pill will not update")
-}
-
-// location: the network name's price, same responsible-process rules
+// location: one coordinate for the weather, same responsible-process rules
 locationGate.start()
-
-// bluetooth: gated on the privacy grant, which the watcher above also needs
-bluetoothWatcher.start()
 
 // waking clears the gamma table, so the shade has to be reasserted.
 NSWorkspace.shared.notificationCenter.addObserver(
@@ -3715,27 +4047,63 @@ NSWorkspace.shared.notificationCenter.addObserver(
     applyShade()
 }
 
-// media: Spotify broadcasts every state change itself, and the payload
-// already carries the track — so the pill repaints without asking anyone
-// anything. Launch and quit are the one pair it cannot announce.
-DistributedNotificationCenter.default().addObserver(
-    forName: NSNotification.Name("\(spotifyBundleID).PlaybackStateChanged"), object: nil, queue: .main
-) { note in updateMedia(from: note.userInfo) }
+// Polls pause while nobody can see the bar: screens asleep, screen locked,
+// user switched out. Each would otherwise spawn a CLI every few seconds.
+var pauseReasons: Set<String> = []
+func pausePolls(_ why: String, _ on: Bool) {
+    let wasPaused = !pauseReasons.isEmpty
+    if on { pauseReasons.insert(why) } else { pauseReasons.remove(why) }
+    tlog("polls: \(why) \(on ? "pause" : "resume") -> \(pauseReasons.isEmpty ? "running" : "paused")")
+    guard wasPaused, pauseReasons.isEmpty else { return }
+    // back in view: catch up now rather than at the next tick (weather is
+    // 30 min out). ponytail: 5 s for the network to come back after a wake
+    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+        guard pauseReasons.isEmpty else { return }
+        updateMedia(); locationGate.refresh(); updateTailscale(); updateClaude(); updateHome(); updateAgents()
+    }
+}
+for (name, why, on): (NSNotification.Name, String, Bool) in [
+    (NSWorkspace.screensDidSleepNotification, "screens", true),
+    (NSWorkspace.screensDidWakeNotification, "screens", false),
+    (NSWorkspace.sessionDidResignActiveNotification, "session", true),
+    (NSWorkspace.sessionDidBecomeActiveNotification, "session", false),
+] {
+    NSWorkspace.shared.notificationCenter.addObserver(forName: name, object: nil, queue: .main) { _ in
+        pausePolls(why, on)
+    }
+}
+for (name, on) in [("com.apple.screenIsLocked", true), ("com.apple.screenIsUnlocked", false)] {
+    DistributedNotificationCenter.default().addObserver(forName: .init(name), object: nil, queue: .main) { _ in
+        pausePolls("locked", on)
+    }
+}
 
+// 10% tolerance lets the system coalesce the wakeups
+func poll(_ interval: TimeInterval, _ body: @escaping () -> Void) {
+    let t = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+        if pauseReasons.isEmpty { body() }
+    }
+    t.tolerance = interval / 10
+}
+
+// media: launch and quit repaint at once, the track itself is polled
 for event in [NSWorkspace.didLaunchApplicationNotification,
               NSWorkspace.didTerminateApplicationNotification] {
     NSWorkspace.shared.notificationCenter.addObserver(forName: event, object: nil, queue: .main) { note in
         guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
-              app.bundleIdentifier == spotifyBundleID else { return }
-        if event == NSWorkspace.didLaunchApplicationNotification { primeMedia() } else { updateMedia() }
+              app.bundleIdentifier == spotifastBundleID else { return }
+        updateMedia()
     }
 }
+poll(MEDIA_POLL) { updateMedia() }
 
 // clock and weather have no publisher to listen to. The clock ticks on
 // the minute boundary rather than every 60 s from launch, so it never
 // shows a stale minute.
 func scheduleClock() {
     updateClock()
+    updateEvents()
+    updateCaffeinate() // the minutes-left label
     let now = Date()
     let nextMinute = Calendar.current.nextDate(after: now, matching: DateComponents(second: 0),
                                                matchingPolicy: .nextTime) ?? now.addingTimeInterval(60)
@@ -3743,10 +4111,15 @@ func scheduleClock() {
 }
 scheduleClock()
 
-Timer.scheduledTimer(withTimeInterval: WEATHER_POLL, repeats: true) { _ in locationGate.refresh() }
+poll(WEATHER_POLL) { locationGate.refresh() }
 // ponytail: 15 s poll; `tailscale debug watch-ipn` streams changes if this lags
-Timer.scheduledTimer(withTimeInterval: TAILSCALE_POLL, repeats: true) { _ in updateTailscale() }
-Timer.scheduledTimer(withTimeInterval: CLAUDE_POLL, repeats: true) { _ in updateClaude() }
+poll(TAILSCALE_POLL) { updateTailscale() }
+poll(CLAUDE_POLL) { updateClaude() }
+poll(HOME_POLL) { updateHome() }
+poll(AGENTS_POLL) { updateAgents() }
+poll(ACTIVITY_POLL) { updateActivity() }
+NotificationCenter.default.addObserver(forName: ProcessInfo.thermalStateDidChangeNotification, object: nil,
+                                       queue: .main) { _ in updateActivity() }
 
 // --- go -------------------------------------------------------------------
 
@@ -3759,20 +4132,30 @@ guard !surfaces.isEmpty else {
     exit(1)
 }
 apply(fetchSnapshot()) // blocking is fine here: the run loop has not started
-rightItems["activity"] = BarItem(icon: "sf:cpu", iconColor: \.accent)
+updateActivity() // primes the cpu ticks; the first busy figure comes a poll later
+rightItems["more"] = BarItem(icon: "sf:chevron.left", iconColor: \.muted)
 applyShade() // restore the level this machine was left at
+// a flag left on disk means we died in lid mode: put disablesleep back
+if lidSetByUs { tlog("lid: undoing disablesleep left by a crash"); lidSetByUs = false; setDisableSleep(false) }
 updateBattery()
 updateBrightness()
-updateWifi()
+updateTheme()
 updateWeather()
 updateTailscale()
 updateLayout()
 updateClaude()
+updateHome()
+updateAgents()
+NotificationCenter.default.addObserver(forName: .EKEventStoreChanged, object: eventStore,
+                                       queue: .main) { _ in updateEvents() }
+eventStore.requestFullAccessToEvents { granted, _ in
+    if granted { DispatchQueue.main.async { updateEvents() } }
+}
 DistributedNotificationCenter.default().addObserver(
     forName: NSNotification.Name(kTISNotifySelectedKeyboardInputSourceChanged as String),
     object: nil, queue: .main) { _ in updateLayout() }
 repaint()
-primeMedia()
+updateMedia()
 reconcile("startup") // the OmniWM watch, and retries for a manager not up yet
 tlog("statusbar up on " + surfaces.map { "\($0.screen.localizedName)=m\($0.monitorID)\($0.notched ? " (notched)" : "")" }.joined(separator: ", "))
 app.run()

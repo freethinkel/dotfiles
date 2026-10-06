@@ -5,16 +5,18 @@
   <key>CFBundleIdentifier</key><string>dev.freethinkel.statusbar</string>
   <key>CFBundleName</key><string>statusbar</string>
   <!-- This file is BOTH the section embedded in the binary and the
-       bundle's Contents/Info.plist, so the usage strings have one home.
-       The bundle is not cosmetic: measured on macOS 26.3, a bundled app
-       with Location authorised reads the SSID and an unbundled binary
-       reads nil no matter what it is granted. -->
+       bundle's Contents/Info.plist, so the usage strings have one home. -->
   <key>CFBundleExecutable</key><string>statusbar</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>LSUIElement</key><true/>
-  <key>NSBluetoothAlwaysUsageDescription</key>
-  <string>statusbar shows how many bluetooth devices are connected in the status bar.</string>
   <key>NSLocationWhenInUseUsageDescription</key>
-  <string>macOS treats the name of the wi-fi network you are on as location data. statusbar shows that name in the status bar, and uses your position only to fetch the local weather.</string>
+  <string>statusbar uses your position only to fetch the local weather.</string>
+  <key>NSCalendarsFullAccessUsageDescription</key>
+  <string>statusbar marks the clock when you have events today and opens their call links.</string>
+  <!-- Home Assistant over plain http on the LAN -->
+  <key>NSAppTransportSecurity</key>
+  <dict><key>NSAllowsLocalNetworking</key><true/></dict>
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>statusbar talks to Home Assistant on your local network to show and control your devices.</string>
 </dict>
 </plist>

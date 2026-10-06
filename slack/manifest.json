@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "Slack theme",
+  "version": "1",
+  "description": "Follows the active dotfiles theme.",
+  "content_scripts": [{ "matches": ["https://app.slack.com/*"], "js": ["inject.js"], "run_at": "document_start" }],
+  "web_accessible_resources": [{ "resources": ["theme.css"], "matches": ["https://app.slack.com/*"] }]
+}

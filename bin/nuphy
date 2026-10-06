@@ -1,0 +1,83 @@
+#!/usr/bin/env swift
+// nuphy color '#rrggbb' — backlight colour of a NuPhy Air65 V3, over the USB cable only
+// (Bluetooth carries no config channel). Switches to the Static effect, keeps
+// brightness, writes both the Mac and the Win record so the side switch does not matter.
+// Protocol: github.com/gig3m/nuphykit PROTOCOL.md (Air100 V3), same on the Air65 V3:
+// 64-byte reports on the usage 0x01/0x00 interface,
+// frame = 55 <cmd> 00 <sum of bytes 4..63>, payload XOR a session key from 0xEE.
+// Light record (0xD5 read / 0xD6 write, 17 bytes): 0 effect, 1 brightness %,
+// 4 colour mode (0 = fixed), 6-8 RGB, 10 side-light brightness. The device keeps
+// RGB rescaled to the brightness and rounds it, so it reads back a few steps off,
+// and a brightness write rescales it: colour goes last.
+// ponytail: Air65 V3 PID only; other V3 boards differ in PID, add theirs here
+import Foundation
+import IOKit.hid
+
+let VID = 0x19F5, PID = 0x102B
+
+func fail(_ m: String) -> Never { FileHandle.standardError.write("nuphy: \(m)\n".data(using: .utf8)!); exit(1) }
+
+guard CommandLine.arguments.count == 3, CommandLine.arguments[1] == "color" else { fail("usage: nuphy color '#rrggbb'") }
+let hex = CommandLine.arguments[2].trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+guard hex.count == 6, let rgb = UInt32(hex, radix: 16) else { fail("bad colour \(CommandLine.arguments[2])") }
+// LEDs wash pastels out to white: keep the hue, drop the white part (min
+// channel), stretch to full scale. A grey has no hue and stays as given.
+// ponytail: full saturation always; blend some white back if themes look too loud
+let given = [Int(rgb >> 16 & 0xFF), Int(rgb >> 8 & 0xFF), Int(rgb & 0xFF)]
+let lo = given.min()!, span = given.max()! - lo
+let colour = given.map { UInt8(span == 0 ? $0 : ($0 - lo) * 255 / span) }
+
+let manager = IOHIDManagerCreate(kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone))
+IOHIDManagerSetDeviceMatching(manager, [kIOHIDVendorIDKey: VID, kIOHIDProductIDKey: PID,
+                                        kIOHIDDeviceUsagePageKey: 0x01, kIOHIDDeviceUsageKey: 0x00] as CFDictionary)
+guard let dev = (IOHIDManagerCopyDevices(manager) as? Set<IOHIDDevice>)?.first else { fail("Air65 V3 not connected by cable") }
+guard IOHIDDeviceOpen(dev, IOOptionBits(kIOHIDOptionsTypeNone)) == kIOReturnSuccess else { fail("cannot open the keyboard") }
+
+var inbox: [[UInt8]] = []
+let buf = UnsafeMutablePointer<UInt8>.allocate(capacity: 64)
+IOHIDDeviceRegisterInputReportCallback(dev, buf, 64, { _, _, _, _, _, report, len in
+    inbox.append(Array(UnsafeBufferPointer(start: report, count: len)))
+}, nil)
+IOHIDDeviceScheduleWithRunLoop(dev, CFRunLoopGetCurrent(), CFRunLoopMode.defaultMode.rawValue)
+
+var key: UInt8 = 0
+
+// sends one command, returns the decoded reply payload (after the 4-byte len/addr/pad echo)
+func request(_ cmd: UInt8, _ payload: [UInt8], raw: [UInt8]? = nil) -> [UInt8]? {
+    var out = [UInt8](repeating: 0, count: 64)
+    out[0] = 0x55; out[1] = cmd
+    for (i, b) in (raw ?? payload.map { $0 ^ key }).enumerated() { out[4 + i] = b }
+    out[3] = UInt8(out[4...].reduce(0) { ($0 + Int($1)) } & 0xFF)
+    inbox.removeAll()
+    guard IOHIDDeviceSetReport(dev, kIOHIDReportTypeOutput, 0, out, 64) == kIOReturnSuccess else { return nil }
+    let deadline = Date().addingTimeInterval(1)
+    while Date() < deadline {
+        CFRunLoopRunInMode(.defaultMode, 0.02, true)
+        if let r = inbox.first(where: { $0.count >= 8 && $0[0] == 0xAA && $0[1] == cmd }) {
+            return raw != nil ? r : r[8...].map { $0 ^ key }
+        }
+    }
+    return nil
+}
+
+// handshake: 4 zero bytes + >= 21 random ones; the device answers the zeros
+// XORed with the key. Without it writes are acked and dropped.
+let challenge = [0, 0, 0, 0] + (0..<32).map { _ in UInt8.random(in: 1...255) }
+guard let hs = request(0xEE, [], raw: challenge), hs[4] == hs[5], hs[5] == hs[6] else { fail("handshake rejected") }
+key = hs[4]
+
+// Partial writes only: rewriting the whole record does not round-trip on the
+// inactive mode (side-light byte 10 came back 00), so touch just our bytes.
+for mode: UInt8 in [0, 1] { // pad byte picks the record: 0 Mac, 1 Win
+    guard let before = request(0xD5, [17, 0, 0, mode]), before.count >= 11 else { fail("cannot read lighting") }
+    // switching the effect loads that effect's own brightness; put ours back
+    _ = request(0xD6, [1, 0, 0, mode, 3])   // effect: Static
+    _ = request(0xD6, [1, 1, 0, mode, before[1]])
+    _ = request(0xD6, [1, 10, 0, mode, before[10]])
+    _ = request(0xD6, [1, 4, 0, mode, 0])   // colour mode: fixed
+    _ = request(0xD6, [3, 6, 0, mode] + colour)
+    // the device acks writes it discards, only a read-back proves one landed
+    guard let rec = request(0xD5, [17, 0, 0, mode]), rec.count >= 9,
+          rec[0] == 3, rec[4] == 0,
+          zip(rec[6...8], colour).allSatisfy({ abs(Int($0) - Int($1)) <= 8 }) else { fail("write did not stick") }
+}

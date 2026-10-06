@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Home Assistant VM in UTM, started hidden at login.
+     ponytail: stopgap until HA moves to its own mini PC, then delete this and the install.sh lines -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>dev.freethinkel.homeassistant</string>
+  <key>ProgramArguments</key><array>
+    <string>/Applications/UTM.app/Contents/MacOS/utmctl</string>
+    <string>start</string><string>--hide</string><string>homeassistant</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>StandardErrorPath</key><string>/tmp/homeassistant-vm.log</string>
+</dict>
+</plist>
