@@ -29,17 +29,20 @@ input {
     // Next sections include libinput settings.
     // Omitting settings disables them, or leaves them at their default values.
     // All commented-out settings here are examples, not defaults.
+    // closer to the Windows Precision driver than libinput's defaults
     touchpad {
         // off
         tap
-        // dwt
+        dwt
         // dwtp
         // drag false
         // drag-lock
         natural-scroll
-        // accel-speed 0.2
+        accel-speed 0.3
+        scroll-factor 0.6
         // accel-profile "flat"
         // scroll-method "two-finger"
+        // click-method "clickfinger"
         // disabled-on-external-mouse
     }
 

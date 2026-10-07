@@ -1,6 +1,6 @@
 # plain Arch (scripts/install.sh), pacman --needed; names split on whitespace, # starts a comment
 # CLI, same set as the Omarchy branch
-make stow zsh tmux neovim starship zoxide fzf ripgrep fd bat eza lazygit git-delta btop jq unzip
+base-devel stow zsh tmux neovim starship zoxide fzf ripgrep fd bat eza lazygit git-delta btop jq unzip
 # desktop
 niri ghostty fuzzel mako swaylock swayidle wl-clipboard
 xdg-desktop-portal-gnome xdg-desktop-portal-gtk   # gnome one is what niri screencasts through

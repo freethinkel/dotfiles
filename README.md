@@ -11,6 +11,7 @@ make -C ~/Developer/infra/dotfiles
 
 On macOS Homebrew must be installed.
 On plain Arch (`ID=arch`, no Omarchy) it runs `pacman -Syu --needed` over `arch.pkgs`, enables NetworkManager, power-profiles-daemon and fstrim,
+builds Helium from the AUR with plain `makepkg` (again only when the AUR version changed),
 and also links `ghostty` and `niri`; logging in on tty1 then starts `niri-session` (from `niri/.zprofile`).
 On Omarchy and Asahi the CLI tools come from pacman.
 On any Linux the configs already there are moved to `*.bak`.

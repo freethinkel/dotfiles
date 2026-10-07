@@ -32,6 +32,19 @@ fonts=~/.local/share/fonts
 # -Syu, never -Sy alone: Arch doesn't support partial upgrades. Unquoted on purpose, one word per package.
 sudo pacman -Syu --needed --noconfirm $(sed 's/#.*//' arch.pkgs)
 sudo systemctl enable --now NetworkManager power-profiles-daemon fstrim.timer
+# AUR with plain makepkg (paru-bin lags behind pacman's libalpm and won't start),
+# rebuilt only when the AUR version moved, so a re-run also upgrades.
+# ponytail: a package with an epoch never matches and rebuilds every run
+for p in helium-browser-bin; do
+  d=~/.cache/aur/$p
+  if [[ -d $d ]]; then git -C "$d" pull -q; else git clone -q "https://aur.archlinux.org/$p.git" "$d"; fi ||
+    { echo "$p: fetch failed" >&2; continue; }
+  v=$(sed -n 's/^\tpkgver = //p; s/^\tpkgrel = //p' "$d/.SRCINFO" | paste -sd-)
+  [[ $(pacman -Q "$p" 2>/dev/null) == "$p $v" ]] && continue
+  # makepkg checks release signatures against validpgpkeys (full fingerprints) but won't fetch the keys
+  gpg -q --keyserver hkps://keyserver.ubuntu.com --recv-keys $(sed -n 's/^\tvalidpgpkeys = //p' "$d/.SRCINFO") || true
+  (cd "$d" && makepkg -si --noconfirm) || echo "$p: build failed" >&2
+done
 [[ $SHELL == */zsh ]] || chsh -s "$(command -v zsh)" || echo "chsh failed, switch to zsh by hand" >&2
 [[ -d ~/.antidote ]] || git clone --depth 1 https://github.com/mattmc3/antidote ~/.antidote || echo "antidote clone failed" >&2
 elif command -v pacman >/dev/null; then
