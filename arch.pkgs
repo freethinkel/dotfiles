@@ -1,0 +1,11 @@
+# plain Arch (scripts/install.sh), pacman --needed; names split on whitespace, # starts a comment
+# CLI, same set as the Omarchy branch
+stow zsh tmux neovim starship zoxide fzf ripgrep fd bat eza lazygit git-delta btop jq unzip
+# desktop
+niri ghostty fuzzel mako swaylock swayidle wl-clipboard
+xdg-desktop-portal-gnome xdg-desktop-portal-gtk   # gnome one is what niri screencasts through
+pipewire pipewire-pulse wireplumber networkmanager noto-fonts noto-fonts-emoji
+# laptop (T14 Gen 2)
+sof-firmware intel-media-driver power-profiles-daemon
+# optional
+yazi grim slurp zathura zathura-pdf-mupdf

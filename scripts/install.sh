@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Links the dotfiles into $HOME with stow. macOS: also the Brewfile, the font and system defaults.
-# Linux: CLI packages only. Arch/Omarchy: tools from pacman, its own configs moved to *.bak;
+# Linux: CLI packages only. Plain Arch: arch.pkgs plus the niri desktop;
+# Omarchy/Asahi: tools from pacman, its own configs moved to *.bak;
 # servers: tools as release binaries in ~/.local/bin. Safe to re-run.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -16,17 +17,7 @@ command -v brew >/dev/null || { echo "Install Homebrew first: https://brew.sh" >
 
 # a failed formula (e.g. an untrusted tap) should not stop the linking below
 brew bundle --no-upgrade --file Brewfile || echo "brew bundle had errors, continuing" >&2
-
-# IoskeleyMono (ghostty, neovide); not in brew. A network hiccup only skips the font.
-if ! ls ~/Library/Fonts/IoskeleyMono* &>/dev/null; then
-  tmp=$(mktemp -d)
-  if curl -fsSL -o "$tmp/f.zip" https://github.com/ahatem/IoskeleyMono/releases/download/v2.1.0/IoskeleyMono-NL-NerdFont.zip; then
-    unzip -qo "$tmp/f.zip" -d "$tmp" && find "$tmp" -name '*.ttf' -exec cp {} ~/Library/Fonts/ \;
-  else
-    echo "font download failed, skipping" >&2
-  fi
-  rm -rf "$tmp"
-fi
+fonts=~/Library/Fonts
 
 defaults write com.apple.dock autohide -bool false
 defaults write NSGlobalDomain AppleShowAllExtensions -bool true
@@ -34,8 +25,17 @@ defaults write com.apple.finder FXPreferredViewStyle -string clmv
 defaults write NSGlobalDomain _HIHideMenuBar -bool true # takes a relogin
 mkdir -p ~/Pictures/screenshots && defaults write com.apple.screencapture location ~/Pictures/screenshots
 killall Dock Finder SystemUIServer 2>/dev/null || true
+elif [[ ! -d ~/.local/share/omarchy ]] && grep -qx 'ID=arch' /etc/os-release 2>/dev/null; then
+# plain Arch (the T14): CLI tools and the niri desktop from arch.pkgs
+PACKAGES+=(ghostty niri)
+fonts=~/.local/share/fonts
+# -Syu, never -Sy alone: Arch doesn't support partial upgrades. Unquoted on purpose, one word per package.
+sudo pacman -Syu --needed --noconfirm $(sed 's/#.*//' arch.pkgs)
+sudo systemctl enable --now NetworkManager power-profiles-daemon fstrim.timer
+[[ $SHELL == */zsh ]] || chsh -s "$(command -v zsh)" || echo "chsh failed, switch to zsh by hand" >&2
+[[ -d ~/.antidote ]] || git clone --depth 1 https://github.com/mattmc3/antidote ~/.antidote || echo "antidote clone failed" >&2
 elif command -v pacman >/dev/null; then
-# Arch / Omarchy (also Asahi, where the x86_64 release binaries below don't run)
+# Omarchy, Asahi (where the x86_64 release binaries below don't run)
 sudo pacman -S --needed --noconfirm stow zsh tmux neovim starship zoxide fzf ripgrep fd bat eza lazygit git-delta btop
 [[ $SHELL == */zsh ]] || chsh -s "$(command -v zsh)" || echo "chsh failed, switch to zsh by hand" >&2
 [[ -d ~/.antidote ]] || git clone --depth 1 https://github.com/mattmc3/antidote ~/.antidote || echo "antidote clone failed" >&2
@@ -70,6 +70,18 @@ gh_bin jesseduffield/lazygit lazygit
 gh_bin dandavison/delta delta
 gh_bin aristocratos/btop btop
 [[ -d ~/.antidote ]] || git clone --depth 1 https://github.com/mattmc3/antidote ~/.antidote || echo "antidote clone failed" >&2
+fi
+
+# IoskeleyMono (ghostty, neovide); not in brew or pacman. A network hiccup only skips the font.
+if [[ ${fonts-} ]] && ! ls "$fonts"/IoskeleyMono* &>/dev/null; then
+  mkdir -p "$fonts"
+  tmp=$(mktemp -d)
+  if curl -fsSL -o "$tmp/f.zip" https://github.com/ahatem/IoskeleyMono/releases/download/v2.1.0/IoskeleyMono-NL-NerdFont.zip; then
+    unzip -qo "$tmp/f.zip" -d "$tmp" && find "$tmp" -name '*.ttf' -exec cp {} "$fonts"/ \;
+  else
+    echo "font download failed, skipping" >&2
+  fi
+  rm -rf "$tmp"
 fi
 
 mkdir -p ~/.claude ~/.config/herdr ~/.config/btop ~/.config/lazygit

@@ -9,7 +9,11 @@ git clone https://github.com/freethinkel/dotfiles ~/Developer/infra/dotfiles
 make -C ~/Developer/infra/dotfiles
 ```
 
-On macOS Homebrew must be installed. On Arch/Omarchy (Asahi too) the tools come from pacman and the configs it already has are moved to `*.bak`.
+On macOS Homebrew must be installed.
+On plain Arch (`ID=arch`, no Omarchy) it runs `pacman -Syu --needed` over `arch.pkgs`, enables NetworkManager, power-profiles-daemon and fstrim,
+and also links `ghostty` and `niri`; logging in on tty1 then starts `niri-session` (from `niri/.zprofile`).
+On Omarchy and Asahi the CLI tools come from pacman.
+On any Linux the configs already there are moved to `*.bak`.
 On other Linux (x86_64 servers) only the CLI packages are linked,
 and the tools are fetched as release binaries into `~/.local/bin`, no sudo; git, stow, zsh, tmux and nvim come from the system.
 The clone can live anywhere.
@@ -36,6 +40,7 @@ and add `foo` to `PACKAGES` in `scripts/install.sh`.
 | path | what |
 |---|---|
 | `<package>/` | stow package, mirrors `$HOME` |
+| `arch.pkgs` | pacman packages for plain Arch, the Brewfile of the T14 |
 | `bin/` | scripts like `theme` and `wallpaper`, added to `PATH` in `.zshrc` |
 | `scripts/` | `install.sh`, `bt-trackpad.sh` (Magic Trackpad pairing shared with Asahi), run through `make`; not a stow package |
 | `themes/` | palettes and templates for `theme set <name>`, downloaded ones are gitignored |
