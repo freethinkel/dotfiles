@@ -114,7 +114,7 @@ link_apps() {
   # ponytail: Linux spotifast follows Omarchy itself, not linked there
   local sf="$HOME/Library/Application Support/me.paolino.spotifast/themes"
   # a real file: spotifast's theme scan may skip symlinks
-  [[ -d $sf ]] && rm -f "$sf/Dotfiles.json" && cp "$OUT/spotifast.json" "$sf/Dotfiles.json"
+  if [[ -d $sf ]]; then rm -f "$sf/Dotfiles.json" && cp "$OUT/spotifast.json" "$sf/Dotfiles.json"; fi
 }
 
 set_theme() {

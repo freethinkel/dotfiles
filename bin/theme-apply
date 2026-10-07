@@ -68,7 +68,7 @@ fi
 # AppleScript can't tell profiles apart, so the tab is opened from the command
 # line, on a dead http URL: Chromium won't take chrome:// or about: from there
 hl="$(sed -n 's/^highlight = "#\([0-9a-fA-F]\{6\}\)".*/\1/p' "$T/colors.toml" | head -1)"
-if [[ -n $hl ]] && pgrep -xq Helium; then
+if [[ -n $hl ]] && pgrep -x Helium >/dev/null; then
   hue="$(awk -v h="$hl" 'function x(s) { return index("0123456789abcdef", substr(tolower(h), s, 1)) - 1 }
     BEGIN { r = (x(1)*16 + x(2)) / 255; g = (x(3)*16 + x(4)) / 255; b = (x(5)*16 + x(6)) / 255
       mx = r; if (g > mx) mx = g; if (b > mx) mx = b; mn = r; if (g < mn) mn = g; if (b < mn) mn = b
