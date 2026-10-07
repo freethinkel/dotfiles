@@ -17,6 +17,7 @@ osascript -e 'tell application "System Events"
   end repeat
 end tell' 2>/dev/null || true
 pkill -USR2 btop 2>/dev/null || true
+pkill -USR2 waybar 2>/dev/null || true # rereads config and style
 
 # herdr: auto_switch picks dark_name/light_name from what the terminal reports
 # (mochi over ssh too), so colours go to [theme.custom.<mode>] and only this

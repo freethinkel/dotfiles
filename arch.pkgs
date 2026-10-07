@@ -2,10 +2,10 @@
 # CLI, same set as the Omarchy branch
 base-devel stow zsh tmux neovim starship zoxide fzf ripgrep fd bat eza lazygit git-delta btop jq unzip
 # desktop
-niri ghostty fuzzel mako swaylock swayidle wl-clipboard
+niri waybar playerctl ghostty fuzzel mako swaylock swayidle wl-clipboard
 xdg-desktop-portal-gnome xdg-desktop-portal-gtk   # gnome one is what niri screencasts through
 pipewire pipewire-pulse wireplumber networkmanager noto-fonts noto-fonts-emoji
-# laptop (T14 Gen 2)
-sof-firmware intel-media-driver power-profiles-daemon
+# laptop (T14 Gen 1)
+sof-firmware intel-media-driver vulkan-intel power-profiles-daemon python-gobject   # python-gobject: powerprofilesctl
 # optional
 yazi grim slurp zathura zathura-pdf-mupdf

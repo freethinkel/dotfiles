@@ -1,0 +1,81 @@
+/* geometry from statusbar.swift: 34 bar, 26 pills, 10 side pads, 2 between pills */
+@import "theme.css"; /* ~/.config/theme/waybar.css, linked by bin/theme */
+
+* {
+  font-family: "IoskeleyMonoNL Nerd Font Mono";
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+window#waybar {
+  background: @bar_bg;
+  color: @label;
+}
+
+tooltip { background: @item_bg; border: 1px solid @accent; border-radius: 8px; }
+tooltip label { color: @label; }
+
+.modules-left { margin-left: 10px; }
+.modules-right { margin-right: 10px; }
+
+#custom-logo {
+  color: @accent;
+  font-size: 15px;
+  min-width: 26px;
+  margin: 4px 10px 4px 0;
+  border-radius: 6px;
+}
+
+/* active workspace outlined, not filled; the rest sit back at half strength */
+#workspaces button {
+  min-width: 24px;
+  padding: 0 2px;
+  margin: 4px 2px;
+  color: alpha(@muted, 0.5);
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+#workspaces button.active {
+  color: @accent;
+  background: alpha(@accent, 0.12);
+  border-color: @accent;
+}
+#workspaces button:hover { background: alpha(@label, 0.1); }
+
+#mpris,
+#custom-more, #idle_inhibitor, #tray,
+#language, #backlight, #pulseaudio, #battery, #clock, #cpu {
+  padding: 0 10px;
+  margin: 4px 1px;
+  border-radius: 6px;
+}
+#mpris:hover,
+#custom-more:hover, #idle_inhibitor:hover,
+#language:hover, #backlight:hover, #pulseaudio:hover, #battery:hover, #clock:hover, #cpu:hover {
+  background: alpha(@label, 0.1);
+}
+
+#custom-more { color: @muted; }
+#idle_inhibitor { color: @muted; }
+#idle_inhibitor.activated { color: @accent; }
+
+/* layout: a keycap, like the key: glyph */
+#language {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 4px;
+  margin: 8px 10px;
+  border: 1.5px solid @label;
+  border-radius: 3.5px;
+}
+
+#battery.high, #battery.charging, #battery.full { color: @green; }
+#battery.warning:not(.charging) { color: @yellow; }
+#battery.critical:not(.charging) { color: @red; }
+
+#cpu { color: @accent; }
+#cpu.hot { color: @yellow; }

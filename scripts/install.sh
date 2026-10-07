@@ -27,7 +27,7 @@ mkdir -p ~/Pictures/screenshots && defaults write com.apple.screencapture locati
 killall Dock Finder SystemUIServer 2>/dev/null || true
 elif [[ ! -d ~/.local/share/omarchy ]] && grep -qx 'ID=arch' /etc/os-release 2>/dev/null; then
 # plain Arch (the T14): CLI tools and the niri desktop from arch.pkgs
-PACKAGES+=(ghostty niri)
+PACKAGES+=(ghostty niri waybar)
 fonts=~/.local/share/fonts
 # -Syu, never -Sy alone: Arch doesn't support partial upgrades. Unquoted on purpose, one word per package.
 sudo pacman -Syu --needed --noconfirm $(sed 's/#.*//' arch.pkgs)

@@ -20,6 +20,8 @@ input {
             // If this section is empty, niri will fetch xkb settings
             // from org.freedesktop.locale1. You can control these using
             // localectl set-x11-keymap.
+            layout "us,ru"
+            options "grp:win_space_toggle,ctrl:nocaps"
         }
 
         // Enable numlock on startup, omitting this setting disables it.
@@ -79,6 +81,11 @@ input {
 // Find more information on the wiki:
 // https://niri-wm.github.io/niri/Configuration:-Outputs
 // Remember to uncomment the node by removing "/-"!
+// T14 panel: auto picks 1.25, one step smaller
+output "eDP-1" {
+    scale 1
+}
+
 /-output "eDP-1" {
     // Uncomment this line to disable this output.
     // off
@@ -270,6 +277,8 @@ layout {
 // Note that running niri as a session supports xdg-desktop-autostart,
 // which may be more convenient to use.
 // See the binds section below for more spawn examples.
+
+spawn-at-startup "waybar"
 
 // Lock after 5 min idle and before suspend, monitors off after 10 min.
 spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f" "timeout" "600" "niri msg action power-off-monitors" "before-sleep" "swaylock -f"

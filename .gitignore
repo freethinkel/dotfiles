@@ -3,6 +3,7 @@
 .claude/settings.local.json
 # links made by bin/theme (~/.config/ghostty is a folded stow dir)
 ghostty/.config/ghostty/themes/
+waybar/.config/waybar/theme.css
 # tpm installs plugins here
 tmux/.config/tmux/plugins/
 # nvim runtime junk
