@@ -2894,11 +2894,11 @@ final class BarView: NSView, NSDraggingSource {
     private func drawMedia(at origin: CGFloat, _ titleFont: NSFont, _ iconFont: NSFont) {
         guard model.media.running, !model.media.title.isEmpty else { return }
         let width = mediaSize(titleFont, iconFont)
-        let pill = NSRect(x: origin, y: (BAR_HEIGHT - PILL_HEIGHT) / 2, width: width, height: PILL_HEIGHT)
+        let pill = NSRect(x: origin, y: (bounds.height - PILL_HEIGHT) / 2, width: width, height: PILL_HEIGHT)
 
         let layout = mediaLayout(titleFont, iconFont)
         for (name, glyph, dx, w) in layout.glyphs {
-            let hit = NSRect(x: pill.minX + dx, y: 0, width: w, height: BAR_HEIGHT)
+            let hit = NSRect(x: pill.minX + dx, y: 0, width: w, height: bounds.height)
             pressing(hit) {
                 drawIcon(glyph, iconFont, palette.label,
                          centeredIn: NSRect(x: pill.minX + dx, y: pill.minY, width: w, height: pill.height))
@@ -2906,7 +2906,7 @@ final class BarView: NSView, NSDraggingSource {
             mediaRects.append((name, hit))
         }
         let titleHit = NSRect(x: pill.minX + layout.titleX, y: 0,
-                              width: titleWidth(titleFont), height: BAR_HEIGHT)
+                              width: titleWidth(titleFont), height: bounds.height)
         pressing(titleHit) {
             if titleScrolls {
                 drawMarquee(titleFont, in: titleHit, midY: pill.midY)
@@ -2963,8 +2963,8 @@ final class BarView: NSView, NSDraggingSource {
         // A square, like the icon-only pills at the other end. The left
         // edge stays at PAD_LEFT, so only the inner edge moves.
         let appleW = PILL_HEIGHT
-        let apple = NSRect(x: PAD_LEFT, y: (BAR_HEIGHT - PILL_HEIGHT) / 2, width: appleW, height: PILL_HEIGHT)
-        appleRect = NSRect(x: apple.minX, y: 0, width: appleW, height: BAR_HEIGHT)
+        let apple = NSRect(x: PAD_LEFT, y: (bounds.height - PILL_HEIGHT) / 2, width: appleW, height: PILL_HEIGHT)
+        appleRect = NSRect(x: apple.minX, y: 0, width: appleW, height: bounds.height)
         pressing(appleRect) { drawIcon(appleGlyph, appleFont, palette.accent, centeredIn: apple) }
 
         // one pill per workspace, like OmniWM's own bar: label, then an
@@ -2974,12 +2974,12 @@ final class BarView: NSView, NSDraggingSource {
         for ws in shown {
             let apps = model.apps[ws] ?? []
             let iconsW = apps.isEmpty ? 0 : CGFloat(apps.count) * (APP_ICON_SIZE + APP_ICON_GAP) + 4
-            let chip = NSRect(x: x, y: (BAR_HEIGHT - PILL_HEIGHT) / 2,
+            let chip = NSRect(x: x, y: (bounds.height - PILL_HEIGHT) / 2,
                               width: CHIP_BOX + iconsW + CHIP_PAD * 2, height: PILL_HEIGHT)
             // each display marks the workspace IT is showing, not the
             // globally focused one
             let active = ws == surface.visible
-            let chipHit = NSRect(x: chip.minX, y: 0, width: chip.width, height: BAR_HEIGHT)
+            let chipHit = NSRect(x: chip.minX, y: 0, width: chip.width, height: bounds.height)
             pressing(chipHit) {
             // OmniWM-bar style: the active workspace is outlined, not
             // filled, and everything outside it sits back at half strength
@@ -2992,19 +2992,19 @@ final class BarView: NSView, NSDraggingSource {
             }
             let tint: NSColor = active ? palette.accent : palette.muted
             let fade: CGFloat = active ? 1 : 0.5
-            let labelBox = NSRect(x: chip.minX + CHIP_PAD, y: 0, width: CHIP_BOX, height: BAR_HEIGHT)
+            let labelBox = NSRect(x: chip.minX + CHIP_PAD, y: 0, width: CHIP_BOX, height: bounds.height)
             switch workspaceIcon(ws) {
             case .glyph(let glyph)?:
                 drawIcon(glyph, iconFont, tint, centeredIn: labelBox)
             case .image(let icon)?:
-                icon.draw(in: NSRect(x: labelBox.midX - 9, y: BAR_HEIGHT / 2 - 9, width: 18, height: 18),
+                icon.draw(in: NSRect(x: labelBox.midX - 9, y: bounds.height / 2 - 9, width: 18, height: 18),
                           from: .zero, operation: .sourceOver, fraction: fade)
             case nil:
                 draw(String(ws.suffix(1)), chipFont, tint, centeredIn: labelBox)
             }
             var ix = labelBox.maxX + 2
             for win in apps {
-                let r = NSRect(x: ix, y: (BAR_HEIGHT - APP_ICON_SIZE) / 2, width: APP_ICON_SIZE, height: APP_ICON_SIZE)
+                let r = NSRect(x: ix, y: (bounds.height - APP_ICON_SIZE) / 2, width: APP_ICON_SIZE, height: APP_ICON_SIZE)
                 // only the focused window's icon is at full strength, and 1.1x
                 let target: CGFloat = win.focused ? 1 : 0
                 var t = winAnim[win.id] ?? target
@@ -3016,7 +3016,7 @@ final class BarView: NSView, NSDraggingSource {
                 let e = t * t * (3 - 2 * t) // smoothstep
                 let grow = APP_ICON_SIZE * 0.05 * e
                 let winHit = NSRect(x: r.minX - APP_ICON_GAP / 2, y: 0,
-                                    width: APP_ICON_SIZE + APP_ICON_GAP, height: BAR_HEIGHT)
+                                    width: APP_ICON_SIZE + APP_ICON_GAP, height: bounds.height)
                 pressing(winHit) {
                     appIcon(win.app)?.draw(in: r.insetBy(dx: -grow, dy: -grow), from: .zero,
                                            operation: .sourceOver, fraction: 0.5 + 0.5 * e)
@@ -3068,9 +3068,9 @@ final class BarView: NSView, NSDraggingSource {
             let innerGap: CGFloat = hasIcon && hasLabel ? ICON_GAP : 0
             let square = hasIcon && !hasLabel
             let width = ITEM_PAD + iconInk + innerGap + labelAdv + ITEM_PAD
-            let pill = NSRect(x: cursor - width, y: (BAR_HEIGHT - PILL_HEIGHT) / 2,
+            let pill = NSRect(x: cursor - width, y: (bounds.height - PILL_HEIGHT) / 2,
                               width: width, height: PILL_HEIGHT)
-            let hit = NSRect(x: pill.minX, y: 0, width: width, height: BAR_HEIGHT)
+            let hit = NSRect(x: pill.minX, y: 0, width: width, height: bounds.height)
             // the dragged pill's slot: an empty outline where it will land
             if name == dragName {
                 let slot = NSBezierPath(roundedRect: pill.insetBy(dx: 1, dy: 1), xRadius: 6, yRadius: 6)
@@ -3111,7 +3111,7 @@ final class BarView: NSView, NSDraggingSource {
         // hover/press feedback for whatever the pointer is over: one tint
         // laid over the clickable rect, so every target reacts the same way
         if let p = hoverPoint, let r = clickRect(at: p) {
-            let box = NSRect(x: r.minX, y: (BAR_HEIGHT - PILL_HEIGHT) / 2, width: r.width, height: PILL_HEIGHT)
+            let box = NSRect(x: r.minX, y: (bounds.height - PILL_HEIGHT) / 2, width: r.width, height: PILL_HEIGHT)
             pressing(r) {
                 palette.label.withAlphaComponent(0.1 + 0.12 * (r == scaleRect ? pressAnim : 0)).setFill()
                 NSBezierPath(roundedRect: box, xRadius: 6, yRadius: 6).fill()
@@ -3182,7 +3182,7 @@ final class BarView: NSView, NSDraggingSource {
         closePopup()
         // snapshot without the press shrink or hover tint
         pressedRect = nil; scaleRect = nil; pressAnim = 0; hoverPoint = nil
-        let pill = NSRect(x: rect.minX, y: (BAR_HEIGHT - PILL_HEIGHT) / 2, width: rect.width, height: PILL_HEIGHT)
+        let pill = NSRect(x: rect.minX, y: (bounds.height - PILL_HEIGHT) / 2, width: rect.width, height: PILL_HEIGHT)
         guard let rep = bitmapImageRepForCachingDisplay(in: pill) else { return }
         cacheDisplay(in: pill, to: rep)
         // clipped and tinted like the hover plate, not a square cut of the bar
@@ -3404,6 +3404,12 @@ final class BarWindow: NSPanel {
 // was built.
 let stackOffset: CGFloat = ProcessInfo.processInfo.environment["STATUSBAR_STACK"] == nil ? 0 : BAR_HEIGHT
 
+// On a notched display safeAreaInsets.top is the native menu bar's height
+// (38 on a 14"/16"), and it holds while that menu bar is auto-hidden.
+func barHeight(_ screen: NSScreen) -> CGFloat {
+    screen.safeAreaInsets.top > 0 ? screen.safeAreaInsets.top : BAR_HEIGHT
+}
+
 // One surface per display. Each owns its screen's workspace set and its
 // own window; everything else it reads from the shared model.
 final class BarSurface {
@@ -3420,11 +3426,13 @@ final class BarSurface {
     // read from the screen itself instead of asked of a helper.
     var notched: Bool { screen.safeAreaInsets.top > 0 }
 
+    var height: CGFloat { barHeight(screen) }
+
     init(screen: NSScreen, monitorID: String) {
         self.screen = screen
         self.monitorID = monitorID
-        let frame = NSRect(x: screen.frame.minX, y: screen.frame.maxY - BAR_HEIGHT - stackOffset,
-                           width: screen.frame.width, height: BAR_HEIGHT)
+        let frame = NSRect(x: screen.frame.minX, y: screen.frame.maxY - barHeight(screen) - stackOffset,
+                           width: screen.frame.width, height: barHeight(screen))
         window = BarWindow(contentRect: frame, styleMask: [.borderless, .nonactivatingPanel],
                            backing: .buffered, defer: false)
         window.isOpaque = false
@@ -3441,8 +3449,8 @@ final class BarSurface {
     }
 
     func place() {
-        let frame = NSRect(x: screen.frame.minX, y: screen.frame.maxY - BAR_HEIGHT - stackOffset,
-                           width: screen.frame.width, height: BAR_HEIGHT)
+        let frame = NSRect(x: screen.frame.minX, y: screen.frame.maxY - height - stackOffset,
+                           width: screen.frame.width, height: height)
         window.setFrame(frame, display: true)
         view.frame = NSRect(origin: .zero, size: frame.size)
     }
