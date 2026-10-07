@@ -1,6 +1,7 @@
 // Waybar on niri, laid out like statusbar/statusbar.swift: one solid strip,
 // workspace chips on the left, media in the middle, icon+label pills on the right.
-// Glyphs are Nerd Font escapes so the file survives any editor.
+// Glyphs are Nerd Font icons at 15pt: the Mono font squeezes them into one cell,
+// so 16px (the Swift bar's ICON_SIZE) drew them smaller than the 13px text.
 {
   "layer": "top",
   "position": "top",
@@ -9,11 +10,11 @@
   "modules-left": ["custom/logo", "niri/workspaces"],
   "modules-center": ["mpris"],
   // DEFAULT_ORDER, minus the macOS-only and network pills (claude, weather, home, tailscale, theme, agents)
-  "modules-right": ["group/more", "niri/language", "backlight", "pulseaudio", "battery", "clock", "cpu"],
+  "modules-right": ["group/more", "custom/layout", "backlight", "pulseaudio", "battery", "clock", "cpu"],
 
   // the apple pill's place: accent glyph, opens the launcher
   "custom/logo": {
-    "format": "",
+    "format": "<span size='17pt' rise='-2pt'></span>",
     "tooltip": false,
     "on-click": "fuzzel"
   },
@@ -24,7 +25,7 @@
 
   "mpris": {
     "format": "{status_icon} {artist} – {title}",
-    "status-icons": { "playing": "", "paused": "", "stopped": "" },
+    "status-icons": { "playing": "<span size='17pt' rise='-2pt'></span>", "paused": "<span size='17pt' rise='-2pt'></span>", "stopped": "<span size='17pt' rise='-2pt'></span>" },
     "title-len": 40,
     "artist-len": 24,
     "on-click": "playerctl play-pause"
@@ -36,31 +37,30 @@
     "drawer": { "click-to-reveal": true, "transition-left-to-right": false, "transition-duration": 200 },
     "modules": ["custom/more", "idle_inhibitor", "tray"]
   },
-  "custom/more": { "format": "", "tooltip": false },
+  "custom/more": { "format": "<span size='17pt' rise='-2pt'></span>", "tooltip": false },
   // caffeinate
   "idle_inhibitor": {
     "format": "{icon}",
-    "format-icons": { "activated": "", "deactivated": "" }
+    "format-icons": { "activated": "<span size='17pt' rise='-2pt'></span>", "deactivated": "<span size='17pt' rise='-2pt'></span>" }
   },
   "tray": { "icon-size": 16, "spacing": 8 },
 
   // drawn as a keycap in style.css
-  "niri/language": {
-    "format": "{short}",
-    "format-en": "EN",
-    "format-ru": "RU",
+  "custom/layout": {
+    "exec": "~/.config/waybar/layout.sh",
+    "tooltip": false,
     "on-click": "niri msg action switch-layout next"
   },
 
   "backlight": {
-    "format": " {percent}%",
+    "format": "<span size='17pt' rise='-2pt'></span> {percent}%",
     "tooltip": false
   },
 
   "pulseaudio": {
     "format": "{icon} {volume}%",
-    "format-muted": " mute",
-    "format-icons": { "headphone": "", "headset": "", "default": ["", "", ""] },
+    "format-muted": "<span size='17pt' rise='-2pt'>󰖁</span> mute",
+    "format-icons": { "headphone": "<span size='17pt' rise='-2pt'>󰋋</span>", "headset": "<span size='17pt' rise='-2pt'>󰋋</span>", "default": ["<span size='17pt' rise='-2pt'>󰕿</span>", "<span size='17pt' rise='-2pt'>󰖀</span>", "<span size='17pt' rise='-2pt'>󰕾</span>"] },
     "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
     "scroll-step": 5
   },
@@ -69,14 +69,14 @@
   "battery": {
     "states": { "high": 100, "normal": 89, "warning": 29, "critical": 9 },
     "format": "{icon} {capacity}%",
-    "format-charging": " {capacity}%",
-    "format-full": "",
-    "format-icons": ["", "", "", "", ""],
+    "format-charging": "<span size='17pt' rise='-2pt'></span> {capacity}%",
+    "format-full": "<span size='17pt' rise='-2pt'></span>",
+    "format-icons": ["<span size='17pt' rise='-2pt'></span>", "<span size='17pt' rise='-2pt'></span>", "<span size='17pt' rise='-2pt'></span>", "<span size='17pt' rise='-2pt'></span>", "<span size='17pt' rise='-2pt'></span>"],
     "tooltip-format": "{timeTo}"
   },
 
   "clock": {
-    "format": " {:%d %b %H:%M}",
+    "format": "<span size='17pt' rise='-2pt'></span> {:%d %b %H:%M}",
     "tooltip-format": "<tt>{calendar}</tt>",
     "calendar": { "mode": "month", "weeks-pos": "", "format": { "today": "<b><u>{}</u></b>" } }
   },
@@ -85,8 +85,8 @@
   "cpu": {
     "interval": 60,
     "states": { "hot": 80 },
-    "format": "",
-    "format-hot": " {usage}%",
+    "format": "<span size='17pt' rise='-2pt'></span>",
+    "format-hot": "<span size='17pt' rise='-2pt'></span> {usage}%",
     "tooltip": false,
     "on-click": "ghostty -e btop"
   }

@@ -8,6 +8,9 @@ light=0; [[ -f "$T/light.mode" ]] && light=1
 
 # macOS appearance
 osascript -e "tell application \"System Events\" to tell appearance preferences to set dark mode to $([[ $light = 1 ]] && echo false || echo true)" 2>/dev/null || true
+# Linux: the portal's color-scheme, which GTK apps and ghostty's light:/dark: theme follow
+command -v gsettings &>/dev/null &&
+  gsettings set org.gnome.desktop.interface color-scheme "$([[ $light = 1 ]] && echo prefer-light || echo prefer-dark)" 2>/dev/null || true
 
 # tmux / ghostty / btop / herdr
 tmux list-sessions &>/dev/null && tmux source-file ~/.config/tmux/tmux.conf 2>/dev/null || true
@@ -16,6 +19,8 @@ osascript -e 'tell application "System Events"
     tell p to click menu item "Reload Configuration" of menu "Ghostty" of menu bar 1
   end repeat
 end tell' 2>/dev/null || true
+# GTK ghostty reloads its config on SIGUSR2; macOS ghostty has no handler and would die
+[[ $(uname) == Linux ]] && pkill -USR2 -x ghostty 2>/dev/null || true
 pkill -USR2 btop 2>/dev/null || true
 pkill -USR2 waybar 2>/dev/null || true # rereads config and style
 
@@ -40,7 +45,7 @@ if [[ -f $cfg ]]; then
   # light/dark notification or SIGWINCH: a dark -> dark switch needs the signal.
   # Clients (they have a tty, the server has none), after ghostty has its new config
   ( sleep 0.5
-    ps -axo pid=,tty=,comm= | awk '$2 != "??" && $3 ~ /(^|\/)herdr$/ { print $1 }' | xargs kill -WINCH ) &>/dev/null &
+    ps -axo pid=,tty=,comm= | awk '$2 !~ /^\?+$/ && $3 ~ /(^|\/)herdr$/ { print $1 }' | xargs kill -WINCH ) &>/dev/null &
 fi
 
 # Chromium browsers: theme colour policy. From user defaults it is only a

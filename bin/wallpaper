@@ -135,6 +135,15 @@ apply_wallpaper() {
     exit 1
   fi
 
+  # niri draws no wallpaper: swaybg does, and niri's spawn-at-startup reads the link
+  if [[ $(uname) == Linux ]]; then
+    mkdir -p "$HOME/.cache"
+    ln -sfn "$img" "$HOME/.cache/wallpaper"
+    pkill -x swaybg || true
+    setsid -f swaybg -i "$img" -m fill >/dev/null 2>&1
+    return
+  fi
+
   local applied=0
 
   # Write to wallpaper store for all spaces

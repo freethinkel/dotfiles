@@ -48,14 +48,14 @@ tooltip label { color: @label; }
 
 #mpris,
 #custom-more, #idle_inhibitor, #tray,
-#language, #backlight, #pulseaudio, #battery, #clock, #cpu {
+#custom-layout, #backlight, #pulseaudio, #battery, #clock, #cpu {
   padding: 0 10px;
   margin: 4px 1px;
   border-radius: 6px;
 }
 #mpris:hover,
 #custom-more:hover, #idle_inhibitor:hover,
-#language:hover, #backlight:hover, #pulseaudio:hover, #battery:hover, #clock:hover, #cpu:hover {
+#custom-layout:hover, #backlight:hover, #pulseaudio:hover, #battery:hover, #clock:hover, #cpu:hover {
   background: alpha(@label, 0.1);
 }
 
@@ -64,7 +64,7 @@ tooltip label { color: @label; }
 #idle_inhibitor.activated { color: @accent; }
 
 /* layout: a keycap, like the key: glyph */
-#language {
+#custom-layout {
   font-size: 10px;
   font-weight: 700;
   padding: 0 4px;

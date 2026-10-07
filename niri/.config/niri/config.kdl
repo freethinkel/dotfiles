@@ -21,8 +21,12 @@ input {
             // from org.freedesktop.locale1. You can control these using
             // localectl set-x11-keymap.
             layout "us,ru"
-            options "grp:win_space_toggle,ctrl:nocaps"
+            options "ctrl:nocaps"
         }
+
+        // defaults are 600 ms / 25 per second, sluggish for hjkl after macOS
+        repeat-delay 250
+        repeat-rate 40
 
         // Enable numlock on startup, omitting this setting disables it.
         numlock
@@ -130,7 +134,9 @@ layout {
     // - "always", the focused column will always be centered.
     // - "on-overflow", focusing a column will center it if it doesn't fit
     //   together with the previously focused column.
-    center-focused-column "never"
+    center-focused-column "always"
+    // a lone window sits in the middle, not glued to the left edge
+    always-center-single-column
 
     // You can customize the widths that "switch-preset-column-width" (Mod+R) toggles between.
     preset-column-widths {
@@ -279,6 +285,7 @@ layout {
 // See the binds section below for more spawn examples.
 
 spawn-at-startup "waybar"
+spawn-sh-at-startup "swaybg -i ~/.cache/wallpaper -m fill"
 
 // Lock after 5 min idle and before suspend, monitors off after 10 min.
 spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f" "timeout" "600" "niri msg action power-off-monitors" "before-sleep" "swaylock -f"
@@ -418,8 +425,8 @@ binds {
     Mod+Up    { focus-window-up; }
     Mod+Right { focus-column-right; }
     Mod+H     { focus-column-left; }
-    Mod+J     { focus-window-down; }
-    Mod+K     { focus-window-up; }
+    Mod+J     { focus-window-or-workspace-down; }
+    Mod+K     { focus-window-or-workspace-up; }
     Mod+L     { focus-column-right; }
 
     Mod+Ctrl+Left  { move-column-left; }
@@ -427,8 +434,8 @@ binds {
     Mod+Ctrl+Up    { move-window-up; }
     Mod+Ctrl+Right { move-column-right; }
     Mod+Ctrl+H     { move-column-left; }
-    Mod+Ctrl+J     { move-window-down; }
-    Mod+Ctrl+K     { move-window-up; }
+    Mod+Ctrl+J     { move-window-down-or-to-workspace-down; }
+    Mod+Ctrl+K     { move-window-up-or-to-workspace-up; }
     Mod+Ctrl+L     { move-column-right; }
 
     // Alternative commands that move across workspaces when reaching
@@ -618,8 +625,8 @@ binds {
     // a matching layout switch hotkey configured in xkb options above.
     // Having both at once on the same hotkey will break the switching,
     // since it will switch twice upon pressing the hotkey (once by xkb, once by niri).
-    // Mod+Space       { switch-layout "next"; }
-    // Mod+Shift+Space { switch-layout "prev"; }
+    Mod+Space       { switch-layout "next"; }
+    Mod+Shift+Space { switch-layout "prev"; }
 
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
@@ -642,4 +649,10 @@ binds {
     // Powers off the monitors. To turn them back on, do any input like
     // moving the mouse or pressing any other key.
     Mod+Shift+P { power-off-monitors; }
+}
+
+// swaybg's wallpaper also fills the overview backdrop, not a flat grey
+layer-rule {
+    match namespace="^wallpaper$"
+    place-within-backdrop true
 }

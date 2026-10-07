@@ -20,6 +20,8 @@ mouse-scroll-multiplier = 2
 window-theme = system
 cursor-style = bar
 macos-titlebar-style = native
+# Linux: no GTK header bar, niri draws no decorations either; macOS ignores it
+gtk-titlebar = false
 window-colorspace = display-p3
 window-inherit-working-directory = true
 window-padding-color = background
