@@ -31,11 +31,11 @@ PACKAGES+=(ghostty niri waybar)
 fonts=~/.local/share/fonts
 # -Syu, never -Sy alone: Arch doesn't support partial upgrades. Unquoted on purpose, one word per package.
 sudo pacman -Syu --needed --noconfirm $(sed 's/#.*//' arch.pkgs)
-sudo systemctl enable --now NetworkManager power-profiles-daemon fstrim.timer
+sudo systemctl enable --now NetworkManager bluetooth power-profiles-daemon fstrim.timer
 # AUR with plain makepkg (paru-bin lags behind pacman's libalpm and won't start),
 # rebuilt only when the AUR version moved, so a re-run also upgrades.
 # ponytail: a package with an epoch never matches and rebuilds every run
-for p in helium-browser-bin; do
+for p in helium-browser-bin herdr-bin; do
   d=~/.cache/aur/$p
   if [[ -d $d ]]; then git -C "$d" pull -q; else git clone -q "https://aur.archlinux.org/$p.git" "$d"; fi ||
     { echo "$p: fetch failed" >&2; continue; }
