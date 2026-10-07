@@ -1,6 +1,8 @@
 .DS_Store
 .env
 .claude/settings.local.json
+# links made by bin/theme (~/.config/ghostty is a folded stow dir)
+ghostty/.config/ghostty/themes/
 # tpm installs plugins here
 tmux/.config/tmux/plugins/
 # nvim runtime junk

@@ -110,6 +110,9 @@ link_apps() {
   mkdir -p "$HOME/.claude/themes" "$HOME/.config/btop/themes"
   ln -sfn "$OUT/claude.json" "$HOME/.claude/themes/current.json"
   ln -sfn "$OUT/btop.theme" "$HOME/.config/btop/themes/current.theme"
+  mkdir -p "$HOME/.config/ghostty/themes"
+  ln -sfn "$OUT/ghostty.conf" "$HOME/.config/ghostty/themes/dotfiles-light"
+  ln -sfn "$OUT/ghostty.conf" "$HOME/.config/ghostty/themes/dotfiles-dark"
   # spotifast (macOS): one more palette in its picker, select "Dotfiles" there once
   # ponytail: Linux spotifast follows Omarchy itself, not linked there
   local sf="$HOME/Library/Application Support/me.paolino.spotifast/themes"

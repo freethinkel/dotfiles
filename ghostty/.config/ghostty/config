@@ -33,5 +33,7 @@ config-file = keybind.ghostty
 # The generated colours as a conditional theme, the same file for both:
 # Ghostty tracks light/dark (its answer to CSI ?996n and mode 2031, which
 # herdr's auto_switch reads) only for a conditional theme, and two equal
-# values collapse to a plain one, hence the "./" in the second path.
-theme = light:~/.config/theme/ghostty.conf,dark:~/.config/theme/./ghostty.conf
+# values collapse to a plain one, hence two names. Both are links that
+# `theme` puts in themes/ to ~/.config/theme/ghostty.conf: Ghostty 1.3.1
+# (Arch) doesn't expand ~ in a theme path.
+theme = light:dotfiles-light,dark:dotfiles-dark
