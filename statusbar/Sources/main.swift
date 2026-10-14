@@ -123,7 +123,7 @@ var popupGuardToken: Any?
 popupGuardToken = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown]) { _ in
     // a click that lands in another app dismisses the popup; hover-exit
     // is the tracking areas' job
-    if popupWindow != nil, pointerLeftTheHull() { closePopup() }
+    if popover != nil, pointerLeftTheHull() { closePopup() }
 }
 
 // --- right-cluster publishers ---------------------------------------------

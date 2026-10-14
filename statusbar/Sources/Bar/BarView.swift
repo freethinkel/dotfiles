@@ -485,7 +485,7 @@ final class BarView: NSView, NSDraggingSource {
         pressedRect = clickRect(at: p)
         scaleRect = pressedRect
         needsDisplay = true
-        if appleRect.contains(p), let surface {
+        if appleRect.contains(p) {
             appMenuStack.removeAll()
             // clicking the bar deactivated the app, which makes its menu
             // items read disabled and presses land nowhere — hand focus
@@ -493,10 +493,7 @@ final class BarView: NSView, NSDraggingSource {
             NSWorkspace.shared.runningApplications
                 .first { $0.localizedName == model.frontApp }?
                 .activate()
-            // aligned to its LEFT edge: it is the leftmost thing on the bar,
-            // so a right-aligned popup would hang off the screen
-            showPopup("apple", under: window?.convertToScreen(convert(appleRect, to: nil)) ?? appleRect,
-                      on: surface, alignLeft: true)
+            showPopup("apple", of: self, at: appleRect)
             return
         }
         if let id = winRects.first(where: { $0.1.contains(p) })?.0 {
@@ -533,7 +530,7 @@ final class BarView: NSView, NSDraggingSource {
             return
         }
         // an item with a popup toggles it; the rest still act directly
-        if let surface, showPopup(name, under: window?.convertToScreen(convert(rect, to: nil)) ?? rect, on: surface) {
+        if showPopup(name, of: self, at: rect) {
             return
         }
         closePopup()
@@ -557,11 +554,10 @@ final class BarView: NSView, NSDraggingSource {
             repaint()
             return
         }
-        guard let name = hit(event), name == "caffeinate" || name == "agents", let surface,
+        guard let name = hit(event), name == "caffeinate" || name == "agents",
               let rect = itemRects.first(where: { $0.0 == name })?.1 else { return }
         // the agents pill picks its orchestrator on the right button
-        showPopup(name == "agents" ? "agents:pick" : name,
-                  under: window?.convertToScreen(convert(rect, to: nil)) ?? rect, on: surface)
+        showPopup(name == "agents" ? "agents:pick" : name, of: self, at: rect)
     }
 
     // A trackpad flick delivers dozens of precise events plus a momentum

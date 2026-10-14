@@ -53,6 +53,13 @@ func haRequest(_ path: String, _ body: [String: Any]? = nil, done: @escaping (Da
     }
 }
 
+// the switch moves now, HA's answer (via updateHome) has the last word
+func haToggle(_ e: HomeEntity, _ on: Bool, _ service: String) {
+    if let i = home?.firstIndex(where: { $0.id == e.id }) { home?[i].state = on ? "on" : "off" }
+    refreshPopup()
+    haCall(e, service)
+}
+
 func haCall(_ e: HomeEntity, _ service: String, _ extra: [String: Any] = [:]) {
     haRequest("services/\(e.domain)/\(service)", extra.merging(["entity_id": e.id]) { a, _ in a }) { _ in
         updateHome()
@@ -108,8 +115,8 @@ func homeRows() -> [PopupRow] {
             case "climate":
                 let temp = e.temp.map { "\(Int($0.rounded()))° · " } ?? ""
                 rows.append(PopupRow(icon: on ? "sf:snowflake" : "sf:power", text: e.name,
-                                     detail: temp + e.state, highlight: on,
-                                     action: { haCall(e, on ? "turn_off" : "turn_on") }))
+                                     detail: temp + e.state, toggle: on,
+                                     onToggle: { haToggle(e, $0, $0 ? "turn_on" : "turn_off") }))
                 guard on, let target = e.target else { continue }
                 let span = e.maxT - e.minT
                 rows.append(PopupRow(text: String(format: target.truncatingRemainder(dividingBy: 1) == 0 ? "%.0f°" : "%.1f°", target),
@@ -126,8 +133,8 @@ func homeRows() -> [PopupRow] {
                                      }))
             default:
                 let icon = ["light": "sf:lightbulb", "fan": "sf:fan"][e.domain] ?? "sf:power"
-                rows.append(PopupRow(icon: icon, text: e.name, detail: e.state, highlight: on,
-                                     action: { haCall(e, "toggle") }))
+                rows.append(PopupRow(icon: icon, text: e.name, toggle: on,
+                                     onToggle: { haToggle(e, $0, "toggle") }))
             }
         }
         if list.isEmpty { rows.append(PopupRow(text: "no devices", dim: true)) }

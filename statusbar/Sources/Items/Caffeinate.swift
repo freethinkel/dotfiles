@@ -115,7 +115,10 @@ func updateCaffeinate() {
 }
 
 func caffeinateRows() -> [PopupRow] {
-    var rows = [PopupRow(text: caffProc == nil ? "awake: off" : "awake: on", hero: true)]
+    var rows = [PopupRow(text: "awake", hero: true, toggle: caffProc != nil, onToggle: { on in
+        on ? startCaffeinate(caffFlags) : stopCaffeinate()
+        refreshPopup()
+    })]
     for m in CAFF_MODES {
         rows.append(PopupRow(text: m.text, detail: m.flags == "lid" ? "-i + pmset" : m.flags,
                              highlight: m.flags == caffFlags, action: {
@@ -133,9 +136,6 @@ func caffeinateRows() -> [PopupRow] {
             closePopup()
         }))
     }
-    if caffProc != nil {
-        rows.append(PopupRow(text: "stop", dim: true, action: { stopCaffeinate(); closePopup() }))
-    }
     // night shift lives here rather than in a pill of its own
     if blueLightStatus()?.available.boolValue == true { rows.append(PopupRow(separator: true)) }
     // read in process, every time the rows are built: the row says what
@@ -143,8 +143,8 @@ func caffeinateRows() -> [PopupRow] {
     // rather than a lying one
     if let ns = blueLightStatus(), ns.available.boolValue {
         let on = ns.enabled.boolValue
-        rows.append(PopupRow(text: "night shift \(on ? "on" : "off")", action: {
-            setNightShift(!on)
+        rows.append(PopupRow(text: "night shift", toggle: on, onToggle: { on in
+            setNightShift(on)
             refreshPopup()
         }))
     }

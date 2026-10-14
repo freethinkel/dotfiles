@@ -31,7 +31,6 @@ let APP_ICON_GAP: CGFloat = 2
 // popups
 let ROW_HEIGHT: CGFloat = 26
 let POPUP_PAD: CGFloat = 8
-let POPUP_RADIUS: CGFloat = 8
 let CELL_PAD: CGFloat = 14        // table cells: added to the widest cell of a column
 
 // right cluster, screen order left to right

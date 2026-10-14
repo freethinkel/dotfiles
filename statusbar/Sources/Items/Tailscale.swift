@@ -56,11 +56,12 @@ func tailscaleRows() -> [PopupRow] {
     func run(_ args: [String]) -> () -> Void {
         { DispatchQueue.global(qos: .userInitiated).async { _ = shell(TAILSCALE_CLI, args); updateTailscale() } }
     }
-    var rows = [PopupRow(text: t.tailnet.isEmpty ? "tailscale" : t.tailnet, hero: true)]
-    // the button says what a click does; the status under it is read-only
-    rows.append(PopupRow(icon: "sf:power", text: t.running ? "disconnect" : "connect",
-                         action: run(t.running ? ["down"] : ["up"])))
-    rows.append(PopupRow(separator: true))
+    var rows = [PopupRow(text: t.tailnet.isEmpty ? "tailscale" : t.tailnet, hero: true,
+                         toggle: t.running, onToggle: { on in
+        tailscale.running = on // the switch moves now, the CLI confirms on the next update
+        refreshPopup()
+        run(on ? ["up"] : ["down"])()
+    })]
     rows.append(PopupRow(icon: t.running ? "ts" : "ts:off",
                          text: t.running ? "connected" : "disconnected",
                          detail: t.running ? t.ip : "", dim: true))
