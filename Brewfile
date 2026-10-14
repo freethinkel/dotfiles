@@ -30,4 +30,6 @@ brew "asmvik/formulae/skhd"
 cask "ghostty"
 cask "raycast"
 cask "omniwm"
+cask "glide"
+brew "paneru"
 cask "desktoppr"        # bin/wallpaper

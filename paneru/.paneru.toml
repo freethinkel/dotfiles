@@ -1,0 +1,75 @@
+# https://github.com/karinushka/paneru/blob/main/CONFIGURATION.md
+# keys mirror glide/.glide.toml; don't run both at once
+
+[options]
+focus_follows_mouse = true
+mouse_follows_focus = true
+auto_center = true
+preset_column_widths = [0.33, 0.5, 0.66, 0.8, 1.0]
+animation_speed = 14
+
+[padding]
+top = 0
+bottom = 0
+left = 8
+right = 8
+
+# 8px each side = 16px between columns
+[windows.all]
+title = ".*"
+horizontal_padding = 8
+
+[bindings]
+# mirrors omniwm/.config/omniwm/settings.toml [[hotkeys]]; omniwm workspaces = paneru virtual rows.
+# no paneru equivalent, skipped: focusColumn.N, focusMonitorLast, expandContainerToAvailablePrimarySpan,
+# command palette, menu anywhere, quake terminal, overview
+window_virtualnum_1 = "alt - 1"
+window_virtualmovenum_1 = "alt + shift - 1"
+window_virtualnum_2 = "alt - 2"
+window_virtualmovenum_2 = "alt + shift - 2"
+window_virtualnum_3 = "alt - 3"
+window_virtualmovenum_3 = "alt + shift - 3"
+window_virtualnum_4 = "alt - 4"
+window_virtualmovenum_4 = "alt + shift - 4"
+window_virtualnum_5 = "alt - 5"
+window_virtualmovenum_5 = "alt + shift - 5"
+window_virtualnum_6 = "alt - 6"
+window_virtualmovenum_6 = "alt + shift - 6"
+window_virtualnum_7 = "alt - 7"
+window_virtualmovenum_7 = "alt + shift - 7"
+window_virtualnum_8 = "alt - 8"
+window_virtualmovenum_8 = "alt + shift - 8"
+window_virtualnum_9 = "alt - 9"
+window_virtualmovenum_9 = "alt + shift - 9"
+window_virtual_south = "ctrl - rightarrow"
+window_virtual_north = "ctrl - leftarrow"
+window_virtualmove_north = "ctrl + alt + shift - pageup"
+window_virtualmove_south = "ctrl + alt + shift - pagedown"
+window_focus_west = ["alt - h", "cmd - h"]
+window_focus_east = ["alt - l", "cmd - l"]
+window_virtualfocus_south = "alt - j"
+window_virtualfocus_north = "alt - k"
+window_focus_managed = "alt - tab"
+window_focus_first = "alt - home"
+window_focus_last = "alt - end"
+window_swap_west = ["alt + shift - h", "ctrl + alt + shift - leftarrow"]
+window_swap_east = ["alt + shift - l", "ctrl + alt + shift - rightarrow"]
+mouse_nextdisplay = "ctrl + cmd - tab"
+window_fullwidth = ["alt - f", "alt + shift - f"]
+# paneru steps through preset_column_widths instead of omniwm's 10%
+window_resize = ["alt - period", "alt - equal", "alt - r"]
+window_shrink = ["alt - comma", "alt - minus"]
+window_vertical_grow = "alt + shift - equal"
+window_vertical_shrink = "alt + shift - minus"
+window_equalize = "ctrl + alt - r"
+window_balance = "alt + shift - b"
+window_raise_floating = "alt + shift - r"
+window_manage = "alt - t"
+window_center = "alt - c"
+quit = "ctrl + alt - q"
+
+[swipe.gesture]
+fingers_count = 4
+
+[swipe.scroll]
+vertical_modifier = "shift"

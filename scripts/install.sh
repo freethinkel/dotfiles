@@ -12,7 +12,7 @@ PACKAGES=(zsh git nvim tmux btop lazygit herdr claude)
 ln -sfn "$PWD" ~/.dotfiles
 
 if [[ $(uname) == Darwin ]]; then
-PACKAGES+=(ghostty skhd omniwm)
+PACKAGES+=(ghostty skhd omniwm glide paneru)
 command -v brew >/dev/null || { echo "Install Homebrew first: https://brew.sh" >&2; exit 1; }
 
 # a failed formula (e.g. an untrusted tap) should not stop the linking below
@@ -24,6 +24,18 @@ defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 defaults write com.apple.finder FXPreferredViewStyle -string clmv
 defaults write NSGlobalDomain _HIHideMenuBar -bool true # takes a relogin
 mkdir -p ~/Pictures/screenshots && defaults write com.apple.screencapture location ~/Pictures/screenshots
+# 3/4-finger swipes belong to OmniWM (columns, workspaces, overview): macOS Spaces/Mission Control gestures off
+for d in com.apple.AppleMultitouchTrackpad com.apple.driver.AppleBluetoothMultitouch.trackpad; do
+  for g in ThreeFingerHorizSwipe ThreeFingerVertSwipe FourFingerHorizSwipe FourFingerVertSwipe; do
+    defaults write $d Trackpad${g}Gesture -int 0
+  done
+done
+for g in threeFingerHorizSwipe threeFingerVertSwipe fourFingerHorizSwipe fourFingerVertSwipe; do
+  defaults -currentHost write NSGlobalDomain com.apple.trackpad.${g}Gesture -int 0
+done
+defaults write com.apple.dock showMissionControlGestureEnabled -bool false
+defaults write com.apple.dock showAppExposeGestureEnabled -bool false
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
 killall Dock Finder SystemUIServer 2>/dev/null || true
 elif [[ ! -d ~/.local/share/omarchy ]] && grep -qx 'ID=arch' /etc/os-release 2>/dev/null; then
 # plain Arch (the T14): CLI tools and the niri desktop from arch.pkgs

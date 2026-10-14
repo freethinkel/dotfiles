@@ -1,0 +1,21 @@
+# Overrides https://github.com/glide-wm/glide/blob/main/glide.default.toml
+
+[settings]
+animate = false
+default_disable = false
+default_layout_kind = "scroll"
+outer_gap = 0
+inner_gap = 16
+default_keys = true
+
+[keys]
+"Alt + Shift + S" = "change_layout_kind"
+"Alt + Shift + T" = "toggle_column_tabbed"
+"Alt + R" = "cycle_column_width"
+"Alt + Equal" = { resize = { direction = "right", percent = 5 } }
+"Alt + Minus" = { resize = { direction = "right", percent = -5 } }
+
+[settings.experimental]
+scroll.enable = true
+scroll.center_focused_column = "always"
+scroll.invert_scroll_direction = true
