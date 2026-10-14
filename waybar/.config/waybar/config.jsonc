@@ -35,13 +35,16 @@
   "group/more": {
     "orientation": "horizontal",
     "drawer": { "click-to-reveal": true, "transition-left-to-right": false, "transition-duration": 200 },
-    "modules": ["custom/more", "idle_inhibitor", "tray"]
+    "modules": ["custom/more", "custom/caffeine", "tray"]
   },
   "custom/more": { "format": "<span size='17pt' rise='-2pt'></span>", "tooltip": false },
-  // caffeinate
-  "idle_inhibitor": {
-    "format": "{icon}",
-    "format-icons": { "activated": "<span size='17pt' rise='-2pt'></span>", "deactivated": "<span size='17pt' rise='-2pt'></span>" }
+  // caffeine.sh: no sleep, no lock, lid closed keeps running
+  "custom/caffeine": {
+    "exec": "~/.config/waybar/caffeine.sh",
+    "return-type": "json",
+    "interval": "once",
+    "signal": 8,
+    "on-click": "~/.config/waybar/caffeine.sh toggle"
   },
   "tray": { "icon-size": 16, "spacing": 8 },
 
