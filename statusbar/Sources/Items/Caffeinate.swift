@@ -121,7 +121,7 @@ func caffeinateRows() -> [PopupRow] {
     })]
     for m in CAFF_MODES {
         rows.append(PopupRow(text: m.text, detail: m.flags == "lid" ? "-i + pmset" : m.flags,
-                             highlight: m.flags == caffFlags, action: {
+                             checked: m.flags == caffFlags, action: {
             // a running one switches mode and keeps its deadline
             if caffProc != nil { startCaffeinate(m.flags, until: caffUntil) } else { caffFlags = m.flags }
             refreshPopup()

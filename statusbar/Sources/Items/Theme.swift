@@ -27,7 +27,7 @@ func themeRows() -> [PopupRow] {
     let bin = THEMES_DIR.deletingLastPathComponent().appendingPathComponent("bin/theme").path
     for (name, (light, swatches)) in names {
         rows.append(PopupRow(icon: light ? "sf:sun.max.fill" : "sf:moon.fill", text: name,
-                             swatches: swatches, highlight: name == current, action: {
+                             swatches: swatches, checked: name == current, action: {
             closePopup()
             // login shell: launchd's PATH lacks brew, which theme-apply's reloads need
             DispatchQueue.global(qos: .userInitiated).async { _ = shell("/bin/zsh", ["-lc", "\"$0\" set \"$1\"", bin, name]) }

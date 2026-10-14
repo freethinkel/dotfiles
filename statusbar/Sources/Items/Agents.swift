@@ -142,7 +142,7 @@ func updateAgents() {
 
 func orchestratorRows() -> [PopupRow] {
     [PopupRow(text: "orchestrator", hero: true)] + ORCHESTRATORS.map { name in
-        PopupRow(text: name, highlight: name == orchestrator, action: { orchestrator = name; closePopup() })
+        PopupRow(text: name, checked: name == orchestrator, action: { orchestrator = name; closePopup() })
     }
 }
 

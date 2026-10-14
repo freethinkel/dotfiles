@@ -15,7 +15,8 @@ struct PopupRow {
     var separator = false // a thin rule instead of content
     var hero = false // accent, bold — the title row
     var dim = false // the quiet action footer
-    var highlight = false // today's week, the active device
+    var highlight = false // a quiet plate: the meeting on now, the menu you're in
+    var checked: Bool? // one of a set: ✓ when true, nil when the row is no choice
     var slider: Double? // 0...1, a native slider; the text is its readout
     var onSlide: ((Double) -> Void)?
     var toggle: Bool? // a trailing switch
@@ -53,7 +54,11 @@ extension PopupRow {
 
 struct PopupRowView: View {
     let row: PopupRow
+    var checkColumn = false // the popup has a choice somewhere: every row keeps the ✓ column, like NSMenu
     @State private var hovered = false
+    // hover is a menu selection: accent plate, text in the bar colour, the
+    // pair the calendar's today already uses
+    private var ink: NSColor? { hovered ? palette.barBG : nil }
 
     var body: some View {
         if row.separator {
@@ -96,6 +101,13 @@ struct PopupRowView: View {
     }
 
     @ViewBuilder private var leading: some View {
+        if checkColumn {
+            Image(systemName: "checkmark")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(ink.map { Color(nsColor: $0) } ?? .primary)
+                .opacity(row.checked == true ? 1 : 0)
+                .frame(width: 12)
+        }
         if let bar = row.bar {
             RoundedRectangle(cornerRadius: 1.5)
                 .fill(Color(nsColor: bar).opacity(row.strike || row.dim ? 0.4 : 1))
@@ -105,7 +117,7 @@ struct PopupRowView: View {
             Image(nsImage: image).resizable().frame(width: 16, height: 16)
         }
         if !row.icon.isEmpty {
-            Image(nsImage: iconImage(row.icon, nerdFont("Bold", 13), palette.accent))
+            Image(nsImage: iconImage(row.icon, nerdFont("Bold", 13), ink ?? palette.accent))
         }
     }
 
@@ -115,7 +127,7 @@ struct PopupRowView: View {
             Text(verbatim: row.text)
                 .font(Font(row.font))
                 .strikethrough(row.strike)
-                .foregroundStyle(hovered ? Color(nsColor: palette.accent) : row.color)
+                .foregroundStyle(ink.map { Color(nsColor: $0) } ?? row.color)
             Spacer(minLength: 16)
             if !row.swatches.isEmpty {
                 HStack(spacing: 4) {
@@ -127,7 +139,8 @@ struct PopupRowView: View {
                 }
             }
             if !row.detail.isEmpty {
-                Text(verbatim: row.detail).font(Font(nerdFont("Regular", 11))).foregroundStyle(.secondary)
+                Text(verbatim: row.detail).font(Font(nerdFont("Regular", 11)))
+                    .foregroundStyle(ink.map { Color(nsColor: $0).opacity(0.7) } ?? .secondary)
             }
             if let on = row.toggle {
                 Toggle("", isOn: Binding(get: { on }, set: { row.onToggle?($0) }))
@@ -136,8 +149,8 @@ struct PopupRowView: View {
         }
         .padding(.horizontal, 4)
         .frame(height: ROW_HEIGHT)
-        .background(RoundedRectangle(cornerRadius: 5)
-            .fill(row.highlight || hovered ? Color.primary.opacity(0.1) : .clear)
+        .background(RoundedRectangle(cornerRadius: 6)
+            .fill(hovered ? Color(nsColor: palette.accent) : row.highlight ? Color.primary.opacity(0.1) : .clear)
             .padding(.horizontal, -2).padding(.vertical, 2))
         .contentShape(Rectangle())
     }
@@ -216,11 +229,13 @@ struct PopupContent: View {
         return out
     }
 
+    private var checkColumn: Bool { rows.contains { $0.checked != nil } }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(blocks, id: \.lowerBound) { block in
                 if rows[block.lowerBound].cells.isEmpty {
-                    PopupRowView(row: rows[block.lowerBound])
+                    PopupRowView(row: rows[block.lowerBound], checkColumn: checkColumn)
                 } else {
                     let table = PopupTable(rows: Array(rows[block]))
                     // label tables hug the left edge; a bare grid (the calendar) centres

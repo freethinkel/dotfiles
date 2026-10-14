@@ -36,7 +36,7 @@ func layoutRows() -> [PopupRow] {
     for src in sources {
         let id: String? = inputSourceProp(src, kTISPropertyInputSourceID)
         let name: String = inputSourceProp(src, kTISPropertyLocalizedName) ?? "?"
-        rows.append(PopupRow(text: name, detail: layoutShort(src), highlight: id == current, action: {
+        rows.append(PopupRow(text: name, detail: layoutShort(src), checked: id == current, action: {
             TISSelectInputSource(src)
             closePopup()
         }))

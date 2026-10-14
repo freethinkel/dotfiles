@@ -178,8 +178,7 @@ func volumeRows() -> [PopupRow] {
     // output devices, current one marked
     let current = defaultOutputDevice()
     for device in audioOutputDevices() {
-        rows.append(PopupRow(icon: device.id == current ? "󰄬" : " ", text: device.name,
-                             highlight: device.id == current,
+        rows.append(PopupRow(text: device.name, checked: device.id == current,
                              action: {
                                  setDefaultOutputDevice(device.id)
                                  updateVolume()

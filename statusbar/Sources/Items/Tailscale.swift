@@ -68,10 +68,10 @@ func tailscaleRows() -> [PopupRow] {
     if t.running && !t.exitNodes.isEmpty {
         rows.append(PopupRow(separator: true))
         rows.append(PopupRow(text: "exit node", dim: true))
-        rows.append(PopupRow(text: "none", highlight: t.exitNode.isEmpty,
+        rows.append(PopupRow(text: "none", checked: t.exitNode.isEmpty,
                              action: run(["set", "--exit-node="])))
         for node in t.exitNodes {
-            rows.append(PopupRow(text: node.name, highlight: node.name == t.exitNode,
+            rows.append(PopupRow(text: node.name, checked: node.name == t.exitNode,
                                  action: run(["set", "--exit-node=\(node.ip)"])))
         }
     }
