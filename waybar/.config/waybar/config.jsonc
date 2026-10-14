@@ -1,4 +1,4 @@
-// Waybar on niri, laid out like statusbar/statusbar.swift: one solid strip,
+// Waybar on niri, laid out like statusbar/: one solid strip,
 // workspace chips on the left, media in the middle, icon+label pills on the right.
 // Glyphs are Nerd Font icons at 15pt: the Mono font squeezes them into one cell,
 // so 16px (the Swift bar's ICON_SIZE) drew them smaller than the 13px text.

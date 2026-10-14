@@ -8,7 +8,7 @@ APP=~/.local/share/statusbar/statusbar.app
 mkdir -p "$APP/Contents/MacOS"
 swiftc -O -F /System/Library/PrivateFrameworks -framework SkyLight -framework DisplayServices \
   -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __info_plist -Xlinker statusbar-info.plist \
-  -o "$APP/Contents/MacOS/statusbar" statusbar.swift
+  -o "$APP/Contents/MacOS/statusbar" $(find Sources -name "*.swift")
 cp statusbar-info.plist "$APP/Contents/Info.plist"
 # A real identity, not the linker's ad-hoc one: ad-hoc pins TCC grants to the
 # binary's hash, so every rebuild re-asked for bluetooth, calendar, location.

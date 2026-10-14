@@ -1,4 +1,4 @@
-/* geometry from statusbar.swift: 34 bar, 26 pills, 10 side pads, 2 between pills */
+/* geometry from statusbar/Sources/Core/Config.swift: 34 bar, 26 pills, 10 side pads, 2 between pills */
 @import "theme.css"; /* ~/.config/theme/waybar.css, linked by bin/theme */
 
 * {
