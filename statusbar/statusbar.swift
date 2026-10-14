@@ -75,7 +75,8 @@ let HOME_POLL: TimeInterval = 15
 let AGENTS_POLL: TimeInterval = 5
 let ACTIVITY_POLL: TimeInterval = 60 // also the cpu averaging window
 let ACTIVITY_CPU_HOT = 0.8
-let HOME_DOMAINS: Set<String> = ["climate", "light", "switch", "fan"]
+// no "switch": the only ones are the ACs' power switches under climate.*; add it back for smart plugs
+let HOME_DOMAINS: Set<String> = ["climate", "light", "fan"]
 
 // DisplayServices (private) — the same calls Control Center makes, and
 // the brightness keys go through.
@@ -2307,7 +2308,8 @@ func updateHome() {
                     guard HOME_DOMAINS.contains(e.domain) else { return nil }
                     let a = s["attributes"] as? [String: Any] ?? [:]
                     e.name = a["friendly_name"] as? String ?? id
-                    e.temp = a["current_temperature"] as? Double
+                    // no room sensor: show the setpoint (pitsos_ac reports it read-only)
+                    e.temp = a["current_temperature"] as? Double ?? a["setpoint"] as? Double
                     e.target = a["temperature"] as? Double
                     e.minT = a["min_temp"] as? Double ?? e.minT
                     e.maxT = a["max_temp"] as? Double ?? e.maxT
