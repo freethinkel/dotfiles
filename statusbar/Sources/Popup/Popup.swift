@@ -62,7 +62,7 @@ struct PopupRowView: View {
 
     var body: some View {
         if row.separator {
-            Divider().padding(.vertical, 4)
+            Divider().padding(.vertical, 2)
         } else if let pager = row.pager {
             HStack {
                 arrow("‹") { pager(-1) }
@@ -83,7 +83,8 @@ struct PopupRowView: View {
             }
             .padding(.horizontal, 4)
             .frame(height: ROW_HEIGHT)
-        } else if let action = row.action {
+        } else if let action = row.action ?? row.toggle.map({ on in { row.onToggle?(!on) } }) {
+            // a switch row flips from anywhere on it, the switch itself is just the readout
             Button(action: action) { content }
                 .buttonStyle(.plain)
                 .onHover { hovered = $0 }
@@ -117,7 +118,9 @@ struct PopupRowView: View {
             Image(nsImage: image).resizable().frame(width: 16, height: 16)
         }
         if !row.icon.isEmpty {
-            Image(nsImage: iconImage(row.icon, nerdFont("Bold", 13), ink ?? palette.accent))
+            // the bar's icon size, in a fixed column so the labels line up
+            Image(nsImage: iconImage(row.icon, nerdFont("Bold", ICON_SIZE), ink ?? palette.accent))
+                .frame(minWidth: ICON_SIZE + 2)
         }
     }
 
@@ -128,7 +131,7 @@ struct PopupRowView: View {
                 .font(Font(row.font))
                 .strikethrough(row.strike)
                 .foregroundStyle(ink.map { Color(nsColor: $0) } ?? row.color)
-            Spacer(minLength: 16)
+            Spacer(minLength: 12)
             if !row.swatches.isEmpty {
                 HStack(spacing: 4) {
                     ForEach(Array(row.swatches.enumerated()), id: \.offset) { _, chip in
@@ -143,16 +146,32 @@ struct PopupRowView: View {
                     .foregroundStyle(ink.map { Color(nsColor: $0).opacity(0.7) } ?? .secondary)
             }
             if let on = row.toggle {
-                Toggle("", isOn: Binding(get: { on }, set: { row.onToggle?($0) }))
-                    .toggleStyle(.switch).controlSize(.mini).labelsHidden()
+                AccentSwitch(on: on, tint: ink ?? palette.accent)
             }
         }
         .padding(.horizontal, 4)
-        .frame(height: ROW_HEIGHT)
+        .frame(height: row.action != nil || row.toggle != nil ? BUTTON_HEIGHT : ROW_HEIGHT)
         .background(RoundedRectangle(cornerRadius: 6)
             .fill(hovered ? Color(nsColor: palette.accent) : row.highlight ? Color.primary.opacity(0.1) : .clear)
             .padding(.horizontal, -2).padding(.vertical, 2))
         .contentShape(Rectangle())
+    }
+}
+
+// drawn, not NSSwitch: the popover's app is never active, so the native
+// switch renders in its inactive grey instead of the accent
+struct AccentSwitch: View {
+    let on: Bool
+    let tint: NSColor // the accent, or the bar colour on an accent hover plate
+
+    var body: some View {
+        Capsule()
+            .fill(on ? Color(nsColor: tint) : Color.primary.opacity(0.15))
+            .frame(width: 26, height: 15)
+            .overlay(alignment: on ? .trailing : .leading) {
+                Circle().fill(.white).shadow(color: .black.opacity(0.25), radius: 0.5, y: 0.5).padding(1.5)
+            }
+            .animation(.snappy(duration: 0.15), value: on)
     }
 }
 
