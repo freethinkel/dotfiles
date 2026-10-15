@@ -44,6 +44,9 @@ export BUN_INSTALL="$HOME/.bun"
 path=($BUN_INSTALL/bin(N/) $HOME/.opencode/bin(N/) $HOME/.nub/bin(N/) $HOME/zero/bin(N/) $path)
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
+# herdr answers XTVERSION as "libghostty", which Claude Code's kitty-graphics allowlist rejects
+[[ $TERM_PROGRAM == herdr ]] && export CLAUDE_CODE_FORCE_TERMINAL_IMAGES=1
+
 # >>> otty shell integration >>>
 # Added by Otty — toggle in Settings > Shell > Shell Integration.
 # Inert unless launched by Otty (it sets $OTTY_SHELL_INTEGRATION).
