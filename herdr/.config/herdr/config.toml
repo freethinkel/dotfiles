@@ -142,13 +142,6 @@ description = "navigate right (vim/herdr)"
 # command = "lazygit"
 
 [[keys.command]]
-key = "prefix+t"
-type = "plugin_action"
-command = "edit"
-description = "edit worktree-hooks config"
-
-
-[[keys.command]]
 key = "cmd+r"
 type = "plugin_action"
 command = "persiyanov.reviewr.toggle" # <plugin_id>.<action_id> — note the id, not the name
@@ -299,6 +292,16 @@ pane_history = false
 # Maximum scrollback buffer size in bytes retained per pane terminal.
 # Matches Ghostty's default scrollback-limit behavior.
 # scrollback_limit_bytes = 10000000
+
+[[keys.command]]
+key = "prefix+t"
+type = "plugin_action"
+command = "herdr-tsk.open-board"
+
+[[keys.command]]
+key = "prefix+a"
+type = "plugin_action"
+command = "herdr-tsk.quick-capture"
 
 # >>> herdr-profiles managed keybinding (edit with: herdr-profiles setup) >>>
 [[keys.command]]
