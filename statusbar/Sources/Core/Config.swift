@@ -28,11 +28,7 @@ let ICON_SIZE: CGFloat = 16
 let ICON_GAP: CGFloat = 4         // icon to label, right-cluster items       // bar glyphs; "sf:" icons are SF Symbols at this point size
 let APP_ICON_GAP: CGFloat = 2
 
-// popups
-let ROW_HEIGHT: CGFloat = 26
-let BUTTON_HEIGHT: CGFloat = 30   // clickable rows: actions, switches
-let POPUP_PAD: CGFloat = 6
-let CELL_PAD: CGFloat = 14        // table cells: added to the widest cell of a column
+// popup sizes live in Popup/Style.swift
 
 // right cluster, screen order left to right
 let DEFAULT_ORDER = ["claude", "weather", "home", "tailscale", "caffeinate", "theme", "more", "agents", "layout", "brightness", "volume", "battery", "clock", "activity"]

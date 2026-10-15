@@ -46,23 +46,13 @@ func iconImage(_ s: String, _ font: NSFont, _ color: NSColor) -> NSImage {
     }
 }
 
-extension PopupRow {
-    var font: NSFont { nerdFont(hero ? "Bold" : "Regular", dim ? 12 : 13) }
-    // accent stays for tints and marks: as text on clear glass it washes out
-    var color: Color { dim ? .secondary : .primary }
-}
-
 struct PopupRowView: View {
     let row: PopupRow
     var checkColumn = false // the popup has a choice somewhere: every row keeps the ✓ column, like NSMenu
-    @State private var hovered = false
-    // hover is a menu selection: accent plate, text in the bar colour, the
-    // pair the calendar's today already uses
-    private var ink: NSColor? { hovered ? palette.barBG : nil }
 
     var body: some View {
         if row.separator {
-            Divider().padding(.vertical, 2)
+            PopupSeparator()
         } else if let pager = row.pager {
             HStack {
                 arrow("‹") { pager(-1) }
@@ -73,23 +63,22 @@ struct PopupRowView: View {
             }
             .frame(minWidth: row.minWidth, minHeight: ROW_HEIGHT)
         } else if let value = row.slider {
-            HStack(spacing: 8) {
-                leading
-                Slider(value: Binding(get: { value }, set: { row.onSlide?($0) }))
-                    .controlSize(.small)
+            HStack(spacing: ROW_SPACING) {
+                leading(nil)
+                PopupSlider(value: value) { row.onSlide?($0) }
                     .frame(minWidth: 150)
                 Text(verbatim: row.text).font(Font(row.font)).monospacedDigit()
                     .frame(minWidth: 40, alignment: .trailing)
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, ROW_PAD)
             .frame(height: ROW_HEIGHT)
         } else if let action = row.action ?? row.toggle.map({ on in { row.onToggle?(!on) } }) {
-            // a switch row flips from anywhere on it, the switch itself is just the readout
-            Button(action: action) { content }
-                .buttonStyle(.plain)
-                .onHover { hovered = $0 }
+            // a switch row flips from anywhere on it
+            PopupButton(highlight: row.highlight, action: action) { content(popupInk($0)) }
         } else {
-            content
+            content(nil)
+                .frame(height: ROW_HEIGHT)
+                .background(PopupPlate(highlight: row.highlight))
         }
     }
 
@@ -101,14 +90,8 @@ struct PopupRowView: View {
         .buttonStyle(.plain)
     }
 
-    @ViewBuilder private var leading: some View {
-        if checkColumn {
-            Image(systemName: "checkmark")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(ink.map { Color(nsColor: $0) } ?? .primary)
-                .opacity(row.checked == true ? 1 : 0)
-                .frame(width: 12)
-        }
+    @ViewBuilder private func leading(_ ink: NSColor?) -> some View {
+        if checkColumn { PopupCheck(on: row.checked == true, ink: ink) }
         if let bar = row.bar {
             RoundedRectangle(cornerRadius: 1.5)
                 .fill(Color(nsColor: bar).opacity(row.strike || row.dim ? 0.4 : 1))
@@ -118,15 +101,15 @@ struct PopupRowView: View {
             Image(nsImage: image).resizable().frame(width: 16, height: 16)
         }
         if !row.icon.isEmpty {
-            // the bar's icon size, in a fixed column so the labels line up
-            Image(nsImage: iconImage(row.icon, nerdFont("Bold", ICON_SIZE), ink ?? palette.accent))
-                .frame(minWidth: ICON_SIZE + 2)
+            // a fixed column so the labels line up
+            Image(nsImage: iconImage(row.icon, nerdFont("Bold", POPUP_ICON_SIZE), ink ?? palette.accent))
+                .frame(minWidth: POPUP_ICON_SIZE + 2)
         }
     }
 
-    private var content: some View {
-        HStack(spacing: 8) {
-            leading
+    private func content(_ ink: NSColor?) -> some View {
+        HStack(spacing: ROW_SPACING) {
+            leading(ink)
             Text(verbatim: row.text)
                 .font(Font(row.font))
                 .strikethrough(row.strike)
@@ -145,33 +128,9 @@ struct PopupRowView: View {
                 Text(verbatim: row.detail).font(Font(nerdFont("Regular", 11)))
                     .foregroundStyle(ink.map { Color(nsColor: $0).opacity(0.7) } ?? .secondary)
             }
-            if let on = row.toggle {
-                AccentSwitch(on: on, tint: ink ?? palette.accent)
-            }
+            if let on = row.toggle { PopupSwitch(on: on, ink: ink) }
         }
-        .padding(.horizontal, 4)
-        .frame(height: row.action != nil || row.toggle != nil ? BUTTON_HEIGHT : ROW_HEIGHT)
-        .background(RoundedRectangle(cornerRadius: 6)
-            .fill(hovered ? Color(nsColor: palette.accent) : row.highlight ? Color.primary.opacity(0.1) : .clear)
-            .padding(.horizontal, -2).padding(.vertical, 2))
-        .contentShape(Rectangle())
-    }
-}
-
-// drawn, not NSSwitch: the popover's app is never active, so the native
-// switch renders in its inactive grey instead of the accent
-struct AccentSwitch: View {
-    let on: Bool
-    let tint: NSColor // the accent, or the bar colour on an accent hover plate
-
-    var body: some View {
-        Capsule()
-            .fill(on ? Color(nsColor: tint) : Color.primary.opacity(0.15))
-            .frame(width: 26, height: 15)
-            .overlay(alignment: on ? .trailing : .leading) {
-                Circle().fill(.white).shadow(color: .black.opacity(0.25), radius: 0.5, y: 0.5).padding(1.5)
-            }
-            .animation(.snappy(duration: 0.15), value: on)
+        .padding(.horizontal, ROW_PAD)
     }
 }
 
@@ -263,7 +222,6 @@ struct PopupContent: View {
             }
         }
         .padding(POPUP_PAD)
-        .tint(Color(nsColor: palette.accent))
         .onHover { if !$0 { scheduleHullCheck() } }
     }
 }
