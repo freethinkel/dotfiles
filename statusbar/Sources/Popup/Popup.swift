@@ -63,17 +63,23 @@ struct PopupRowView: View {
             }
             .frame(minWidth: row.minWidth, minHeight: ROW_HEIGHT)
         } else if let value = row.slider {
+            // the full width: no ✓ column, a bigger icon, the slider takes the rest
             HStack(spacing: ROW_SPACING) {
-                leading(nil)
+                if !row.icon.isEmpty {
+                    Image(nsImage: iconImage(row.icon, nerdFont("Bold", SLIDER_ICON_SIZE), palette.accent))
+                        .frame(width: SLIDER_ICON_SIZE + 4)
+                }
                 PopupSlider(value: value) { row.onSlide?($0) }
-                    .frame(minWidth: 150)
+                    .frame(minWidth: 150, maxWidth: .infinity)
                 Text(verbatim: row.text).font(Font(row.font)).monospacedDigit()
                     .frame(minWidth: 40, alignment: .trailing)
             }
             .padding(.horizontal, ROW_PAD)
-            .frame(height: ROW_HEIGHT)
-        } else if let action = row.action ?? row.toggle.map({ on in { row.onToggle?(!on) } }) {
+            .frame(height: BUTTON_HEIGHT)
+        } else if let on = row.toggle {
             // a switch row flips from anywhere on it
+            PopupButton(highlight: row.highlight, quiet: true, action: { row.onToggle?(!on) }) { _ in content(nil) }
+        } else if let action = row.action {
             PopupButton(highlight: row.highlight, action: action) { content(popupInk($0)) }
         } else {
             content(nil)
@@ -101,9 +107,9 @@ struct PopupRowView: View {
             Image(nsImage: image).resizable().frame(width: 16, height: 16)
         }
         if !row.icon.isEmpty {
-            // a fixed column so the labels line up
+            // a fixed column so the labels line up, whatever the glyph's width
             Image(nsImage: iconImage(row.icon, nerdFont("Bold", POPUP_ICON_SIZE), ink ?? palette.accent))
-                .frame(minWidth: POPUP_ICON_SIZE + 2)
+                .frame(width: POPUP_ICON_SIZE + 4)
         }
     }
 
@@ -128,7 +134,7 @@ struct PopupRowView: View {
                 Text(verbatim: row.detail).font(Font(nerdFont("Regular", 11)))
                     .foregroundStyle(ink.map { Color(nsColor: $0).opacity(0.7) } ?? .secondary)
             }
-            if let on = row.toggle { PopupSwitch(on: on, ink: ink) }
+            if let on = row.toggle { PopupSwitch(on: on) { row.onToggle?($0) } }
         }
         .padding(.horizontal, ROW_PAD)
     }
@@ -285,16 +291,26 @@ func showPopup(_ name: String, of view: NSView, at rect: NSRect) -> Bool {
     // private setter is what re-tags it.
     if let w = host.view.window as? NSPanel {
         w.styleMask.insert(.nonactivatingPanel)
-        let sel = NSSelectorFromString("_setPreventsActivation:")
-        if let m = class_getInstanceMethod(type(of: w), sel) {
-            typealias SetBool = @convention(c) (AnyObject, Selector, Bool) -> Void
-            unsafeBitCast(method_getImplementation(m), to: SetBool.self)(w, sel, true)
-        }
+        setPrivate(w, "_setPreventsActivation:", true)
+        // a window that is never key draws native switches and sliders in
+        // their inactive grey; making it key would take the keyboard from
+        // the front app, so it only draws as if it were
+        setPrivate(w, "_setForceActiveControls:", true)
+        // controls already drawn read the flag on the next key change
+        NotificationCenter.default.post(name: NSWindow.didBecomeKeyNotification, object: w)
     }
     popover = p
     popupHost = host
     openPopup = name
     return true
+}
+
+// a private BOOL setter, called if this macOS still has it
+func setPrivate(_ obj: AnyObject, _ name: String, _ value: Bool) {
+    let sel = NSSelectorFromString(name)
+    guard let m = class_getInstanceMethod(type(of: obj), sel) else { return }
+    typealias SetBool = @convention(c) (AnyObject, Selector, Bool) -> Void
+    unsafeBitCast(method_getImplementation(m), to: SetBool.self)(obj, sel, value)
 }
 
 func popupRows(for name: String) -> [PopupRow] {

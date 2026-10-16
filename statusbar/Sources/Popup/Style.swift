@@ -3,9 +3,8 @@ import SwiftUI
 
 // --- popup style -----------------------------------------------------------
 // Every popup is drawn from the pieces below: change a size, a colour or a
-// control here and every item's popup follows. The controls are drawn, not
-// native: the bar's app is never active, so NSSwitch / NSSlider render in
-// their inactive grey instead of the accent.
+// control here and every item's popup follows. The controls are native,
+// tinted with the palette's accent.
 
 let ROW_HEIGHT: CGFloat = 26      // text rows, table cells
 let BUTTON_HEIGHT: CGFloat = 30   // clickable rows: actions, switches
@@ -15,6 +14,7 @@ let ROW_SPACING: CGFloat = 8      // between a row's pieces
 let PLATE_RADIUS: CGFloat = 6     // hover / highlight plate
 let CELL_PAD: CGFloat = 14        // table cells: added to the widest cell of a column
 let POPUP_ICON_SIZE = ICON_SIZE   // leading icons, the bar's own size
+let SLIDER_ICON_SIZE: CGFloat = 20 // a slider row's icon
 
 extension PopupRow {
     var font: NSFont { nerdFont(hero ? "Bold" : "Regular", dim ? 12 : 13) }
@@ -38,18 +38,20 @@ struct PopupPlate: View {
 }
 
 // a whole row as a button: taller, selected on hover; the label gets the
-// hover state to pick its ink
+// hover state to pick its ink. A quiet one (a switch row) only gets the
+// soft plate: on the accent selection the switch's own accent would vanish.
 struct PopupButton<Label: View>: View {
     var highlight = false
+    var quiet = false
     let action: () -> Void
     @ViewBuilder let label: (_ selected: Bool) -> Label
     @State private var hovered = false
 
     var body: some View {
         Button(action: action) {
-            label(hovered)
+            label(hovered && !quiet)
                 .frame(height: BUTTON_HEIGHT)
-                .background(PopupPlate(selected: hovered, highlight: highlight))
+                .background(PopupPlate(selected: hovered && !quiet, highlight: highlight || hovered))
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -75,19 +77,16 @@ struct PopupCheck: View {
     }
 }
 
-// a readout, not a control: the row it sits in does the flipping
+// native, tinted with the bar's accent; a click on the switch flips it, and
+// so does one anywhere else on its row (the row is a button)
 struct PopupSwitch: View {
     let on: Bool
-    var ink: NSColor? = nil // on an accent plate the accent would vanish
+    let onToggle: (Bool) -> Void
 
     var body: some View {
-        Capsule()
-            .fill(on ? Color(nsColor: ink ?? palette.accent) : Color.primary.opacity(0.15))
-            .frame(width: 26, height: 15)
-            .overlay(alignment: on ? .trailing : .leading) {
-                Circle().fill(.white).shadow(color: .black.opacity(0.25), radius: 0.5, y: 0.5).padding(1.5)
-            }
-            .animation(.snappy(duration: 0.15), value: on)
+        Toggle("", isOn: Binding(get: { on }, set: onToggle))
+            .toggleStyle(.switch).controlSize(.mini).labelsHidden()
+            .tint(Color(nsColor: palette.accent))
     }
 }
 
@@ -96,21 +95,8 @@ struct PopupSlider: View {
     let onChange: (Double) -> Void
 
     var body: some View {
-        GeometryReader { g in
-            let k: CGFloat = 14, track = max(g.size.width - k, 1)
-            let x = track * CGFloat(min(max(value, 0), 1))
-            ZStack(alignment: .leading) {
-                Capsule().fill(Color.primary.opacity(0.15)).frame(height: 4)
-                Capsule().fill(Color(nsColor: palette.accent)).frame(width: x + k / 2, height: 4)
-                Circle().fill(.white).shadow(color: .black.opacity(0.3), radius: 1, y: 0.5)
-                    .frame(width: k, height: k).offset(x: x)
-            }
-            .frame(maxHeight: .infinity)
-            .contentShape(Rectangle())
-            .gesture(DragGesture(minimumDistance: 0).onChanged {
-                onChange(Double(min(max(($0.location.x - k / 2) / track, 0), 1)))
-            })
-        }
-        .frame(height: 16)
+        Slider(value: Binding(get: { value }, set: onChange))
+            .controlSize(.small)
+            .tint(Color(nsColor: palette.accent))
     }
 }
