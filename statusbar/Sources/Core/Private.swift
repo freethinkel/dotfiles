@@ -7,20 +7,6 @@ import EventKit
 import IOKit.ps
 import UniformTypeIdentifiers
 
-// DisplayServices (private) — the same calls Control Center makes, and
-// the brightness keys go through.
-@_silgen_name("DisplayServicesGetBrightness")
-func DSGetBrightness(_ display: CGDirectDisplayID, _ value: UnsafeMutablePointer<Float>) -> Int32
-@_silgen_name("DisplayServicesSetBrightness")
-func DSSetBrightness(_ display: CGDirectDisplayID, _ value: Float) -> Int32
-
-// Brightness has a publisher after all. The callback's later arguments
-// are deliberately untyped and never dereferenced: the arity is what the
-// ABI needs, the contents are not ours to trust.
-typealias DSBrightnessProc = @convention(c) (UnsafeRawPointer?, CGDirectDisplayID, UnsafeRawPointer?, UnsafeRawPointer?) -> Void
-@_silgen_name("DisplayServicesRegisterForBrightnessChangeNotifications")
-func DSRegisterBrightnessNotifications(_ display: CGDirectDisplayID, _ context: UnsafeMutableRawPointer?, _ callback: DSBrightnessProc) -> Int32
-
 // --- SkyLight window events (borders.swift recipe) ------------------------
 
 typealias NotifyProc = @convention(c) (UInt32, UnsafeMutableRawPointer?, Int, UnsafeMutableRawPointer?) -> Void

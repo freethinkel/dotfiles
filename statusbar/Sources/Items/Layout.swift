@@ -41,6 +41,7 @@ func layoutRows() -> [PopupRow] {
             closePopup()
         }))
     }
+    rows.append(PopupRow(separator: true))
     rows.append(PopupRow(text: "keyboard settings…", dim: true, action: {
         NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension")!)
         closePopup()

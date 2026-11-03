@@ -33,7 +33,7 @@ func set(_ name: String, _ mutate: (inout BarItem) -> Void) {
     let t0 = DispatchTime.now().uptimeNanoseconds
     rightItems[name] = item
     repaint()
-    // an open popup shows the same state as its pill — the brightness
+    // an open popup shows the same state as its pill — a slider
     // popup kept whatever value it was built with while the pill moved
     if openPopup == name { refreshPopup() }
     tlog(String(format: "item %@ %.2f ms", name, Double(DispatchTime.now().uptimeNanoseconds - t0) / 1_000_000))
@@ -48,20 +48,14 @@ func fetchFailed(_ name: String, poll: TimeInterval) {
     set(name) { $0.stale = age > 2 * poll }
 }
 
-func shell(_ launch: String, _ args: [String], stdin input: String? = nil) -> String {
+func shell(_ launch: String, _ args: [String]) -> String {
     let p = Process()
     p.executableURL = URL(fileURLWithPath: launch)
     p.arguments = args
     let pipe = Pipe()
     p.standardOutput = pipe
     p.standardError = FileHandle.nullDevice
-    let inPipe = Pipe()
-    if input != nil { p.standardInput = inPipe }
     guard (try? p.run()) != nil else { return "" }
-    if let input { // ponytail: small inputs only — written whole before reading
-        inPipe.fileHandleForWriting.write(input.data(using: .utf8)!)
-        try? inPipe.fileHandleForWriting.close()
-    }
     let out = pipe.fileHandleForReading.readDataToEndOfFile()
     p.waitUntilExit()
     return String(data: out, encoding: .utf8) ?? ""

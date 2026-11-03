@@ -117,7 +117,7 @@ func rowsForMenu(_ element: AXUIElement, context: String = "",
         if recents, title.hasPrefix("Show “"), title.hasSuffix("” in Finder") { continue }
         if recents, ["Applications", "Documents", "Servers"].contains(title) {
             section = title
-            rows.append(PopupRow(text: title, dim: true))
+            rows.append(PopupRow(text: title.lowercased(), header: true))
             continue
         }
         if !axChildren(item).isEmpty {

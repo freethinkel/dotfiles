@@ -31,7 +31,7 @@ let APP_ICON_GAP: CGFloat = 2
 // popup sizes live in Popup/Style.swift
 
 // right cluster, screen order left to right
-let DEFAULT_ORDER = ["claude", "weather", "home", "tailscale", "caffeinate", "theme", "more", "agents", "layout", "brightness", "volume", "battery", "clock", "activity"]
+let DEFAULT_ORDER = ["claude", "weather", "home", "tailscale", "caffeinate", "theme", "more", "layout", "volume", "battery", "clock", "activity"]
 
 // Dragged order, kept in UserDefaults. Items added to DEFAULT_ORDER later
 // slot in at their default index; ones removed from it drop out.
@@ -48,9 +48,12 @@ var collapsed = true
 var dragName: String? // the pill being dragged, if any
 var collapsible: ArraySlice<String> { rightOrder.prefix { $0 != "more" } }
 
-// above app windows, one below the native menu bar: with the menu bar on
-// auto-hide it slides in OVER the bar when the pointer hits the top edge
-let BAR_LEVEL = NSWindow.Level(rawValue: NSWindow.Level.mainMenu.rawValue - 1)
+// nori's Space slide leaves windows from .statusBar up where they are;
+// anything lower rides off with the old Space. Under the pointer the bar
+// drops one below the native menu bar, so on auto-hide that one can still
+// slide in over it (updateBarLevel).
+let BAR_LEVEL = NSWindow.Level.statusBar
+let BAR_LEVEL_HOVER = NSWindow.Level(rawValue: NSWindow.Level.mainMenu.rawValue - 1)
 
 // polling (s) — only for sources with no publisher
 let WEATHER_POLL: TimeInterval = 1800
@@ -58,7 +61,6 @@ let TAILSCALE_POLL: TimeInterval = 15
 let TAILSCALE_CLI = "/usr/local/bin/tailscale"
 let CLAUDE_POLL: TimeInterval = 300
 let HOME_POLL: TimeInterval = 15
-let AGENTS_POLL: TimeInterval = 5
 let ACTIVITY_POLL: TimeInterval = 60 // also the cpu averaging window
 let ACTIVITY_CPU_HOT = 0.8
 // no "switch": the only ones are the ACs' power switches under climate.*; add it back for smart plugs

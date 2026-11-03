@@ -161,17 +161,8 @@ final class BarView: NSView, NSDraggingSource {
         palette.barBG.setFill()
         bounds.fill()
 
-        // workspace chips, in one bracket — this display's set only.
-        // Undocked, force-assignment parks the GUEST set (11-19) on the
-        // single display, where its empty slots would render as
-        // duplicate digits — so they are hidden and an empty primary
-        // keeps its slot to hold the row at 1..9. Docked, this
-        // surface's list IS its own set: every slot belongs on the row,
-        // and filtering left the laptop showing two lonely icons.
-        let shown = surfaces.count > 1 ? surface.workspaces
-            : surface.workspaces.filter {
-                $0.count == 1 || model.occupied.contains($0) || $0 == model.focused
-            }
+        // Space chips, in one bracket — this display's set only
+        let shown = surface.workspaces
         // apple pill: the system menu the hidden native menu bar carried
         let appleGlyph = "sf:apple.logo"
         let appleFont = nerdFont("Bold", 15)
@@ -182,9 +173,9 @@ final class BarView: NSView, NSDraggingSource {
         appleRect = NSRect(x: apple.minX, y: 0, width: appleW, height: bounds.height)
         pressing(appleRect) { drawIcon(appleGlyph, appleFont, palette.accent, centeredIn: apple) }
 
-        // one pill per workspace, like OmniWM's own bar: label, then an
-        // icon per window. Floating windows and OmniWM's excluded apps are
-        // already dropped by the time names reach model.apps.
+        // one pill per Space: label, then an icon per window in strip
+        // order. Floating windows are already dropped by the time names
+        // reach model.apps.
         var x = apple.maxX + 10
         for ws in shown {
             let apps = model.apps[ws] ?? []
@@ -196,7 +187,7 @@ final class BarView: NSView, NSDraggingSource {
             let active = ws == surface.visible
             let chipHit = NSRect(x: chip.minX, y: 0, width: chip.width, height: bounds.height)
             pressing(chipHit) {
-            // OmniWM-bar style: the active workspace is outlined, not
+            // the visible Space is outlined, not
             // filled, and everything outside it sits back at half strength
             if active {
                 let plate = NSBezierPath(roundedRect: chip.insetBy(dx: 0.5, dy: 0.5), xRadius: RADIUS, yRadius: RADIUS)
@@ -215,7 +206,7 @@ final class BarView: NSView, NSDraggingSource {
                 icon.draw(in: NSRect(x: labelBox.midX - 9, y: bounds.height / 2 - 9, width: 18, height: 18),
                           from: .zero, operation: .sourceOver, fraction: fade)
             case nil:
-                draw(String(ws.suffix(1)), chipFont, tint, centeredIn: labelBox)
+                draw(ws, chipFont, tint, centeredIn: labelBox)
             }
             var ix = labelBox.maxX + 2
             for win in apps {
@@ -379,6 +370,24 @@ final class BarView: NSView, NSDraggingSource {
     override func mouseMoved(with event: NSEvent) {
         hoverPoint = convert(event.locationInWindow, from: nil)
         needsDisplay = true
+        autoCollapse?.cancel()
+        updateBarLevel()
+    }
+
+    // the expanded cluster folds back on its own 10 s after the pointer
+    // leaves the bar; hovering it again holds it open
+    private var autoCollapse: DispatchWorkItem?
+    private func setCollapsed(_ on: Bool) {
+        collapsed = on
+        set("more") { $0.icon = collapsed ? "sf:chevron.left" : "sf:chevron.right" }
+        scheduleAutoCollapse()
+    }
+    private func scheduleAutoCollapse() {
+        autoCollapse?.cancel()
+        guard !collapsed else { return }
+        let work = DispatchWorkItem { [weak self] in self?.setCollapsed(true) }
+        autoCollapse = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: work)
     }
 
     // Right-cluster pills act on mouseUp, not mouseDown, so a press can
@@ -472,6 +481,7 @@ final class BarView: NSView, NSDraggingSource {
         pressedRect = nil
         needsDisplay = true
         scheduleHullCheck()
+        scheduleAutoCollapse()
     }
 
     private func hit(_ event: NSEvent) -> String? {
@@ -536,8 +546,7 @@ final class BarView: NSView, NSDraggingSource {
         closePopup()
         switch name {
         case "more":
-            collapsed.toggle()
-            set("more") { $0.icon = collapsed ? "sf:chevron.left" : "sf:chevron.right" }
+            setCollapsed(!collapsed)
         case "activity":
             DispatchQueue.global(qos: .userInitiated).async {
                 // login zsh: a launchd agent's PATH lacks /opt/homebrew/bin
@@ -554,10 +563,9 @@ final class BarView: NSView, NSDraggingSource {
             repaint()
             return
         }
-        guard let name = hit(event), name == "caffeinate" || name == "agents",
+        guard let name = hit(event), name == "caffeinate",
               let rect = itemRects.first(where: { $0.0 == name })?.1 else { return }
-        // the agents pill picks its orchestrator on the right button
-        showPopup(name == "agents" ? "agents:pick" : name, of: self, at: rect)
+        showPopup(name, of: self, at: rect)
     }
 
     // A trackpad flick delivers dozens of precise events plus a momentum
@@ -579,18 +587,6 @@ final class BarView: NSView, NSDraggingSource {
         case "volume":
             guard let v = readVolume() else { return }
             writeVolume(v.percent + step) // the CoreAudio listener repaints
-        case "brightness":
-            var value: Float = 0
-            guard DSGetBrightness(builtinDisplayID(), &value) == 0 else { return }
-            // one continuous scale: the backlight down to 0, then shade
-            if step < 0, value <= 0.001 {
-                setShade(shade + 0.08)
-            } else if step > 0, shade > 0.001 {
-                setShade(shade - 0.08) // come out of shade before raising the backlight
-            } else {
-                _ = DSSetBrightness(builtinDisplayID(), min(1, max(0, value + Float(step) / 100)))
-                updateBrightness()
-            }
         default: break
         }
     }

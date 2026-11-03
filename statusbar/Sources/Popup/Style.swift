@@ -8,6 +8,7 @@ import SwiftUI
 
 let ROW_HEIGHT: CGFloat = 26      // text rows, table cells
 let BUTTON_HEIGHT: CGFloat = 30   // clickable rows: actions, switches
+let HEADER_HEIGHT: CGFloat = 24   // section titles, text sitting on the bottom
 let POPUP_PAD: CGFloat = 6        // popup edge
 let ROW_PAD: CGFloat = 4          // inside a row, each side
 let ROW_SPACING: CGFloat = 8      // between a row's pieces
@@ -17,9 +18,9 @@ let POPUP_ICON_SIZE = ICON_SIZE   // leading icons, the bar's own size
 let SLIDER_ICON_SIZE: CGFloat = 20 // a slider row's icon
 
 extension PopupRow {
-    var font: NSFont { nerdFont(hero ? "Bold" : "Regular", dim ? 12 : 13) }
+    var font: NSFont { header ? nerdFont("Bold", 11) : nerdFont(hero ? "Bold" : "Regular", dim ? 12 : 13) }
     // accent stays for tints and marks: as text on clear glass it washes out
-    var color: Color { dim ? .secondary : .primary }
+    var color: Color { dim || header ? .secondary : .primary }
 }
 
 // hover is a menu selection: accent plate, ink in the bar colour, the pair
@@ -59,8 +60,25 @@ struct PopupButton<Label: View>: View {
     }
 }
 
+// inset to the row text, so it reads as a break inside the list rather than a frame
 struct PopupSeparator: View {
-    var body: some View { Divider().padding(.vertical, 2) }
+    var body: some View { Divider().padding(.horizontal, ROW_PAD).padding(.vertical, 4) }
+}
+
+// a palette as one strip: the chips touch, the strip is rounded
+struct PopupSwatches: View {
+    let colors: [NSColor]
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(colors.enumerated()), id: \.offset) { _, c in
+                Rectangle().fill(Color(nsColor: c)).frame(width: 11)
+            }
+        }
+        .frame(height: 12)
+        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(.primary.opacity(0.15), lineWidth: 0.5))
+    }
 }
 
 // one of a set, NSMenu-style; the column stays when unchecked so labels line up

@@ -35,7 +35,8 @@ func barHeight(_ screen: NSScreen) -> CGFloat {
 // own window; everything else it reads from the shared model.
 final class BarSurface {
     var screen: NSScreen
-    var monitorID: String
+    // the key SkyLight files this display's Spaces under
+    var monitorID: String { displayUUID(screen) }
     var workspaces: [String] = []
     var mine: Set<String> = []
     var visible = ""
@@ -49,18 +50,16 @@ final class BarSurface {
 
     var height: CGFloat { barHeight(screen) }
 
-    init(screen: NSScreen, monitorID: String) {
+    init(screen: NSScreen) {
         self.screen = screen
-        self.monitorID = monitorID
-        let frame = NSRect(x: screen.frame.minX, y: screen.frame.maxY - barHeight(screen) - stackOffset,
-                           width: screen.frame.width, height: barHeight(screen))
+        let frame = barFrame(screen, height: barHeight(screen))
         window = BarWindow(contentRect: frame, styleMask: [.borderless, .nonactivatingPanel],
                            backing: .buffered, defer: false)
         window.isOpaque = false
         window.backgroundColor = .clear
         window.hasShadow = false
         window.level = BAR_LEVEL
-        window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+        window.collectionBehavior = [.canJoinAllSpaces]
         window.acceptsMouseMovedEvents = true // tracking areas need the moves
         view = BarView(frame: NSRect(origin: .zero, size: frame.size))
         view.registerForDraggedTypes([barItemType])
@@ -70,11 +69,16 @@ final class BarSurface {
     }
 
     func place() {
-        let frame = NSRect(x: screen.frame.minX, y: screen.frame.maxY - height - stackOffset,
-                           width: screen.frame.width, height: height)
+        let frame = barFrame(screen, height: height)
         window.setFrame(frame, display: true)
         view.frame = NSRect(origin: .zero, size: frame.size)
     }
+}
+
+// 1 pt past both sides of the screen: a window spanning the top edge from side to side is hidden by WindowServer
+// for the whole of Dock's Space switch, whatever its level (measured in nori, docs/WINDOWSERVER.md there).
+func barFrame(_ screen: NSScreen, height: CGFloat) -> NSRect {
+    NSRect(x: screen.frame.minX - 1, y: screen.frame.maxY - height - stackOffset, width: screen.frame.width + 2, height: height)
 }
 
 var surfaces: [BarSurface] = []
@@ -83,53 +87,22 @@ func screenID(_ screen: NSScreen) -> CGDirectDisplayID {
     (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
 }
 
-// Display ids are resolved by NAME every time the screens change.
-func monitorIDs() -> [String: String] { // display name -> WM monitor id
-    // OmniWM names monitors with NSScreen.localizedName (Monitor.current()
-    // in its source), so the name join works; its ids stay opaque
-    // ("display:…") and only ever meet the query payloads they came from.
-    guard omniwmActive() else { return [:] }
-    var map: [String: String] = [:]
-    if let list = omniQuery("displays", ["--fields", "id,name"])?["displays"] as? [[String: Any]] {
-        for d in list {
-            if let id = d["id"] as? String, let name = d["name"] as? String { map[name] = id }
-        }
-    }
-    return map
+func displayUUID(_ screen: NSScreen) -> String {
+    guard let uuid = CGDisplayCreateUUIDFromDisplayID(screenID(screen))?.takeRetainedValue() else { return "" }
+    return CFUUIDCreateString(nil, uuid) as String
 }
 
-// A label no window manager gave: unique per display, and it matches no
-// WM id, so the display's workspace pills stay empty until one answers.
-func unresolvedID(_ screen: NSScreen) -> String { "unresolved:\(screenID(screen))" }
-
-// One bar per display, always; the window manager only labels them. A
-// display the manager does not list (not up yet, a login, a switch) is
-// unresolved: its workspace pills stay empty rather than show another
-// manager's state. reconcile() below asks again.
-func rebuildSurfaces(_ ids: [String: String]) {
+// One bar per display; a display's Spaces come from SkyLight by its UUID.
+func rebuildSurfaces() {
     var kept: [BarSurface] = []
     for screen in NSScreen.screens {
-        let existing = surfaces.first(where: { screenID($0.screen) == screenID(screen) })
-        let id = ids[screen.localizedName] ?? unresolvedID(screen)
-        let label = id.hasPrefix("unresolved:") ? "no window manager yet" : "omniwm monitor \(id)"
-        if let existing {
-            if existing.monitorID != id {
-                tlog("monitor: \(screen.localizedName) is now \(label) (was \(existing.monitorID))")
-                existing.monitorID = id
-                // the old manager's workspaces name nothing now, and apply()
-                // keeps a list it is not given: clear them for the placeholder
-                if id.hasPrefix("unresolved:") {
-                    existing.workspaces = []
-                    existing.mine = []
-                    existing.visible = ""
-                }
-            }
+        if let existing = surfaces.first(where: { screenID($0.screen) == screenID(screen) }) {
             existing.screen = screen
             existing.place()
             kept.append(existing)
         } else {
-            tlog("surface: \(screen.localizedName) -> \(label)\(screen.safeAreaInsets.top > 0 ? " (notched)" : "")")
-            kept.append(BarSurface(screen: screen, monitorID: id))
+            tlog("surface: \(screen.localizedName) -> \(displayUUID(screen))\(screen.safeAreaInsets.top > 0 ? " (notched)" : "")")
+            kept.append(BarSurface(screen: screen))
         }
     }
     for gone in surfaces where !kept.contains(where: { $0 === gone }) {
@@ -137,6 +110,21 @@ func rebuildSurfaces(_ ids: [String: String]) {
         gone.window.orderOut(nil)
     }
     surfaces = kept
+}
+
+// Drops a bar-height BEFORE the pointer reaches the bar: dropped only on
+// arrival, the menu bar began its reveal under ours and showed up late,
+// already open, or not at all.
+// ponytail: a Space slide while the pointer is that close takes the bar along
+func updateBarLevel() {
+    let p = NSEvent.mouseLocation
+    for surface in surfaces {
+        let f = surface.window.frame
+        // +1: at the very top the pointer sits ON maxY, which contains() leaves out
+        let near = NSRect(x: f.minX, y: f.minY - f.height, width: f.width, height: f.height * 2 + 1)
+        let level = near.contains(p) ? BAR_LEVEL_HOVER : BAR_LEVEL
+        if surface.window.level != level { surface.window.level = level }
+    }
 }
 
 func repaint() {

@@ -176,6 +176,8 @@ func volumeRows() -> [PopupRow] {
                  }),
     ]
     // output devices, current one marked
+    rows.append(PopupRow(separator: true))
+    rows.append(PopupRow(text: "output", header: true))
     let current = defaultOutputDevice()
     for device in audioOutputDevices() {
         rows.append(PopupRow(text: device.name, checked: device.id == current,
@@ -185,6 +187,7 @@ func volumeRows() -> [PopupRow] {
                                  refreshPopup()
                              }))
     }
+    rows.append(PopupRow(separator: true))
     rows.append(PopupRow(text: "sound settings…", dim: true, action: {
         NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Sound-Settings.extension")!)
         closePopup()

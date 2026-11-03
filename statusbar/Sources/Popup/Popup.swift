@@ -13,8 +13,9 @@ struct PopupRow {
     var detail = "" // right-aligned, dim — menu shortcuts live here
     var swatches: [NSColor] = [] // right-aligned colour chips — theme previews
     var separator = false // a thin rule instead of content
-    var hero = false // accent, bold — the title row
+    var hero = false // bold — the title row
     var dim = false // the quiet action footer
+    var header = false // a section title: small, bold, dim, never clickable
     var highlight = false // a quiet plate: the meeting on now, the menu you're in
     var checked: Bool? // one of a set: ✓ when true, nil when the row is no choice
     var slider: Double? // 0...1, a native slider; the text is its readout
@@ -34,10 +35,10 @@ struct PopupRow {
     var bar: NSColor? // leading colour stripe — an event's calendar
     var strike = false // declined / cancelled
     var pager: ((Int) -> Void)? // ‹ title ›, either arrow pages by ∓1
-    var minWidth: CGFloat = 0 // content width floor, so the popup keeps its size between pages
+    var width: CGFloat = 0 // fixes the popup's content width: rows truncate rather than widen it
 }
 
-// every icon kind the bar knows (sf:, nerd glyphs, ts, agents:, keycaps)
+// every icon kind the bar knows (sf:, nerd glyphs, ts, keycaps)
 // goes through the bar's own drawIcon, so the popup can't drift from it
 func iconImage(_ s: String, _ font: NSFont, _ color: NSColor) -> NSImage {
     NSImage(size: NSSize(width: ceil(inkBox(s, font).width), height: ROW_HEIGHT), flipped: false) { r in
@@ -61,7 +62,7 @@ struct PopupRowView: View {
                 Spacer()
                 arrow("›") { pager(1) }
             }
-            .frame(minWidth: row.minWidth, minHeight: ROW_HEIGHT)
+            .frame(minHeight: ROW_HEIGHT)
         } else if let value = row.slider {
             // the full width: no ✓ column, a bigger icon, the slider takes the rest
             HStack(spacing: ROW_SPACING) {
@@ -83,7 +84,7 @@ struct PopupRowView: View {
             PopupButton(highlight: row.highlight, action: action) { content(popupInk($0)) }
         } else {
             content(nil)
-                .frame(height: ROW_HEIGHT)
+                .frame(height: row.header ? HEADER_HEIGHT : ROW_HEIGHT, alignment: row.header ? .bottom : .center)
                 .background(PopupPlate(highlight: row.highlight))
         }
     }
@@ -120,19 +121,13 @@ struct PopupRowView: View {
                 .font(Font(row.font))
                 .strikethrough(row.strike)
                 .foregroundStyle(ink.map { Color(nsColor: $0) } ?? row.color)
+                .lineLimit(1)
             Spacer(minLength: 12)
-            if !row.swatches.isEmpty {
-                HStack(spacing: 4) {
-                    ForEach(Array(row.swatches.enumerated()), id: \.offset) { _, chip in
-                        RoundedRectangle(cornerRadius: 3).fill(Color(nsColor: chip))
-                            .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(.primary.opacity(0.2), lineWidth: 0.5))
-                            .frame(width: 10, height: 10)
-                    }
-                }
-            }
+            if !row.swatches.isEmpty { PopupSwatches(colors: row.swatches) }
             if !row.detail.isEmpty {
                 Text(verbatim: row.detail).font(Font(nerdFont("Regular", 11)))
                     .foregroundStyle(ink.map { Color(nsColor: $0).opacity(0.7) } ?? .secondary)
+                    .fixedSize() // the title gives way, not the detail
             }
             if let on = row.toggle { PopupSwitch(on: on) { row.onToggle?($0) } }
         }
@@ -175,7 +170,7 @@ struct PopupTable: View {
         .padding(.horizontal, CELL_PAD / 2)
         .frame(height: ROW_HEIGHT)
         .background {
-            let plate = RoundedRectangle(cornerRadius: RADIUS)
+            let plate = RoundedRectangle(cornerRadius: PLATE_RADIUS)
             if marked { plate.fill(Color(nsColor: palette.accent)).padding(.horizontal, 1).padding(.vertical, 2) }
             else if k == row.cellRing { plate.strokeBorder(Color(nsColor: palette.accent)).padding(.horizontal, 1).padding(.vertical, 2) }
         }
@@ -214,6 +209,7 @@ struct PopupContent: View {
     }
 
     private var checkColumn: Bool { rows.contains { $0.checked != nil } }
+    private var width: CGFloat? { rows.map(\.width).max().flatMap { $0 > 0 ? $0 : nil } }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -227,6 +223,7 @@ struct PopupContent: View {
                 }
             }
         }
+        .frame(width: width)
         .padding(POPUP_PAD)
         .onHover { if !$0 { scheduleHullCheck() } }
     }
@@ -318,15 +315,12 @@ func popupRows(for name: String) -> [PopupRow] {
     case "apple": return appleMenuRows()
     case "clock": return calendarRows()
     case "weather": return weatherRows()
-    case "brightness": return brightnessRows()
     case "volume": return volumeRows()
     case "battery": return batteryRows()
     case "tailscale": return tailscaleRows()
     case "home": return homeRows()
     case "layout": return layoutRows()
     case "claude": return claudeRows()
-    case "agents": return agentRows()
-    case "agents:pick": return orchestratorRows()
     case "caffeinate": return caffeinateRows()
     case "theme": return themeRows()
     default: return []

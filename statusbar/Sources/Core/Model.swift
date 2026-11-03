@@ -21,12 +21,7 @@ struct BarWin: Equatable {
 
 final class Model {
     var focused = "" // globally focused workspace
-    var apps: [String: [BarWin]] = [:] // ws -> one entry per window, OmniWM-bar style
-    var occupied: Set<String> = []
-    // floating windows stay off the chips. Only the windows QUERY says
-    // which are floating; the workspace-bar stream does not, so the
-    // snapshot keeps the set and the stream filters by it.
-    var floating: Set<String> = []
+    var apps: [String: [BarWin]] = [:] // ws -> one entry per window, left to right as on the strip
     var frontApp = ""
     var media = Media()
 }
@@ -40,71 +35,48 @@ struct Media: Equatable {
 let model = Model()
 var palette = loadPalette()
 
-// SLOW path: who lives where. Three CLI calls — and it runs only when a
-// window is created or destroyed, never on a workspace switch.
-//
-// It is computed OFF the main queue and applied on it. Measured the hard
-// way: with the CLI calls inline on main, one contended rebuild blocked
-// the render path for 7.6 seconds and every switch queued behind it. The
-// architecture only pays off if subprocess work never sits on the path a
-// frame has to travel.
+// One line of nori's stream, which is `query spaces`: every Space with its
+// display, whether it is focused or visible, its strip left to right
+// (floating windows already left out) and the window that has focus there.
+// Keyed by display UUID, or "Main" when displays share their Spaces.
 struct Snapshot {
     var perMonitor: [String: (workspaces: [String], visible: String)] = [:]
     var apps: [String: [BarWin]] = [:]
-    var occupied: Set<String> = []
-    var floating: Set<String> = []
     var focused = ""
 }
 
-let rebuildQueue = DispatchQueue(label: "com.freethinkel.statusbar.rebuild")
-
-func fetchSnapshot() -> Snapshot { omniwmSnapshot() }
-
-// Two omniwmctl queries: workspaces arrive with their display and visibility in one query, and
-// the windows query brings the app names the sole-app chips need. The
-// snapshot also carries focus; the watch stream below covers the fast path.
-func omniwmSnapshot() -> Snapshot {
+func snapshot(fromNori line: Data) -> Snapshot? {
+    guard let spaces = try? JSONSerialization.jsonObject(with: line) as? [[String: Any]] else { return nil }
     var s = Snapshot()
-    var sets: [String: [String]] = [:]
-    var visible: [String: String] = [:]
-    if let list = omniQuery("workspaces",
-                            ["--fields", "raw-name,display"])?["workspaces"]
-        as? [[String: Any]] {
-        for w in list {
-            guard let name = w["rawName"] as? String,
-                  let monitor = (w["display"] as? [String: Any])?["id"] as? String else { continue }
-            sets[monitor, default: []].append(name)
+    for space in spaces {
+        // fullscreen Spaces have no Desktop number, nothing to show or focus
+        guard let number = space["number"] as? Int, let display = space["display"] as? String else { continue }
+        let ws = "\(number)"
+        s.perMonitor[display, default: ([], "")].workspaces.append(ws)
+        if space["isVisible"] as? Bool == true { s.perMonitor[display]?.visible = ws }
+        if space["isFocused"] as? Bool == true { s.focused = ws }
+        var names: [Int: String] = [:]
+        for app in space["apps"] as? [[String: Any]] ?? [] {
+            for id in app["windows"] as? [Int] ?? [] { names[id] = app["name"] as? String }
         }
-    }
-    // visible/focused come from the DISPLAYS query: the workspaces
-    // query's isVisible/isFocused go dark on EMPTY workspaces (the
-    // same trap every workspace script hits), and the pill for a focused empty 8/9
-    // never lit up
-    if let displays = omniQuery("displays", [])?["displays"] as? [[String: Any]] {
-        for d in displays {
-            guard let id = d["id"] as? String,
-                  let active = (d["activeWorkspace"] as? [String: Any])?["rawName"] as? String
-            else { continue }
-            visible[id] = active
-            if (d["isCurrent"] as? Bool) == true { s.focused = active }
-        }
-    }
-    for id in surfaces.map({ $0.monitorID }) {
-        s.perMonitor[id] = (sets[id] ?? [], visible[id] ?? "")
-    }
-
-    if let list = omniQuery("windows", ["--fields", "id,workspace,app,mode,is-focused"])?["windows"]
-        as? [[String: Any]] {
-        for w in list {
-            guard let ws = (w["workspace"] as? [String: Any])?["rawName"] as? String,
-                  let app = (w["app"] as? [String: Any])?["name"] as? String,
-                  let id = w["id"] as? String else { continue }
-            guard (w["mode"] as? String) != "floating" else { s.floating.insert(id); continue }
-            s.occupied.insert(ws)
-            s.apps[ws, default: []].append(BarWin(app: app, id: id, focused: (w["isFocused"] as? Bool) == true))
+        let focusedWin = space["focusedWindow"] as? Int
+        for id in space["columns"] as? [Int] ?? [] {
+            guard let app = names[id], !app.hasPrefix("statusbar") else { continue }
+            s.apps[ws, default: []].append(BarWin(app: app, id: "\(id)", focused: id == focusedWin))
         }
     }
     return s
+}
+
+// nori gone: no Spaces to show rather than its last word
+func clearSpaces() {
+    for surface in surfaces {
+        surface.workspaces = []
+        surface.mine = []
+        surface.visible = ""
+    }
+    model.apps = [:]
+    model.focused = ""
 }
 
 // Reports whether anything actually moved. A workspace switch produces
@@ -114,7 +86,7 @@ func omniwmSnapshot() -> Snapshot {
 func apply(_ s: Snapshot) -> Bool {
     var changed = false
     for surface in surfaces {
-        guard let part = s.perMonitor[surface.monitorID] else { continue }
+        guard let part = s.perMonitor[surface.monitorID] ?? s.perMonitor["Main"] else { continue }
         if !part.workspaces.isEmpty, surface.workspaces != part.workspaces {
             surface.workspaces = part.workspaces
             surface.mine = Set(part.workspaces)
@@ -125,8 +97,6 @@ func apply(_ s: Snapshot) -> Bool {
             changed = true
         }
     }
-    model.floating = s.floating
-    if model.occupied != s.occupied { model.occupied = s.occupied; changed = true }
     if model.apps != s.apps { model.apps = s.apps; changed = true }
     if !s.focused.isEmpty, model.focused != s.focused {
         tlog("focused \(s.focused) (snapshot)")
@@ -136,11 +106,3 @@ func apply(_ s: Snapshot) -> Bool {
     return changed
 }
 
-
-// FAST path: a workspace switch changes focus and nothing else. No CLI,
-// no IPC, no shell — every surface already knows the rest, and the one
-// that owns the workspace also now shows it.
-func setFocused(_ ws: String) {
-    model.focused = ws
-    for surface in surfaces where surface.mine.contains(ws) { surface.visible = ws }
-}

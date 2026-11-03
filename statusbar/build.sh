@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 APP=~/.local/share/statusbar/statusbar.app
 mkdir -p "$APP/Contents/MacOS"
-swiftc -O -F /System/Library/PrivateFrameworks -framework SkyLight -framework DisplayServices \
+swiftc -O -F /System/Library/PrivateFrameworks -framework SkyLight \
   -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __info_plist -Xlinker statusbar-info.plist \
   -o "$APP/Contents/MacOS/statusbar" $(find Sources -name "*.swift")
 cp statusbar-info.plist "$APP/Contents/Info.plist"

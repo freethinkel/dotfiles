@@ -65,7 +65,7 @@ func calendarRows() -> [PopupRow] {
     rows.append(PopupRow(text: title.string(from: picked).lowercased(), hero: true, pager: { step in
         calDay = cal.date(byAdding: .month, value: step, to: picked)
         refreshPopup()
-    }, minWidth: width))
+    }, width: width))
     rows.append(PopupRow(cells: ["w", "mo", "tu", "we", "th", "fr", "sa", "su"], cellDim: Set(0..<8)))
 
     guard let monthStart = cal.date(from: cal.dateComponents([.year, .month], from: picked)) else { return rows }
@@ -112,7 +112,7 @@ func calendarRows() -> [PopupRow] {
     rows.append(PopupRow(separator: true))
     let head = DateFormatter()
     head.dateFormat = "EEEE d MMMM"
-    rows.append(PopupRow(text: cal.isDateInToday(picked) ? "today" : head.string(from: picked).lowercased(), dim: true))
+    rows.append(PopupRow(text: cal.isDateInToday(picked) ? "today" : head.string(from: picked).lowercased(), header: true))
     let agenda = on(picked).sorted { ($0.isAllDay ? 0 : 1, $0.startDate) < ($1.isAllDay ? 0 : 1, $1.startDate) }
     if agenda.isEmpty { rows.append(PopupRow(text: access ? "no events" : "no calendar access", dim: true)) }
     let hm = DateFormatter()
@@ -126,17 +126,8 @@ func calendarRows() -> [PopupRow] {
         // "all day" is 7 wide; the font is mono, so padding lines the titles up
         let time = e.isAllDay ? "all day" : hm.string(from: e.startDate).padding(toLength: 7, withPad: " ", startingAt: 0)
         let detail = [when, link != nil && e.endDate > now ? "join" : nil].compactMap { $0 }.joined(separator: " · ")
-        // the same sums PopupView.measure does: stripe + text + detail
-        let room = width - 10 - (detail.isEmpty ? 0 : advance(detail, nerdFont("Regular", 11)) + 24)
-        // only the title gives way: the time always stays
-        let f = nerdFont("Regular", 13)
-        var name = e.title ?? ""
-        if advance("\(time) \(name)", f) > room {
-            while !name.isEmpty && advance("\(time) \(name)…", f) > room { name.removeLast() }
-            name += "…"
-        }
-        let text = "\(time) \(name)"
-        rows.append(PopupRow(text: text,
+        // the popup's width is the grid's: a long title is cut by the row, the time stays
+        rows.append(PopupRow(text: "\(time) \(e.title ?? "")",
                              detail: detail,
                              dim: !e.isAllDay && e.endDate <= now,
                              highlight: when == "now",

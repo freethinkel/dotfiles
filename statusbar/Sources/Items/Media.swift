@@ -36,9 +36,11 @@ func updateMedia() {
         let f = shell(SPOTIFAST_CLI, ["now-playing", "--raw"])
             .trimmingCharacters(in: .newlines)
             .split(separator: "\t", omittingEmptySubsequences: false).map(String.init)
-        let next = f.count < 3 ? Media(running: true)
-            : Media(running: true, playing: f[0] == "playing",
-                    title: f[2].isEmpty ? f[1] : "\(f[2]) — \(f[1])")
+        // the CLI answers blank about once an hour while Spotifast is
+        // fine; one bad poll kept blanking the pill for a cycle
+        guard f.count >= 3 else { return }
+        let next = Media(running: true, playing: f[0] == "playing",
+                         title: f[2].isEmpty ? f[1] : "\(f[2]) — \(f[1])")
         DispatchQueue.main.async { setMedia(next) }
     }
 }

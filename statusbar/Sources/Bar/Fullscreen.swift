@@ -11,7 +11,7 @@ import UniformTypeIdentifiers
 // A display is "fullscreen" when some app window spans its full width and
 // reaches its top edge — tiled windows never do, the WM's outer gap keeps
 // them under the bar. Covers native fullscreen (starts below the notch,
-// hence the safe-area slack) and OmniWM's own toggle-fullscreen.
+// hence the safe-area slack).
 func fullscreenDisplays() -> Set<CGDirectDisplayID> {
     var covered: Set<CGDirectDisplayID> = []
     guard let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements],
@@ -41,6 +41,7 @@ func updateBarVisibility() {
     let covered = fullscreenDisplays()
     for surface in surfaces {
         if covered.contains(screenID(surface.screen)) {
+            if surface.window.isVisible { tlog("fullscreen: hiding on \(surface.screen.localizedName)") }
             surface.window.orderOut(nil)
             if openPopup != nil { closePopup() }
         } else {

@@ -1,10 +1,9 @@
-// statusbar — a native menu bar replacement for OmniWM, in ONE process.
+// statusbar — a native menu bar for nori, in ONE process.
 //
-// Left: workspace chips with one icon per window, fed by OmniWM's
-// workspace-bar stream (fast path, no subprocess) and SkyLight window
-// events (slow path, a snapshot off the main queue). Right: pills whose
+// Left: Space chips with one icon per window, fed by nori's subscribe
+// stream over its socket, no subprocess. Right: pills whose
 // sources are read in process and publish — IOPS, CoreAudio,
-// DisplayServices, EventKit, TIS — so only the clock and the network
+// EventKit, TIS — so only the clock and the network
 // services (weather, tailscale, claude, home assistant) are polled.
 //
 // Timings land in /tmp/statusbar.log as `switch <ws> <ms>`.
@@ -21,15 +20,6 @@ import UniformTypeIdentifiers
 let app = NSApplication.shared
 app.setActivationPolicy(.accessory)
 
-var labelsFromOmniWM = omniwmActive()
-
-let wmAppsWatch = NSWorkspace.shared.observe(\.runningApplications, options: []) { _, _ in
-    DispatchQueue.main.async {
-        guard omniwmActive() != labelsFromOmniWM else { return }
-        reconcile("wm-apps")
-    }
-}
-
 // native fullscreen lives on its own Space: switching to it is the event
 NSWorkspace.shared.notificationCenter.addObserver(
     forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main
@@ -43,8 +33,6 @@ NSWorkspace.shared.notificationCenter.addObserver(
     guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
           let name = app.localizedName, name != model.frontApp,
           app.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return }
-    // someone is using the Mac: an unresolved display is worth asking about now
-    if anyUnresolved() { reconcile("activation") }
     kickVisibility()
     model.frontApp = name
     repaint()
@@ -53,8 +41,7 @@ NSWorkspace.shared.notificationCenter.addObserver(
 }
 
 
-// Displays come and go: re-resolve which OmniWM display this screen is
-// now, move the window onto it, and rebuild. Screen parameters arrive
+// Displays come and go: move the windows onto them, and rebuild. Screen parameters arrive
 // before the arrangement settles, so give it a beat (borders.swift learnt
 // the same lesson with a stale CG-to-Cocoa flip after a replug).
 NotificationCenter.default.addObserver(
@@ -62,30 +49,17 @@ NotificationCenter.default.addObserver(
 ) { _ in
     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
         closePopup() // its anchor may not exist any more
-        var known: [String: String] = [:] // two identical monitors share a name
-        for surface in surfaces { known[surface.screen.localizedName] = surface.monitorID }
-        rebuildSurfaces(known)
-        applyShade() // a new display arrives at full output
-        // the WM can adopt the new display after this grace: reconcile asks
-        // again until it answers, with its own backoff
-        reconcile("screens")
+        rebuildSurfaces()
+        apply(noriState)
+        repaint()
     }
 }
 
 
 let notify: NotifyProc = { event, _, _, _ in
     DispatchQueue.main.async {
-        if event == EVENT_WINDOW_CREATE || event == EVENT_WINDOW_DESTROY {
-            kickRebuild()
-            rebuildSubscriptions()
-        } else if event == EVENT_WINDOW_ORDER || event == EVENT_WINDOW_VISIBILITY {
-            // the chips are only as fresh as this: a window changing
-            // workspace shows up here and nowhere else. A plain
-            // workspace switch lands here too and fetches a snapshot
-            // that changed nothing, which apply() reports so the
-            // repaint is skipped.
-            kickRebuild()
-        }
+        // the chips come from nori; these only keep the bar out of fullscreen
+        if event == EVENT_WINDOW_CREATE || event == EVENT_WINDOW_DESTROY { rebuildSubscriptions() }
         kickVisibility()
     }
 }
@@ -126,6 +100,11 @@ popupGuardToken = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown]) 
     if popover != nil, pointerLeftTheHull() { closePopup() }
 }
 
+// the bar's own moves drop its level (BarView.mouseMoved); these raise it
+// again, including when the pointer leaves through the native menu bar
+// that slid in over it
+let barLevelToken = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { _ in updateBarLevel() }
+
 // --- right-cluster publishers ---------------------------------------------
 
 // battery: IOPS fires on capacity ticks too
@@ -149,28 +128,12 @@ AudioObjectAddPropertyListenerBlock(AudioObjectID(kAudioObjectSystemObject),
 }
 attachVolumeListeners()
 
-// brightness: DisplayServices publishes, so the keyboard keys land here
-// without the bar being told about them by anyone else
-let brightnessProc: DSBrightnessProc = { _, _, _, _ in
-    DispatchQueue.main.async { updateBrightness() }
-}
-if DSRegisterBrightnessNotifications(builtinDisplayID(), nil, brightnessProc) != 0 {
-    tlog("brightness notifications unavailable — pill updates on scroll only")
-}
-
 // night shift: same idea one layer up — the schedule flipping it is a
 // change nobody else would tell an open popup about
 watchNightShift()
 
 // location: one coordinate for the weather, same responsible-process rules
 locationGate.start()
-
-// waking clears the gamma table, so the shade has to be reasserted.
-NSWorkspace.shared.notificationCenter.addObserver(
-    forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
-) { _ in
-    applyShade()
-}
 
 // Polls pause while nobody can see the bar: screens asleep, screen locked,
 // user switched out. Each would otherwise spawn a CLI every few seconds.
@@ -184,7 +147,7 @@ func pausePolls(_ why: String, _ on: Bool) {
     // 30 min out). ponytail: 5 s for the network to come back after a wake
     DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
         guard pauseReasons.isEmpty else { return }
-        updateMedia(); locationGate.refresh(); updateTailscale(); updateClaude(); updateHome(); updateAgents()
+        updateMedia(); locationGate.refresh(); updateTailscale(); updateClaude(); updateHome()
     }
 }
 for (name, why, on): (NSNotification.Name, String, Bool) in [
@@ -241,7 +204,6 @@ poll(WEATHER_POLL) { locationGate.refresh() }
 poll(TAILSCALE_POLL) { updateTailscale() }
 poll(CLAUDE_POLL) { updateClaude() }
 poll(HOME_POLL) { updateHome() }
-poll(AGENTS_POLL) { updateAgents() }
 poll(ACTIVITY_POLL) { updateActivity() }
 NotificationCenter.default.addObserver(forName: ProcessInfo.thermalStateDidChangeNotification, object: nil,
                                        queue: .main) { _ in updateActivity() }
@@ -249,28 +211,23 @@ NotificationCenter.default.addObserver(forName: ProcessInfo.thermalStateDidChang
 // --- go -------------------------------------------------------------------
 
 model.frontApp = NSWorkspace.shared.frontmostApplication?.localizedName ?? ""
-// startup only: from here the OmniWM watch stream keeps it
-model.focused = omniwmActive() ? managerFocused() : ""
-rebuildSurfaces(monitorIDs())
+rebuildSurfaces()
 guard !surfaces.isEmpty else {
     FileHandle.standardError.write("statusbar: no display\n".data(using: .utf8)!)
     exit(1)
 }
-apply(fetchSnapshot()) // blocking is fine here: the run loop has not started
+startNoriStream()
 updateActivity() // primes the cpu ticks; the first busy figure comes a poll later
 rightItems["more"] = BarItem(icon: "sf:chevron.left", iconColor: \.muted)
-applyShade() // restore the level this machine was left at
 // a flag left on disk means we died in lid mode: put disablesleep back
 if lidSetByUs { tlog("lid: undoing disablesleep left by a crash"); lidSetByUs = false; setDisableSleep(false) }
 updateBattery()
-updateBrightness()
 updateTheme()
 updateWeather()
 updateTailscale()
 updateLayout()
 updateClaude()
 updateHome()
-updateAgents()
 NotificationCenter.default.addObserver(forName: .EKEventStoreChanged, object: eventStore,
                                        queue: .main) { _ in updateEvents() }
 eventStore.requestFullAccessToEvents { granted, _ in
@@ -281,6 +238,5 @@ DistributedNotificationCenter.default().addObserver(
     object: nil, queue: .main) { _ in updateLayout() }
 repaint()
 updateMedia()
-reconcile("startup") // the OmniWM watch, and retries for a manager not up yet
-tlog("statusbar up on " + surfaces.map { "\($0.screen.localizedName)=m\($0.monitorID)\($0.notched ? " (notched)" : "")" }.joined(separator: ", "))
+tlog("statusbar up on " + surfaces.map { "\($0.screen.localizedName)=\($0.monitorID)\($0.notched ? " (notched)" : "")" }.joined(separator: ", "))
 app.run()

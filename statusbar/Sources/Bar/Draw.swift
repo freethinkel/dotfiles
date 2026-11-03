@@ -26,10 +26,6 @@ func inkBox(_ s: String, _ font: NSFont) -> CGRect {
     if s.hasPrefix("ts") { return CGRect(x: 0, y: 0, width: font.pointSize, height: font.pointSize) }
     if s.hasPrefix("key:") { return CGRect(origin: .zero, size: keyBadge(s, font).size) }
     if s.hasPrefix("donut:") { return CGRect(x: 0, y: 0, width: font.pointSize, height: font.pointSize) }
-    if s.hasPrefix("agents:") {
-        let m = agentMark(font)
-        return CGRect(x: 0, y: 0, width: CGFloat(s.count - 7) * m.step - m.gap, height: font.pointSize)
-    }
     if let img = sfSymbol(s, font) { return CGRect(origin: .zero, size: img.size) }
     let line = CTLineCreateWithAttributedString(
         NSAttributedString(string: s, attributes: [.font: font]))
@@ -80,46 +76,8 @@ func keyBadge(_ s: String, _ font: NSFont) -> (text: String, font: NSFont, size:
     return (text, f, NSSize(width: (advance(text, f) + 8).rounded(), height: font.pointSize + 1))
 }
 
-// "agents:<states>" is a row of status marks, one digit (AgentState) each
-func agentMark(_ font: NSFont) -> (d: CGFloat, gap: CGFloat, step: CGFloat) {
-    let d = (font.pointSize * 0.55).rounded(), gap: CGFloat = 5
-    return (d, gap, d + gap)
-}
-
 // "donut:<0...1>" is a progress ring the size of a glyph
 func drawIcon(_ s: String, _ font: NSFont, _ color: NSColor, centeredIn box: CGRect) {
-    if s.hasPrefix("agents:") {
-        let m = agentMark(font), lw: CGFloat = 1.5, r = m.d / 2 - lw / 2
-        let marks = s.dropFirst(7)
-        var x = box.midX - CGFloat(marks.count - 1) * m.step / 2
-        for ch in marks {
-            guard let st = ch.wholeNumberValue.flatMap({ AgentState(rawValue: $0) }) else { continue }
-            let c = NSPoint(x: x.rounded(), y: box.midY.rounded())
-            func circle(_ radius: CGFloat) -> NSBezierPath {
-                let p = NSBezierPath(ovalIn: NSRect(x: c.x - radius, y: c.y - radius, width: radius * 2, height: radius * 2))
-                p.lineWidth = lw
-                return p
-            }
-            st.color.setStroke()
-            st.color.setFill()
-            switch st {
-            case .idle: circle(r).stroke()
-            case .done: circle(r + lw / 2).fill()
-            case .working: // the right half filled, like a moon
-                circle(r).stroke()
-                let half = NSBezierPath()
-                half.move(to: c)
-                half.appendArc(withCenter: c, radius: r, startAngle: 90, endAngle: -90, clockwise: true)
-                half.close()
-                half.fill()
-            case .blocked: // a dot inside a ring: the one that wants you
-                circle(r).stroke()
-                circle(max(1, r - lw - 1)).fill()
-            }
-            x += m.step
-        }
-        return
-    }
     if s.hasPrefix("donut:"), let f = Double(s.dropFirst(6)) {
         let d = font.pointSize, lw = max(2, d / 6), r = (d - lw) / 2
         let c = NSPoint(x: box.midX.rounded(), y: box.midY.rounded())

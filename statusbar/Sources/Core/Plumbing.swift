@@ -9,41 +9,6 @@ import UniformTypeIdentifiers
 
 // --- plumbing -------------------------------------------------------------
 
-// OmniWM, the one window manager this bar speaks to. The running-app
-// check is an in-process lookup, cheap enough to be the whole detection.
-let omniwmBundleID = "com.barut.OmniWM"
-
-func omniwmActive() -> Bool {
-    !NSRunningApplication.runningApplications(withBundleIdentifier: omniwmBundleID).isEmpty
-}
-
-let omniwmctlBin = ["/opt/homebrew/bin/omniwmctl",
-                    "/Applications/OmniWM.app/Contents/MacOS/omniwmctl"]
-    .first { FileManager.default.isExecutableFile(atPath: $0) } ?? "omniwmctl"
-
-@discardableResult
-func omniwmctl(_ args: [String]) -> String { shell(omniwmctlBin, args) }
-
-// One query, unwrapped to its payload. The CLI prints the whole
-// IPCResponse envelope; everything the bar wants lives two levels down
-// at result.payload (OmniWM docs/IPC-CLI.md, "Response Format").
-func omniQuery(_ name: String, _ args: [String] = []) -> [String: Any]? {
-    let out = omniwmctl(["query", name] + args + ["--format", "json"])
-    guard let data = out.data(using: .utf8),
-          let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-          (root["ok"] as? Bool) == true,
-          let result = root["result"] as? [String: Any]
-    else { return nil }
-    return result["payload"] as? [String: Any]
-}
-
-// click-to-jump. OmniWM's focus-name resolves
-// a numeric raw workspace ID across all monitors, which is exactly what a
-// chip on either display means.
-func focusWindow(_ id: String) { omniwmctl(["window", "focus", id]) }
-
-func focusWorkspace(_ ws: String) { omniwmctl(["workspace", "focus-name", ws]) }
-
 // one append-mode descriptor for the daemon's life: no open/close per line
 let logHandle: FileHandle = {
     let fd = open("/tmp/statusbar.log", O_WRONLY | O_APPEND | O_CREAT, 0o644)
@@ -58,7 +23,7 @@ func tlog(_ m: String) {
 // Optional chip icons, ~/.config/statusbar/workspace-icons.conf:
 //   1 = com.apple.Safari      an app's icon, by bundle id
 //   2 = 󰊯                      a single glyph
-// A workspace "12" with no line of its own uses "2"'s. Missing file = digits.
+// Missing file = digits.
 enum WorkspaceIcon { case glyph(String), image(NSImage) }
 let workspaceIcons: [String: WorkspaceIcon] = {
     let path = NSHomeDirectory() + "/.config/statusbar/workspace-icons.conf"
@@ -77,4 +42,4 @@ let workspaceIcons: [String: WorkspaceIcon] = {
     }
     return icons
 }()
-func workspaceIcon(_ ws: String) -> WorkspaceIcon? { workspaceIcons[ws] ?? ws.last.flatMap { workspaceIcons[String($0)] } }
+func workspaceIcon(_ ws: String) -> WorkspaceIcon? { workspaceIcons[ws] }

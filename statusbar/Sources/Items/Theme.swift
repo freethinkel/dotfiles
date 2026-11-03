@@ -25,8 +25,14 @@ func themeRows() -> [PopupRow] {
     let current = currentTheme()
     var rows = [PopupRow(text: "theme", hero: true)]
     let bin = THEMES_DIR.deletingLastPathComponent().appendingPathComponent("bin/theme").path
+    var section: Bool?
     for (name, (light, swatches)) in names {
-        rows.append(PopupRow(icon: light ? "sf:sun.max.fill" : "sf:moon.fill", text: name,
+        if section != light {
+            if section != nil { rows.append(PopupRow(separator: true)) }
+            rows.append(PopupRow(text: light ? "light" : "dark", header: true))
+            section = light
+        }
+        rows.append(PopupRow(text: name,
                              swatches: swatches, checked: name == current, action: {
             closePopup()
             // login shell: launchd's PATH lacks brew, which theme-apply's reloads need
