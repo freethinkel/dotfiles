@@ -94,6 +94,8 @@ gh_bin eza-community/eza eza
 gh_bin jesseduffield/lazygit lazygit
 gh_bin dandavison/delta delta
 gh_bin aristocratos/btop btop
+# jq (Claude statusline) ships a bare binary, not an archive
+[[ -x ~/.local/bin/jq ]] || { curl -fsSL -o ~/.local/bin/jq https://github.com/jqlang/jq/releases/latest/download/jq-linux-amd64 && chmod 755 ~/.local/bin/jq; } || echo "jq: download failed, skipping" >&2
 [[ -d ~/.antidote ]] || git clone --depth 1 https://github.com/mattmc3/antidote ~/.antidote || echo "antidote clone failed" >&2
 fi
 
