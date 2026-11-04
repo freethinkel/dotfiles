@@ -5,6 +5,8 @@ typeset -U path  # nested shells re-add the same dirs
 
 # repo/bin, wherever the repo lives: this file is a stow link into it
 export PATH="${${(%):-%x}:A:h:h}/bin:$PATH"
+# linux servers: install.sh puts starship, zoxide etc. here, before their init below
+path=($HOME/.local/bin(N/) $path)
 # lazygit ignores ~/.config on macOS otherwise
 export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
 # colors from `theme set`
