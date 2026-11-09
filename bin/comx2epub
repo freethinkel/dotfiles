@@ -1,0 +1,346 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["pillow", "websocket-client"]
+# ///
+"""Манга с com-x.life -> fixed-layout EPUB для Send to Kindle или CBZ для KOReader.
+
+  comx2epub https://com-x.life/reader/2789/417508         одна глава
+  comx2epub https://com-x.life/reader/2789/417508 -n 10   10 глав начиная с этой, каждая в своём файле
+  comx2epub https://com-x.life/reader/2789/417508 --all   вся манга, файлами до 190 МБ
+  comx2epub https://com-x.life/reader/2789/417508 --cbz   CBZ вместо EPUB
+  comx2epub https://com-x.life/reader/2789/417508 --out ~/manga   папка для файлов
+  comx2epub https://com-x.life/reader/2789/417508 --offset 10 -n 5   пропустить 10 глав, взять 5
+  comx2epub --selftest
+"""
+# HTML сайта закрыт JS-проверкой, headless-браузеру он отвечает 403. Поэтому страницы
+# читает обычный видимый Chrome с отдельным профилем (~/.cache/comx-chrome): проверку он
+# проходит сам, ничего не подделывается. Если появится Turnstile, галочку жмёт человек.
+# Картинки CDN отдаёт без cookies, их качаем напрямую.
+import argparse
+import http.client
+import io
+import json
+import re
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.request
+import uuid
+import zipfile
+import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
+from pathlib import Path
+from xml.sax.saxutils import escape
+
+import websocket
+from PIL import Image, ImageOps
+
+ORIGIN = "https://com-x.life"
+PORT = 9222
+PROFILE = Path.home() / ".cache/comx-chrome"
+MARK = "window.__DATA__ = "
+MAX_BYTES = 190 * 1024 * 1024  # Send to Kindle принимает EPUB до 200 МБ
+UA = "comx2epub"
+
+
+def devtools(path, method="GET"):
+    req = urllib.request.Request(f"http://127.0.0.1:{PORT}{path}", method=method)
+    with urllib.request.urlopen(req, timeout=5) as r:
+        return json.load(r)
+
+
+class Chrome:
+    def __init__(self):
+        self.launched = False
+        self.seq = 0
+        try:
+            devtools("/json/version")
+        except OSError:
+            # ponytail: только macOS, на Linux нужен прямой запуск бинарника
+            subprocess.run(
+                ["open", "-na", "Google Chrome", "--args", f"--remote-debugging-port={PORT}",
+                 f"--user-data-dir={PROFILE}", "--no-first-run", "--no-default-browser-check"],
+                check=True,
+            )
+            self.launched = True
+            for _ in range(30):
+                time.sleep(1)
+                try:
+                    devtools("/json/version")
+                    break
+                except OSError:
+                    pass
+            else:
+                sys.exit(f"Chrome не открыл порт {PORT}")
+        tab = devtools("/json/new?about:blank", "PUT")
+        self.ws = websocket.create_connection(
+            tab["webSocketDebuggerUrl"], suppress_origin=True, timeout=180
+        )
+
+    def send(self, method, **params):
+        self.seq += 1
+        self.ws.send(json.dumps({"id": self.seq, "method": method, "params": params}))
+        while True:
+            msg = json.loads(self.ws.recv())
+            if msg.get("id") == self.seq:
+                if "error" in msg:
+                    raise RuntimeError(f"{method}: {msg['error']}")
+                return msg["result"]
+
+    def eval(self, js):
+        r = self.send("Runtime.evaluate", expression=js, awaitPromise=True, returnByValue=True)
+        if "exceptionDetails" in r:
+            raise RuntimeError(r["exceptionDetails"].get("text", js))
+        return r["result"].get("value")
+
+    def goto(self, url, timeout=180):
+        """Настоящий переход: проверка сайта выполняется в браузере. Возвращает __DATA__."""
+        self.send("Page.bringToFront")  # в скрытой вкладке проверка стоит на месте
+        self.send("Page.navigate", url=url)
+        for sec in range(timeout):
+            time.sleep(1)
+            try:
+                data = self.eval("window.__DATA__ && window.__DATA__.images && window.__DATA__")
+            except RuntimeError:  # страница сменилась во время запроса
+                continue
+            if data:
+                return data
+            if sec == 15:
+                print("Страница не открылась: если в Chrome капча, пройдите её", file=sys.stderr)
+        sys.exit(f"Не дождался ридера: {url}")
+
+    def chapter(self, news_id, chapter_id):
+        url = f"{ORIGIN}/reader/{news_id}/{chapter_id}"
+        html = self.eval(f"fetch({json.dumps(url)}).then(r => r.text())")
+        pos = html.find(MARK)
+        if pos < 0:  # проверка сайта устарела, проходим её заново
+            return self.goto(url)
+        return json.JSONDecoder().raw_decode(html, pos + len(MARK))[0]
+
+    def close(self):
+        self.send("Browser.close" if self.launched else "Page.close")
+
+
+def download(url):
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return r.read()
+        except (OSError, http.client.HTTPException):
+            if attempt == 3:
+                raise
+            time.sleep(2**attempt)
+
+
+def render(raw, size, rtl):
+    """Исходная картинка -> одна или две JPEG-страницы (разворот режется пополам)."""
+    img = ImageOps.exif_transpose(Image.open(io.BytesIO(raw))).convert("L")
+    w, h = img.size
+    parts = [img]
+    if w > h:
+        left, right = img.crop((0, 0, w // 2, h)), img.crop((w // 2, 0, w, h))
+        parts = [right, left] if rtl else [left, right]
+    pages = []
+    for part in parts:
+        buf = io.BytesIO()
+        ImageOps.pad(part, size, Image.LANCZOS, color=255).save(buf, "JPEG", quality=80, optimize=True)
+        pages.append(buf.getvalue())
+    return pages
+
+
+def safe_name(title):
+    return re.sub(r'[\\/:*?"<>|\x00-\x1f]+', " ", title).strip(" .")[:120] or "manga"
+
+
+def book_title(series, chapters):
+    first, last = chapters[0][0], chapters[-1][0]
+    return f"{series} — {first}" if len(chapters) == 1 else f"{series} — {first} … {last}"
+
+
+def write_epub(path, title, chapters, size, rtl):
+    """chapters: [(название, [jpeg, ...]), ...]"""
+    w, h = size
+    book_id = uuid.uuid5(uuid.NAMESPACE_URL, f"{title}|{w}x{h}|{rtl}")  # повторная отправка заменит книгу
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    items, spine, toc = [], [], []
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("mimetype", "application/epub+zip", zipfile.ZIP_STORED)  # обязан быть первым
+        z.writestr(
+            "META-INF/container.xml",
+            '<?xml version="1.0"?><container version="1.0" '
+            'xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles>'
+            '<rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>'
+            "</rootfiles></container>",
+        )
+        n = 0
+        for name, pages in chapters:
+            toc.append(f'<li><a href="p{n + 1}.xhtml">{escape(name)}</a></li>')
+            for jpeg in pages:
+                n += 1
+                z.writestr(f"OEBPS/i{n}.jpg", jpeg, zipfile.ZIP_STORED)
+                z.writestr(
+                    f"OEBPS/p{n}.xhtml",
+                    '<?xml version="1.0" encoding="utf-8"?><!DOCTYPE html>'
+                    '<html xmlns="http://www.w3.org/1999/xhtml"><head>'
+                    f'<title>{n}</title><meta name="viewport" content="width={w}, height={h}"/></head>'
+                    f'<body style="margin:0"><img src="i{n}.jpg" alt="Страница {n}" '
+                    f'width="{w}" height="{h}" style="display:block"/></body></html>',
+                )
+                cover = ' properties="cover-image"' if n == 1 else ""
+                items.append(f'<item id="i{n}" href="i{n}.jpg" media-type="image/jpeg"{cover}/>')
+                items.append(f'<item id="p{n}" href="p{n}.xhtml" media-type="application/xhtml+xml"/>')
+                spine.append(f'<itemref idref="p{n}"/>')
+        z.writestr(
+            "OEBPS/nav.xhtml",
+            '<?xml version="1.0" encoding="utf-8"?><!DOCTYPE html>'
+            '<html xmlns="http://www.w3.org/1999/xhtml" '
+            'xmlns:epub="http://www.idpf.org/2007/ops"><head>'
+            f'<title>{escape(title)}</title></head><body><nav epub:type="toc"><ol>{"".join(toc)}</ol>'
+            "</nav></body></html>",
+        )
+        z.writestr(
+            "OEBPS/content.opf",
+            '<?xml version="1.0" encoding="utf-8"?>'
+            '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id" '
+            'xml:lang="ru"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/">'
+            f'<dc:identifier id="id">urn:uuid:{book_id}</dc:identifier>'
+            f"<dc:title>{escape(title)}</dc:title><dc:language>ru</dc:language>"
+            f'<meta property="dcterms:modified">{now}</meta>'
+            '<meta property="rendition:layout">pre-paginated</meta>'
+            '<meta property="rendition:orientation">portrait</meta>'
+            '<meta property="rendition:spread">none</meta>'
+            # метаданные Kindle, те же, что пишет Kindle Comic Converter
+            '<meta name="cover" content="i1"/><meta name="fixed-layout" content="true"/>'
+            f'<meta name="original-resolution" content="{w}x{h}"/>'
+            '<meta name="book-type" content="comic"/>'
+            f'<meta name="primary-writing-mode" content="horizontal-{"rl" if rtl else "lr"}"/>'
+            '<meta name="zero-gutter" content="true"/><meta name="zero-margin" content="true"/>'
+            '<meta name="orientation-lock" content="portrait"/></metadata><manifest>'
+            '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>'
+            f'{"".join(items)}</manifest>'
+            f'<spine page-progression-direction="{"rtl" if rtl else "ltr"}">{"".join(spine)}</spine>'
+            "</package>",
+        )
+
+
+def write_cbz(path, title, chapters, size, rtl):
+    # ponytail: без оглавления, в CBZ нет стандартного места для глав
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_STORED) as z:
+        pages = (page for _, chapter in chapters for page in chapter)
+        for n, jpeg in enumerate(pages, 1):
+            z.writestr(f"{n:06}.jpg", jpeg)
+
+
+def selftest():
+    buf = io.BytesIO()
+    src = Image.new("L", (400, 200), 0)
+    src.paste(255, (200, 0, 400, 200))  # правая половина белая
+    src.save(buf, "PNG")
+    size = (120, 160)
+
+    pages = render(buf.getvalue(), size, rtl=True)
+    assert len(pages) == 2
+    first = Image.open(io.BytesIO(pages[0]))
+    assert first.size == size and first.mode == "L"
+    assert first.getpixel((60, 80)) > 200, "в RTL первой идёт правая половина"
+    assert Image.open(io.BytesIO(render(buf.getvalue(), size, rtl=False)[0])).getpixel((60, 80)) < 50
+
+    assert safe_name('../a/b:"c"') == "a b c"
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "t.epub"
+        write_epub(path, "A & <B>", [("Гл. <1>", pages), ("2", pages[:1])], size, True)
+        with zipfile.ZipFile(path) as z:
+            head = z.infolist()[0]
+            assert (head.filename, head.compress_type) == ("mimetype", zipfile.ZIP_STORED)
+            opf = ET.fromstring(z.read("OEBPS/content.opf"))
+            nav = ET.fromstring(z.read("OEBPS/nav.xhtml"))
+            ns = "{http://www.idpf.org/2007/opf}"
+            assert opf.find(f"{ns}spine").get("page-progression-direction") == "rtl"
+            assert len(opf.findall(f"{ns}spine/{ns}itemref")) == 3
+            links = [a.get("href") for a in nav.iter("{http://www.w3.org/1999/xhtml}a")]
+            assert links == ["p1.xhtml", "p3.xhtml"]
+        path = Path(tmp) / "t.cbz"
+        write_cbz(path, "t", [("1", pages), ("2", pages[:1])], size, True)
+        with zipfile.ZipFile(path) as z:
+            assert z.namelist() == ["000001.jpg", "000002.jpg", "000003.jpg"]
+            assert z.read("000002.jpg") == pages[1]
+    print("ok")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
+    ap.add_argument("url", nargs="?", help="ссылка на главу: https://com-x.life/reader/<манга>/<глава>")
+    ap.add_argument("-n", type=int, default=1, help="сколько глав взять начиная с этой, каждая в своём файле")
+    ap.add_argument("--offset", type=int, default=0, help="сколько глав пропустить")
+    ap.add_argument("--all", action="store_true", help="все главы манги")
+    ap.add_argument("--size", default="1072x1448", help="экран Kindle, по умолчанию 1072x1448")
+    ap.add_argument("--ltr", action="store_true", help="читать слева направо (зеркальный перевод)")
+    ap.add_argument("--cbz", action="store_true", help="CBZ для KOReader вместо EPUB")
+    ap.add_argument("-o", "--out", type=Path, default=Path("."), help="папка для файлов")
+    ap.add_argument("--selftest", action="store_true")
+    args = ap.parse_args()
+    if args.selftest:
+        return selftest()
+
+    match = re.fullmatch(r"https://com-x\.life/reader/(\d+)/(\d+)/?", args.url or "")
+    size = re.fullmatch(r"(\d+)x(\d+)", args.size)
+    if not match or not size or args.n < 1 or args.offset < 0:
+        ap.error("нужны ссылка вида https://com-x.life/reader/2789/417508, -n >= 1, --offset >= 0 и --size ШxВ")
+    news_id, chapter_id = int(match[1]), int(match[2])
+    size = int(size[1]), int(size[2])
+    rtl = not args.ltr
+    args.out.mkdir(parents=True, exist_ok=True)
+
+    chrome = Chrome()
+    try:
+        data = chrome.goto(args.url)
+        listing = chrome.eval(f"fetch({json.dumps(data['chapters_url'])}).then(r => r.json())")
+        chapters = listing["data"]["chapters"][::-1]  # сайт отдаёт новые первыми
+        start = next((i for i, c in enumerate(chapters) if c["id"] == chapter_id), None)
+        if start is None:
+            sys.exit(f"Главы {chapter_id} нет в оглавлении")
+        first = args.offset + (0 if args.all else start)
+        todo = chapters[first:] if args.all else chapters[first : first + args.n]
+        if not todo:
+            sys.exit(f"После пропуска {args.offset} глав ничего не осталось: всего глав {len(chapters)}")
+
+        def flush():
+            title = book_title(data["post_title"], book)
+            name = f"{number:0{len(str(len(chapters)))}} {safe_name(title)}"  # номер главы на сайте
+            path = args.out / f"{name}.{'cbz' if args.cbz else 'epub'}"
+            (write_cbz if args.cbz else write_epub)(path, title, book, size, rtl)
+            pages = sum(len(chapter) for _, chapter in book)
+            print(f"{path}: {pages} стр., {path.stat().st_size / 1024 / 1024:.1f} МБ")
+
+        def load(path):
+            return render(download(f"https://{data['host']}/comix/{path}"), size, rtl)
+
+        book, used, number = [], 0, 0
+        with ThreadPoolExecutor(4) as pool:
+            for i, chapter in enumerate(todo, 1):
+                info = chrome.chapter(news_id, chapter["id"])
+                if not info.get("images"):
+                    sys.exit(f"В главе «{chapter['title']}» нет страниц. Если нужен вход, "
+                             f"войдите на сайт в окне Chrome (профиль {PROFILE})")
+                pages = [page for result in pool.map(load, info["images"]) for page in result]
+                weight = sum(map(len, pages))
+                if book and (not args.all or used + weight > MAX_BYTES):
+                    flush()
+                    book, used = [], 0
+                if not book:
+                    number = first + i
+                book.append((chapter["title"], pages))
+                used += weight
+                print(f"[{i}/{len(todo)}] {chapter['title']}: {len(pages)} стр.", flush=True)
+                time.sleep(0.5)  # не нагружаем сайт очередью запросов
+        flush()
+    finally:
+        chrome.close()
+
+
+if __name__ == "__main__":
+    main()
