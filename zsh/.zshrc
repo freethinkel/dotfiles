@@ -43,7 +43,7 @@ alias notes="cd $HOME/Library/Mobile\ Documents/iCloud~Comma/Documents"
 
 export BUN_INSTALL="$HOME/.bun"
 # (N/): only dirs that exist
-path=($BUN_INSTALL/bin(N/) $HOME/.opencode/bin(N/) $HOME/.nub/bin(N/) $HOME/zero/bin(N/) $path)
+path=($BUN_INSTALL/bin(N/) $HOME/.opencode/bin(N/) $HOME/.nub/bin(N/) $HOME/zero/bin(N/) ${GOPATH:-$HOME/go}/bin(N/) $path)
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # herdr answers XTVERSION as "libghostty", which Claude Code's kitty-graphics allowlist rejects
@@ -52,7 +52,7 @@ path=($BUN_INSTALL/bin(N/) $HOME/.opencode/bin(N/) $HOME/.nub/bin(N/) $HOME/zero
 # >>> otty shell integration >>>
 # Added by Otty — toggle in Settings > Shell > Shell Integration.
 # Inert unless launched by Otty (it sets $OTTY_SHELL_INTEGRATION).
-if [ -n "$OTTY_SHELL_INTEGRATION" ] && [ -r "$OTTY_SHELL_INTEGRATION/otty-integration.zsh" ]; then
+if [ -n "$ZSH_VERSION" ] && [ -n "$OTTY_SHELL_INTEGRATION" ] && [ -r "$OTTY_SHELL_INTEGRATION/otty-integration.zsh" ]; then
   . "$OTTY_SHELL_INTEGRATION/otty-integration.zsh"
 fi
 # <<< otty shell integration <<<

@@ -61,3 +61,10 @@ ios-install() {
     local bundle=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app[1]/Info.plist")
     xcrun devicectl device process launch --device "$device" "$bundle"
 }
+
+# Скопировать stdin в буфер обмена терминала через OSC 52: работает и по ssh.
+# Пишем в /dev/tty, чтобы работало и в середине пайпа. tr — для GNU base64,
+# который переносит строки. Пример: git diff | osc52
+osc52() {
+    printf '\e]52;c;%s\a' "$(base64 | tr -d '\n')" > /dev/tty
+}

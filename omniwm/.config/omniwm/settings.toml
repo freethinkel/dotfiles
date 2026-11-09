@@ -54,7 +54,7 @@ top = 32.0
 
 [general]
 animationSpeed = 1.0
-animationsEnabled = false
+animationsEnabled = true
 defaultLayoutType = "niri"
 hotkeysEnabled = true
 hyperKeyModifiers = "Control+Option+Shift+Command"
@@ -194,6 +194,14 @@ xOffset = 0.0
 yOffset = 3.0
 
 [workspaceBar.iconOverrides]
+
+[[appRules]]
+axRole = "AXWindow"
+axSubrole = "AXStandardWindow"
+bundleId = "com.ardia.browser"
+id = "E89582FE-C6CD-4A7E-B566-0B127188E898"
+layout = "float"
+titleSubstring = "Picture in Picture"
 
 [[appRules]]
 bundleId = "com.openai.codex"
