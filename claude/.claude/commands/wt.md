@@ -8,7 +8,7 @@ Arguments: `$ARGUMENTS`
 
 Requires `HERDR_ENV=1`. If it isn't set, say this only works inside herdr and stop.
 
-**Always create and remove worktrees through `herdr worktree create/remove`.** `git worktree add/remove` emits no `worktree.created`/`worktree.removed` events, so the `freethinkel.worktree-hooks` plugin never runs (no `.env` symlink, no `node_modules`, no `settings.local.json`, no submodules). Hook config: `~/.config/herdr/plugins/config/freethinkel.worktree-hooks/config.yml`.
+**Always create and remove worktrees through `herdr worktree create/remove`.** `git worktree add/remove` emits no `worktree.created`/`worktree.removed` events, so the `shepherd.worktree-hooks` plugin never runs (no `.env` symlink, no `node_modules`, no `settings.local.json`, no submodules). Hook config: `~/.config/herdr/plugins/config/shepherd.worktree-hooks/`.
 
 ## Mode is picked from the argument
 
