@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- night shift (CBBlueLightClient publishes) ---------------------------
 // Private CoreBrightness, reached by reflection. It has a publisher: setStatusNotificationBlock fires on

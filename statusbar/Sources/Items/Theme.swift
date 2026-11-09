@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- theme: themes/ via the ~/.config/themes link, `theme set` does the rest
 let THEMES_DIR = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".config/themes").resolvingSymlinksInPath()

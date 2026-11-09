@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- view -----------------------------------------------------------------
 
@@ -27,15 +20,31 @@ func inkBox(_ s: String, _ font: NSFont) -> CGRect {
     if s.hasPrefix("key:") { return CGRect(origin: .zero, size: keyBadge(s, font).size) }
     if s.hasPrefix("donut:") { return CGRect(x: 0, y: 0, width: font.pointSize, height: font.pointSize) }
     if let img = sfSymbol(s, font) { return CGRect(origin: .zero, size: img.size) }
-    let line = CTLineCreateWithAttributedString(
-        NSAttributedString(string: s, attributes: [.font: font]))
-    return CTLineGetImageBounds(line, nil) // baseline at y = 0
+    return memo(&inkCache, "\(s)|\(font.fontName)|\(font.pointSize)") {
+        let line = CTLineCreateWithAttributedString(
+            NSAttributedString(string: s, attributes: [.font: font]))
+        return CTLineGetImageBounds(line, nil) // baseline at y = 0
+    }
 }
 
 func advance(_ s: String, _ font: NSFont) -> CGFloat {
-    let line = CTLineCreateWithAttributedString(
-        NSAttributedString(string: s, attributes: [.font: font]))
-    return CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
+    memo(&advanceCache, "\(s)|\(font.fontName)|\(font.pointSize)") {
+        let line = CTLineCreateWithAttributedString(
+            NSAttributedString(string: s, attributes: [.font: font]))
+        return CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
+    }
+}
+
+// Every frame measures every pill, and the answers only change with the
+// text. ponytail: dropped wholesale past 1000 entries (the clock adds one a minute)
+var inkCache: [String: CGRect] = [:]
+var advanceCache: [String: CGFloat] = [:]
+func memo<V>(_ cache: inout [String: V], _ key: String, _ make: () -> V) -> V {
+    if let v = cache[key] { return v }
+    if cache.count > 1000 { cache.removeAll() }
+    let v = make()
+    cache[key] = v
+    return v
 }
 
 // draws with `origin` as the BASELINE origin, which is the only anchor
@@ -147,6 +156,26 @@ func appIcon(_ name: String) -> NSImage? {
     if let cached = iconCache[name] { return cached }
     guard let icon = NSWorkspace.shared.runningApplications
         .first(where: { $0.localizedName == name })?.icon else { return nil }
-    iconCache[name] = icon
-    return icon
+    // An app icon is an IconServices rep that resolves locale, tint and a
+    // fresh CGImage on EVERY draw: over half of a full frame, sampled. So
+    // it is flattened once into a bitmap the size the chips draw it at
+    // (1.05x when focused, hence the headroom). The theme watcher empties
+    // this cache, so a light/dark icon variant is picked up again.
+    let side = APP_ICON_SIZE * 1.1
+    let scale = NSScreen.screens.map(\.backingScaleFactor).max() ?? 2
+    let px = Int((side * scale).rounded(.up))
+    guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: px, pixelsHigh: px,
+                                     bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                     colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0),
+          let ctx = NSGraphicsContext(bitmapImageRep: rep) else { return icon }
+    // the bitmap context counts in pixels, not points: fill all of it
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = ctx
+    icon.draw(in: NSRect(x: 0, y: 0, width: px, height: px))
+    NSGraphicsContext.restoreGraphicsState()
+    rep.size = NSSize(width: side, height: side)
+    let flat = NSImage(size: rep.size)
+    flat.addRepresentation(rep)
+    iconCache[name] = flat
+    return flat
 }

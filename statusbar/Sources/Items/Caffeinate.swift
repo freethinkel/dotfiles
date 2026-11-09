@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- caffeinate: the CLI as a child, `-w` tied to our pid so a crashed
 // bar never leaves the Mac awake; `-t` ends it on its own.
@@ -58,7 +51,8 @@ func setDisableSleep(_ on: Bool) {
         var ok = false
         if (try? sudo.run()) != nil { sudo.waitUntilExit(); ok = sudo.terminationStatus == 0 }
         if !ok {
-            _ = shell("/usr/bin/osascript", ["-e", "do shell script \"\(cmd)\" with administrator privileges"])
+            _ = shell("/usr/bin/osascript", ["-e", "do shell script \"\(cmd)\" with administrator privileges"],
+                      timeout: nil) // the password dialog waits on a person
         }
     }
 }

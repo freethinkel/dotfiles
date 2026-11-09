@@ -1,11 +1,5 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
 import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- clock (no publisher: the one honest timer, aligned to the minute)
 func updateClock() {

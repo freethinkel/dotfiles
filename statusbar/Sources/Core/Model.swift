@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- model ----------------------------------------------------------------
 
@@ -30,6 +23,8 @@ struct Media: Equatable {
     var running = false
     var playing = false
     var title = ""
+    var art = ""    // cover URL
+    var saved = false // in the library: the cover's hover heart is filled
 }
 
 let model = Model()

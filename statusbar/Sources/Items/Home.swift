@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- home assistant: the REST API, polled. HA_URL and HA_TOKEN (a
 // long-lived token from the HA profile page) come from ~/.env, the file

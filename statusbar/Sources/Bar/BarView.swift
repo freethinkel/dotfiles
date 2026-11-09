@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 let terminalApp = "Ghostty" // the activity pill opens btop here
 
@@ -40,7 +33,8 @@ final class BarView: NSView, NSDraggingSource {
         -> (width: CGFloat, glyphs: [(String, String, CGFloat, CGFloat)], titleX: CGFloat) {
         // square PILL_HEIGHT buttons, like the apple one: hover fills a
         // square and the glyph sits in its centre
-        var x: CGFloat = 0
+        // the cover leads, a PILL_HEIGHT square like the buttons
+        var x: CGFloat = model.media.art.isEmpty ? 0 : PILL_HEIGHT
         var placed: [(String, String, CGFloat, CGFloat)] = []
         for (name, glyph) in mediaGlyphs() {
             placed.append((name, glyph, x, PILL_HEIGHT))
@@ -66,9 +60,12 @@ final class BarView: NSView, NSDraggingSource {
         return titleScrolls ? advance(String(title.prefix(titleLimit)), font) : inkBox(title, font).maxX
     }
 
-    // ponytail: redraws the whole bar at 30 fps while a title scrolls;
-    // cache the bar into a layer and move only the title if CPU shows up
+    // A scrolling title invalidates only its own rect at 30 fps, and draw()
+    // repaints just that rect (background, title, hover) when nothing else
+    // is dirty. ponytail: still a CPU redraw per frame; a CATextLayer with
+    // a CABasicAnimation would hand it to the render server if this shows up
     private var marqueeScheduled = false
+    private var marqueeRect: NSRect? // where the scrolling title was last drawn
     // right-click on the title: still, showing the start of the title
     var marqueeOn: Bool {
         get { !UserDefaults.standard.bool(forKey: "marqueeOff") }
@@ -98,11 +95,13 @@ final class BarView: NSView, NSDraggingSource {
         ctx.drawLinearGradient(erase, start: CGPoint(x: box.maxX, y: 0), end: CGPoint(x: box.maxX - fade, y: 0), options: [])
         ctx.endTransparencyLayer()
         ctx.restoreGState()
-        guard scrolling, !marqueeScheduled else { return }
+        guard scrolling else { return }
+        marqueeRect = box
+        guard !marqueeScheduled else { return }
         marqueeScheduled = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 / 30) { [weak self] in
             self?.marqueeScheduled = false
-            self?.needsDisplay = true
+            self?.setNeedsDisplay(box)
         }
     }
 
@@ -112,6 +111,14 @@ final class BarView: NSView, NSDraggingSource {
         let pill = NSRect(x: origin, y: (bounds.height - PILL_HEIGHT) / 2, width: width, height: PILL_HEIGHT)
 
         let layout = mediaLayout(titleFont, iconFont)
+        if !model.media.art.isEmpty {
+            let hit = NSRect(x: pill.minX, y: 0, width: PILL_HEIGHT, height: bounds.height)
+            let art = NSRect(x: pill.minX, y: pill.minY, width: PILL_HEIGHT, height: PILL_HEIGHT).insetBy(dx: 3, dy: 3)
+            // anywhere over the capsule turns the cover into the like button
+            let hovered = hoverPoint.map { $0.x >= pill.minX && $0.x < pill.maxX } ?? false
+            pressing(hit) { drawCover(art, hovered: hovered, iconFont) }
+            mediaRects.append(("like", hit))
+        }
         for (name, glyph, dx, w) in layout.glyphs {
             let hit = NSRect(x: pill.minX + dx, y: 0, width: w, height: bounds.height)
             pressing(hit) {
@@ -133,6 +140,27 @@ final class BarView: NSView, NSDraggingSource {
         mediaRects.append(("title", titleHit))
     }
 
+    private func drawCover(_ art: NSRect, hovered: Bool, _ iconFont: NSFont) {
+        NSGraphicsContext.saveGraphicsState()
+        NSBezierPath(roundedRect: art, xRadius: RADIUS, yRadius: RADIUS).addClip()
+        if let img = coverImage {
+            img.draw(in: art, from: .zero, operation: .sourceOver, fraction: 1, respectFlipped: true,
+                     hints: [.interpolation: NSNumber(value: NSImageInterpolation.high.rawValue)])
+        } else {
+            palette.label.withAlphaComponent(0.15).setFill()
+            art.fill()
+        }
+        if hovered {
+            NSColor.black.withAlphaComponent(0.5).setFill()
+            art.fill()
+        }
+        NSGraphicsContext.restoreGraphicsState()
+        // Spotify has no dislike: the heart saves the track or takes it back out
+        if hovered {
+            drawIcon(model.media.saved ? "sf:heart.fill" : "sf:heart", iconFont, .white, centeredIn: art)
+        }
+    }
+
     private func draw(_ s: String, _ font: NSFont, _ color: NSColor, centeredIn box: NSRect) {
         drawText(s, font, color, centeredIn: box)
     }
@@ -142,6 +170,21 @@ final class BarView: NSView, NSDraggingSource {
     private var winAnim: [String: CGFloat] = [:]
 
     override func draw(_ dirtyRect: NSRect) {
+        let t0 = CACurrentMediaTime()
+        defer {
+            let ms = (CACurrentMediaTime() - t0) * 1000
+            if ms > 8 { tlog(String(format: "draw %.1f ms (%.0f pt wide)", ms, dirtyRect.width)) }
+        }
+        // only the scrolling title is stale: the rest of the bar and every
+        // hit rect still stand from the last full frame
+        if let m = marqueeRect, m.contains(dirtyRect) {
+            palette.barBG.setFill()
+            m.fill()
+            drawMarquee(nerdFont("SemiBold", 13), in: m, midY: bounds.midY)
+            if let p = hoverPoint, m.contains(p) { drawHoverPlate(m) }
+            return
+        }
+        marqueeRect = nil // drawMedia sets it again if the title still scrolls
         var nextAnim: [String: CGFloat] = [:]
         var animating = false
         chipRects.removeAll()
@@ -316,12 +359,14 @@ final class BarView: NSView, NSDraggingSource {
         }
         // hover/press feedback for whatever the pointer is over: one tint
         // laid over the clickable rect, so every target reacts the same way
-        if let p = hoverPoint, let r = clickRect(at: p) {
-            let box = NSRect(x: r.minX, y: (bounds.height - PILL_HEIGHT) / 2, width: r.width, height: PILL_HEIGHT)
-            pressing(r) {
-                palette.label.withAlphaComponent(0.1 + 0.12 * (r == scaleRect ? pressAnim : 0)).setFill()
-                NSBezierPath(roundedRect: box, xRadius: 6, yRadius: 6).fill()
-            }
+        if let p = hoverPoint, let r = clickRect(at: p) { drawHoverPlate(r) }
+    }
+
+    private func drawHoverPlate(_ r: NSRect) {
+        let box = NSRect(x: r.minX, y: (bounds.height - PILL_HEIGHT) / 2, width: r.width, height: PILL_HEIGHT)
+        pressing(r) {
+            palette.label.withAlphaComponent(0.1 + 0.12 * (r == scaleRect ? pressAnim : 0)).setFill()
+            NSBezierPath(roundedRect: box, xRadius: 6, yRadius: 6).fill()
         }
     }
 
@@ -520,6 +565,7 @@ final class BarView: NSView, NSDraggingSource {
             case "prev": spotifast("previous")
             case "play": spotifast("play-pause")
             case "next": spotifast("next")
+            case "like": spotifast("like")
             default: spotifast("show")
             }
             return

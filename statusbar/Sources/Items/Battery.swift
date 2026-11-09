@@ -1,11 +1,5 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
 import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- battery (IOPS publishes, capacity ticks included)
 var battery = (pct: 0, charging: false, minutes: -1)

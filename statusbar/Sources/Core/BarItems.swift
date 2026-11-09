@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- right cluster ---------------------------------------------------------
 // An item is data. Layout, hit-testing and drawing are generic over the
@@ -30,13 +23,11 @@ func set(_ name: String, _ mutate: (inout BarItem) -> Void) {
     var item = rightItems[name] ?? BarItem()
     mutate(&item)
     guard item != rightItems[name] else { return } // no pixels owed
-    let t0 = DispatchTime.now().uptimeNanoseconds
     rightItems[name] = item
     repaint()
     // an open popup shows the same state as its pill — a slider
     // popup kept whatever value it was built with while the pill moved
     if openPopup == name { refreshPopup() }
-    tlog(String(format: "item %@ %.2f ms", name, Double(DispatchTime.now().uptimeNanoseconds - t0) / 1_000_000))
 }
 
 // A failed fetch keeps the last value on the pill, dimmed once the last
@@ -48,7 +39,11 @@ func fetchFailed(_ name: String, poll: TimeInterval) {
     set(name) { $0.stale = age > 2 * poll }
 }
 
-func shell(_ launch: String, _ args: [String]) -> String {
+// A hung CLI (tailscale with its daemon wedged) would hold a worker thread
+// forever, and the poll would stack another one every 15 s: past `timeout`
+// it gets SIGTERM. nil waits for good, for prompts a person has to answer.
+// ponytail: a child that ignores SIGTERM, or a grandchild holding the pipe, still hangs
+func shell(_ launch: String, _ args: [String], timeout: TimeInterval? = 30) -> String {
     let p = Process()
     p.executableURL = URL(fileURLWithPath: launch)
     p.arguments = args
@@ -56,7 +51,14 @@ func shell(_ launch: String, _ args: [String]) -> String {
     p.standardOutput = pipe
     p.standardError = FileHandle.nullDevice
     guard (try? p.run()) != nil else { return "" }
+    let kill = DispatchWorkItem {
+        guard p.isRunning else { return }
+        tlog("shell: \(launch) \(args.first ?? "") timed out")
+        p.terminate()
+    }
+    if let timeout { DispatchQueue.global().asyncAfter(deadline: .now() + timeout, execute: kill) }
     let out = pipe.fileHandleForReading.readDataToEndOfFile()
     p.waitUntilExit()
+    kill.cancel()
     return String(data: out, encoding: .utf8) ?? ""
 }

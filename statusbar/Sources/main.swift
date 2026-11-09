@@ -6,16 +6,12 @@
 // EventKit, TIS — so only the clock and the network
 // services (weather, tailscale, claude, home assistant) are polled.
 //
-// Timings land in /tmp/statusbar.log as `switch <ws> <ms>`.
+// A frame that takes longer than 8 ms lands in /tmp/statusbar.log as `draw <ms>`.
 
-import ApplicationServices
 import AppKit
 import Carbon
 import CoreAudio
-import CoreLocation
-import EventKit
 import IOKit.ps
-import UniformTypeIdentifiers
 
 let app = NSApplication.shared
 app.setActivationPolicy(.accessory)
@@ -25,19 +21,16 @@ NSWorkspace.shared.notificationCenter.addObserver(
     forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main
 ) { _ in kickVisibility() }
 
-// front app: a notification, not a poll and not a script
+// front app: a notification, not a poll and not a script. Nothing on the
+// bar shows it (only the apple popup reads it), so no repaint.
 NSWorkspace.shared.notificationCenter.addObserver(
     forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
 ) { note in
-    let t0 = DispatchTime.now().uptimeNanoseconds
     guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
           let name = app.localizedName, name != model.frontApp,
           app.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return }
     kickVisibility()
     model.frontApp = name
-    repaint()
-    let ms = Double(DispatchTime.now().uptimeNanoseconds - t0) / 1_000_000
-    tlog(String(format: "frontapp %@ %.2f ms", name, ms))
 }
 
 
@@ -81,12 +74,9 @@ if SLSGetEventPort(cid, &eventPort).rawValue == 0, eventPort != 0 {
 // directory's contents, which fires the watch on the directory itself.
 watch(FileManager.default.homeDirectoryForCurrentUser
     .appendingPathComponent(".config/theme").path, create: false) {
-    let t0 = DispatchTime.now().uptimeNanoseconds
     palette = loadPalette()
     iconCache.removeAll()
     repaint()
-    let ms = Double(DispatchTime.now().uptimeNanoseconds - t0) / 1_000_000
-    tlog(String(format: "theme %.2f ms", ms))
 }
 
 

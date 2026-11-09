@@ -1,11 +1,5 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
 import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- location (one coordinate, for the weather) ---------------------------
 // wttr.in's IP geolocation lands wherever the VPN exit node is, so the
@@ -125,6 +119,18 @@ func clockMinutes(_ s: String) -> Int? {
 
 var weatherCoord: CLLocationCoordinate2D?
 
+// wttr.in drops out for hours at a time (20 h on 2 Nov): a failed fetch
+// tries again in 5 min, not at the next 30-min poll. One retry pending at
+// most; a paused bar skips it, and the resume catches up on its own.
+var weatherRetry: DispatchWorkItem?
+func weatherFailed() {
+    fetchFailed("weather", poll: WEATHER_POLL)
+    weatherRetry?.cancel()
+    let work = DispatchWorkItem { if pauseReasons.isEmpty { updateWeather() } }
+    weatherRetry = work
+    DispatchQueue.main.asyncAfter(deadline: .now() + 300, execute: work)
+}
+
 func updateWeather() {
     // no coordinate: the timezone's city beats an IP that sits behind the VPN
     // ponytail: a tz city is coarse (Europe/Moscow covers far more than Moscow)
@@ -140,7 +146,7 @@ func updateWeather() {
               let current = (root["current_condition"] as? [[String: Any]])?.first,
               let days = root["weather"] as? [[String: Any]],
               let today = days.first
-        else { return DispatchQueue.main.async { fetchFailed("weather", poll: WEATHER_POLL) } }
+        else { return DispatchQueue.main.async { weatherFailed() } }
 
         func text(_ d: [String: Any], _ key: String) -> String { d[key] as? String ?? "" }
         func int(_ d: [String: Any], _ key: String) -> Int { Int(text(d, key)) ?? 0 }
@@ -231,6 +237,7 @@ func updateWeather() {
         }
 
         DispatchQueue.main.async {
+            weatherRetry?.cancel()
             weather = w
             lastFetch["weather"] = Date()
             set("weather") { $0.icon = w.symbol; $0.label = "\(w.temp)°"; $0.stale = false }

@@ -1,11 +1,5 @@
-import ApplicationServices
 import AppKit
-import Carbon
 import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- volume (CoreAudio publishes on the device itself)
 func defaultOutputDevice() -> AudioDeviceID {

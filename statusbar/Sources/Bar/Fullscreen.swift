@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- fullscreen ------------------------------------------------------------
 // A display is "fullscreen" when some app window spans its full width and
@@ -22,11 +15,17 @@ func fullscreenDisplays() -> Set<CGDirectDisplayID> {
         // CG space: origin top-left of the primary display
         let top = primaryH - screen.frame.maxY
         let slack = screen.safeAreaInsets.top + 2
-        for w in list where (w[kCGWindowLayer as String] as? Int) == 0
-            && (w[kCGWindowOwnerPID as String] as? Int) != me
+        for w in list where (w[kCGWindowOwnerPID as String] as? Int) != me
             && ((w[kCGWindowAlpha as String] as? Double) ?? 1) > 0 {
             guard let b = w[kCGWindowBounds as String] as? [String: CGFloat],
-                  let x = b["X"], let y = b["Y"], let width = b["Width"] else { continue }
+                  let x = b["X"], let y = b["Y"], let width = b["Width"], let height = b["Height"]
+            else { continue }
+            // GLFW games (Minecraft) go fullscreen at main-menu level + 1 (25),
+            // not as a native fullscreen Space. Only whole-screen windows there:
+            // status items share the level. Not any layer: Dock and Snap keep
+            // transparent whole-screen overlays at 20.
+            let layer = w[kCGWindowLayer as String] as? Int ?? 0
+            guard layer == 0 || (layer == 25 && height >= screen.frame.height - 2) else { continue }
             if abs(x - screen.frame.minX) < 2, width >= screen.frame.width - 2,
                y >= top - 2, y <= top + slack {
                 covered.insert(screenID(screen))

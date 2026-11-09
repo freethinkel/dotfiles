@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- media (Spotifast, polled) ----------------------------------------------
 // Spotifast posts no distributed notification and MediaRemote is closed
@@ -25,6 +18,7 @@ func spotifastRunning() -> Bool {
 func setMedia(_ next: Media) {
     guard next != model.media else { return }
     model.media = next
+    loadCover(next.art)
     repaint()
     tlog("media \(next.playing ? "play" : "pause") \(next.title)")
 }
@@ -40,7 +34,8 @@ func updateMedia() {
         // fine; one bad poll kept blanking the pill for a cycle
         guard f.count >= 3 else { return }
         let next = Media(running: true, playing: f[0] == "playing",
-                         title: f[2].isEmpty ? f[1] : "\(f[2]) — \(f[1])")
+                         title: f[2].isEmpty ? f[1] : "\(f[2]) — \(f[1])",
+                         art: f.count > 9 ? f[9] : "", saved: f.count > 10 && !["", "no", "false"].contains(f[10]))
         DispatchQueue.main.async { setMedia(next) }
     }
 }
@@ -50,4 +45,24 @@ func spotifast(_ command: String) {
         _ = shell(SPOTIFAST_CLI, [command])
         DispatchQueue.main.async { updateMedia() }
     }
+}
+
+// the cover, fetched once per track; the old one stays up until the new
+// one lands, so a track change does not flash an empty square
+// ponytail: the 640 px art scaled down to 20 pt; fine at one fetch a track
+var coverImage: NSImage?
+private var coverURL = ""
+
+func loadCover(_ url: String) {
+    guard url != coverURL else { return }
+    coverURL = url
+    guard let u = URL(string: url), !url.isEmpty else { coverImage = nil; return }
+    URLSession.shared.dataTask(with: u) { data, _, _ in
+        let img = data.flatMap(NSImage.init(data:))
+        DispatchQueue.main.async {
+            guard url == coverURL, let img else { return }
+            coverImage = img
+            repaint()
+        }
+    }.resume()
 }

@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- tailscale: the CLI's JSON, polled — no event stream to subscribe to.
 // The tailnet can hold hundreds of peers, so the popup lists exit nodes

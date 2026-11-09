@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- window ---------------------------------------------------------------
 
@@ -127,13 +120,11 @@ func updateBarLevel() {
     }
 }
 
+// Invalidation only: AppKit draws once at the end of the run-loop pass,
+// so a burst (the minute tick sets clock, events and caffeinate) is one
+// frame, not three. BarView.draw logs the slow ones itself.
 func repaint() {
-    // every caller is already on the main queue; display() is synchronous
-    // so the timings below cover real drawing, not just invalidation
     MainActor.assumeIsolated {
-        for surface in surfaces {
-            surface.view.needsDisplay = true
-            surface.view.display()
-        }
+        for surface in surfaces { surface.view.needsDisplay = true }
     }
 }

@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- activity: the cpu pill stays a quiet glyph and only speaks up when
 // the machine is struggling — cpu busy over the last poll, memory

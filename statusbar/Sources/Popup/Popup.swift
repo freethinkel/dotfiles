@@ -36,6 +36,7 @@ struct PopupRow {
     var strike = false // declined / cancelled
     var pager: ((Int) -> Void)? // ‹ title ›, either arrow pages by ∓1
     var width: CGFloat = 0 // fixes the popup's content width: rows truncate rather than widen it
+    var custom: AnyView? // a view the row kinds above can't say — the claude usage card
 }
 
 // every icon kind the bar knows (sf:, nerd glyphs, ts, keycaps)
@@ -52,7 +53,9 @@ struct PopupRowView: View {
     var checkColumn = false // the popup has a choice somewhere: every row keeps the ✓ column, like NSMenu
 
     var body: some View {
-        if row.separator {
+        if let custom = row.custom {
+            custom
+        } else if row.separator {
             PopupSeparator()
         } else if let pager = row.pager {
             HStack {
@@ -289,12 +292,14 @@ func showPopup(_ name: String, of view: NSView, at rect: NSRect) -> Bool {
     if let w = host.view.window as? NSPanel {
         w.styleMask.insert(.nonactivatingPanel)
         setPrivate(w, "_setPreventsActivation:", true)
-        // a window that is never key draws native switches and sliders in
-        // their inactive grey; making it key would take the keyboard from
-        // the front app, so it only draws as if it were
-        setPrivate(w, "_setForceActiveControls:", true)
-        // controls already drawn read the flag on the next key change
-        NotificationCenter.default.post(name: NSWindow.didBecomeKeyNotification, object: w)
+        // A window that is never key draws its glass, switches and sliders
+        // in the inactive grey; making it key would take the keyboard from
+        // the front app, so it only takes the key LOOK. Measured on macOS 27
+        // in a test popover: _setForceActiveControls: and
+        // _setHasActiveAppearance: change nothing any more, this does, and
+        // the window stays non-key with the front app still in front.
+        let look = NSSelectorFromString("acquireKeyAppearance")
+        if w.responds(to: look) { w.perform(look) }
     }
     popover = p
     popupHost = host

@@ -1,11 +1,4 @@
-import ApplicationServices
 import AppKit
-import Carbon
-import CoreAudio
-import CoreLocation
-import EventKit
-import IOKit.ps
-import UniformTypeIdentifiers
 
 // --- nori -------------------------------------------------------------------
 // The bar talks to nori's control socket itself, no CLI in between: one
@@ -66,12 +59,9 @@ func startNoriStream() {
         buffer = Data(buffer[buffer.index(after: nl)...])
         let start = lines.lastIndex(of: 0x0A).map { lines.index(after: $0) } ?? lines.startIndex
         guard let s = snapshot(fromNori: Data(lines[start...])) else { return }
-        let t0 = DispatchTime.now().uptimeNanoseconds
         noriState = s
         guard apply(s) else { return }
         repaint()
-        tlog(String(format: "nori %@ %.2f ms", model.focused,
-                    Double(DispatchTime.now().uptimeNanoseconds - t0) / 1_000_000))
     }
     source.setCancelHandler {
         close(fd)
