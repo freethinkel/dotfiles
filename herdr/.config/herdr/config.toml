@@ -117,11 +117,6 @@ navigate_pane_up = ""
 # command = "lazygit"
 
 [[keys.command]]
-key = "cmd+r"
-type = "plugin_action"
-command = "persiyanov.reviewr.toggle" # <plugin_id>.<action_id> — note the id, not the name
-
-[[keys.command]]
 key = "cmd+g"
 type = "pane"
 command = "glui"
