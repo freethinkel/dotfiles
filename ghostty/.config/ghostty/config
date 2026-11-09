@@ -39,3 +39,7 @@ config-file = keybind.ghostty
 # `theme` puts in themes/ to ~/.config/theme/ghostty.conf: Ghostty 1.3.1
 # (Arch) doesn't expand ~ in a theme path.
 theme = light:dotfiles-light,dark:dotfiles-dark
+
+# >>> Scene: managed include. Remove this block to detach Scene. >>>
+config-file = ?"/Users/freethinkel/.config/ghostty/scene.conf"
+# <<< Scene <<<

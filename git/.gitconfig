@@ -22,3 +22,8 @@
     st = status
     lg = log --oneline --graph --decorate -20
     undo = reset --soft HEAD^
+
+# >>> Scene: managed include. Remove this block to detach Scene. >>>
+[include]
+	path = "/Users/freethinkel/.config/git/scene-delta.gitconfig"
+# <<< Scene <<<
